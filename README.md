@@ -46,7 +46,7 @@ Expected result: Page shows "Hello Sorora Tech"
 - Next.js 16.2.0
 - React 19.2.4
 - TypeScript 5
-- Tailwind CSS v4 — uses CSS-based configuration (no tailwind.config.js by default)
+- Tailwind CSS v4 - uses CSS-based configuration (no tailwind.config.js by default)
 - Lexend Font (via next/font/google)
 - App Router
 - src/ directory structure
