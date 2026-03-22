@@ -5,11 +5,11 @@
 ServiaAI is an AI-powered hotel recruitment platform that transforms 
 the way hotels attract, screen, and hire talent. Instead of spending 
 hours manually reviewing CVs and coordinating interviews, ServiaAI 
-automates the entire hiring process — from the moment a candidate 
+automates the entire hiring process - from the moment a candidate 
 applies to the final hiring decision.
 
 This repository contains the frontend of the ServiaAI platform built 
-with Next.js. It serves two separate portals — a candidate-facing 
+with Next.js. It serves two separate portals - a candidate-facing 
 portal where applicants register, upload their CV, submit a video 
 introduction, and track their application status in real time, and a 
 recruiter-facing dashboard where hotel HR teams manage candidates, 
@@ -53,14 +53,14 @@ Expected result: Page shows "Hello Sorora Tech"
 
 ## Node Version
 This project requires Node.js 20.9.0 or higher. 
-A .nvmrc file is included — run nvm use to automatically 
+A .nvmrc file is included - run nvm use to automatically 
 switch to the correct version.
 
 ## Branch Strategy
-- main — production only
-- staging — pre-production testing
-- develop — integration branch
-- feature/xxx — one branch per task
+- main - production only
+- staging - pre-production testing
+- develop - integration branch
+- feature/xxx - one branch per task
 
 ## Team
-Sorora Tech — ServiaAI Project
+Sorora Tech - ServiaAI Project
