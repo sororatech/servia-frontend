@@ -1,7 +1,7 @@
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-white">
-      <h1 className="text-4xl font-bold text-blue-600">
+      <main className="flex min-h-screen items-center justify-center bg-[var(--color-background)]">
+      <h1 className="text-[var(--color-primary)]">
         Hello Servia AI
       </h1>
     </main>
