@@ -48,6 +48,11 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/candidate/:path*',
+    '/recruiter/:path*',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password/:path*',
   ],
 };
