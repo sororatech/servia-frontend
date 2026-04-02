@@ -22,7 +22,12 @@ export default function RootLayout({
       lang="en"
       className={`${lexend.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-[--font-lexend]">{children}</body>
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col font-[--font-lexend]"
+      >
+        {children}
+      </body>
     </html>
   );
 }
