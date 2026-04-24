@@ -1,0 +1,281 @@
+// 'use client';
+
+// import { useState, useEffect } from 'react';
+// import Link from 'next/link';
+// import Image from 'next/image';
+// import { usePathname } from 'next/navigation';
+// import { api } from '@/lib/api';
+
+// const Icons = {
+//   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
+//   Candidates: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+//   Jobs: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+//   Interviews: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+//   Reports: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+//   Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+//   ChevronLeft: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>,
+//   ChevronRight: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>,
+// };
+
+// function useProfile() {
+//   const [profile, setProfile] = useState({
+//     name: 'Loading...',
+//     role: 'Candidate',
+//     isAdmin: false,
+//     avatar: null,
+//   });
+//   const [isLoading, setIsLoading] = useState(true);
+
+//   useEffect(() => {
+//     const fetchProfile = async () => {
+//       try {
+//         const response = await api.get('/users/profile');
+        
+//         const data = response.data;
+        
+//         setProfile({
+//             name: `${data.first_name} ${data.last_name}`,
+//             role: data.user_type === 'candidate' ? 'Candidate' : 'Recruiter',
+//             isAdmin: false,
+//             avatar: data.profile_photo,
+//           });
+//       } catch (error: any) {
+//         console.error('Failed to fetch profile:', error);
+//         setProfile(prev => ({ ...prev, name: 'Guest'}));
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     fetchProfile();
+//   }, []);
+
+//   return { ...profile, isLoading};
+// }
+
+// export function Sidebar() {
+//   const pathname = usePathname();
+//   const { name, role, isAdmin, avatar } = useProfile();
+//   const [isCollapsed, setIsCollapsed] = useState(false);
+
+//   const menuItems = [
+//     { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview },
+//     { name: 'Candidates', href: '/recruiter/dashboard/candidates', icon: Icons.Candidates },
+//     { name: 'Jobs', href: '/recruiter/dashboard/jobs', icon: Icons.Jobs },
+//     { name: 'Interviews', href: '/recruiter/dashboard/interviews', icon: Icons.Interviews },
+//     { name: 'Reports', href: '/recruiter/dashboard/reports', icon: Icons.Reports },
+//     ...(isAdmin ? [{ name: 'Settings', href: '/recruiter/dashboard/settings', icon: Icons.Settings }] : []),
+//   ];
+
+//   return (
+//     <aside 
+//       className={`
+//         flex flex-col bg-[var(--color-secondary)] h-screen sticky top-0
+//         transition-all duration-300 ease-in-out overflow-hidden
+//         ${isCollapsed ? 'w-20' : 'w-64'}
+//       `}
+//     >
+//       <div className="relative flex items-center h-30 px-4 border-b border-white/10">
+//         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'opacity-0 -translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
+//           <Image src="/logo.png" alt="Servia AI" width={40} height={40} className="shrink-0 object-contain" />
+//           <h3 className="text-lg mt-5 font-bold text-[var(--color-primary)] whitespace-nowrap">
+//             ServiaAI
+//           </h3>
+//         </div>
+        
+//         <button
+//           onClick={() => setIsCollapsed(!isCollapsed)}
+//           className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors z-10"
+//           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+//         >
+//           {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
+//         </button>
+//       </div>
+
+//       <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
+//         {menuItems.map((item) => {
+//           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+//           return (
+//             <Link
+//               key={item.href}
+//               href={item.href}
+//               className={`
+//                 flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
+//                 ${isActive 
+//                   ? 'bg-[var(--color-primary)] text-[var(--color-secondary)] font-semibold shadow-md' 
+//                   : 'text-white/80 hover:bg-white/10 hover:text-white'
+//                 }
+//                 ${isCollapsed ? 'justify-center px-0' : ''}
+//               `}
+//               title={isCollapsed ? item.name : undefined}
+//             >
+//               <span className="shrink-0 flex items-center justify-center w-5 h-5">{item.icon()}</span>
+//               <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+//                 {item.name}
+//               </span>
+//             </Link>
+//           );
+//         })}
+//       </nav>
+
+//       <div className="px-3 py-4 border-t border-white/10">
+//         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
+//           <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+//             {avatar ? (
+//               <Image src={avatar} alt={name || 'User'} width={36} height={36} className="rounded-full object-cover" />
+//             ) : (
+//               name?.charAt(0)?.toUpperCase() || 'U'
+//             )}
+//           </div>
+//           <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+//             <span className="text-white font-semibold text-sm truncate">{name || 'Loading...'}</span>
+//             <span className="text-white/60 text-xs truncate">{role || 'Recruiter'}</span>
+//           </div>
+//         </div>
+//       </div>
+//     </aside>
+//   );
+// }
+
+// src/components/layout/Sidebar.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { api } from '@/lib/api';  // ✅ Import api instance
+
+const Icons = {
+  Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
+  Candidates: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+  Jobs: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+  Interviews: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+  Reports: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+  Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  ChevronLeft: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>,
+  ChevronRight: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>,
+};
+
+// ✅ CORRECT: Custom hook with proper URL
+function useProfile() {
+  const [profile, setProfile] = useState({
+    name: 'User',
+    role: 'Candidate',
+    isAdmin: false,
+    avatar: null,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        // ✅ FIXED: Use absolute path with leading/trailing slashes
+        const response = await api.get('/users/profile/');
+        const data = response.data;
+        
+        setProfile({
+          name: `${data.first_name} ${data.last_name}`,
+          role: data.user_type === 'candidate' ? 'Candidate' : 'Recruiter',
+          isAdmin: false,
+          avatar: data.profile_photo,
+        });
+      } catch (error: any) {
+        console.error('Failed to fetch profile:', error);
+        // Keep default values on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  return { ...profile, isLoading };
+}
+
+export function Sidebar() {
+  const pathname = usePathname();
+  const { name, role, isAdmin, avatar, isLoading } = useProfile();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const menuItems = [
+    { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview },
+    { name: 'Candidates', href: '/recruiter/dashboard/candidates', icon: Icons.Candidates },
+    { name: 'Jobs', href: '/recruiter/dashboard/jobs', icon: Icons.Jobs },
+    { name: 'Interviews', href: '/recruiter/dashboard/interviews', icon: Icons.Interviews },
+    { name: 'Reports', href: '/recruiter/dashboard/reports', icon: Icons.Reports },
+    ...(isAdmin ? [{ name: 'Settings', href: '/recruiter/dashboard/settings', icon: Icons.Settings }] : []),
+  ];
+
+  return (
+    <aside 
+      className={`
+        flex flex-col bg-[var(--color-secondary)] h-screen sticky top-0
+        transition-all duration-300 ease-in-out overflow-hidden
+        ${isCollapsed ? 'w-20' : 'w-64'}
+      `}
+    >
+      <div className="relative flex items-center h-30 px-4 border-b border-white/10">
+        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'opacity-0 -translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
+          <Image src="/logo.png" alt="Servia AI" width={40} height={40} className="shrink-0 object-contain" />
+          <h3 className="text-lg mt-5 font-bold text-[var(--color-primary)] whitespace-nowrap">
+            ServiaAI
+          </h3>
+        </div>
+        
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors z-10"
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
+        </button>
+      </div>
+
+      <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`
+                flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
+                ${isActive 
+                  ? 'bg-[var(--color-primary)] text-[var(--color-secondary)] font-semibold shadow-md' 
+                  : 'text-white/80 hover:bg-white/10 hover:text-white'
+                }
+                ${isCollapsed ? 'justify-center px-0' : ''}
+              `}
+              title={isCollapsed ? item.name : undefined}
+            >
+              <span className="shrink-0 flex items-center justify-center w-5 h-5">{item.icon()}</span>
+              <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="px-3 py-4 border-t border-white/10">
+        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
+          <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+            {isLoading ? (
+              <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
+            ) : avatar ? (
+              <Image src={avatar} alt={name || 'User'} width={36} height={36} className="rounded-full object-cover" />
+            ) : (
+              name?.charAt(0)?.toUpperCase() || 'U'
+            )}
+          </div>
+          <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+            <span className="text-white font-semibold text-sm truncate">{isLoading ? 'Loading...' : name}</span>
+            <span className="text-white/60 text-xs truncate">{role}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}

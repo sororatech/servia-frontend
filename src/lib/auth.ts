@@ -1,5 +1,3 @@
-// src/lib/auth.ts
-
 export const AUTH_STORAGE = {
   setToken(token: string): void {
     if (typeof window !== 'undefined') {

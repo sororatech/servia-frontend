@@ -1,16 +1,14 @@
-// src/lib/api.ts
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const api = axios.create({
-  baseURL: API_URL,  // Backend uses /users/* directly
+  baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
-  withCredentials: true,  // Send cookies automatically
+  withCredentials: true,
 });
 
-// Add auth token to requests if available (for non-cookie fallback)
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('auth_token');
@@ -21,7 +19,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -33,8 +30,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// ============ TYPES ============
 
 export interface LoginCredentials {
   email: string;
@@ -60,7 +55,10 @@ export interface RegisterData {
   nationality?: string;
 }
 
-// ============ AUTH API FUNCTIONS ============
+export interface VerificationData {
+  email: string;
+  code: string;
+}
 
 export const authAPI = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
@@ -88,6 +86,16 @@ export const authAPI = {
       token,
       new_password: newPassword,
     });
+    return response.data;
+  },
+
+  async verifyEmail(data: VerificationData): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/users/verify-email/', data);
+    return response.data;
+  },
+
+  async resendVerificationCode(data: { email: string }): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/users/resend-verification/', data);
     return response.data;
   },
 

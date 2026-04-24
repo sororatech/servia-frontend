@@ -1,4 +1,3 @@
-// src/hooks/useRegister.ts
 'use client';
 
 import { useState } from 'react';
@@ -22,10 +21,8 @@ export const useRegister = (): UseRegisterReturn => {
     try {
       const response = await authAPI.register(data);
       
-      // Store user type from response (for redirects)
       AUTH_STORAGE.setUserType(response.user_type);
       
-      // Backend sets cookies automatically, so token is in httpOnly cookie
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 
                           JSON.stringify(err.response?.data) || 
