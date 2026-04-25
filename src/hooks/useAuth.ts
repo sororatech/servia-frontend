@@ -23,19 +23,20 @@ export const useAuth = (): UseAuthReturn => {
 
     try {
       const response = await authAPI.login({ email, password });
-      
+
       AUTH_STORAGE.saveAuth(
-        response.token, 
-        response.user_type, 
-        response.user_id.toString(), 
-        rememberMe
+        response.token,
+        response.user_type,
+        response.user_id.toString(),
+        rememberMe,
       );
-      
+
       const redirectPath = getDashboardUrl(response.user_type);
       router.push(redirectPath);
       router.refresh();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Invalid email or password. Please try again.';
+      const errorMessage =
+        err.response?.data?.error || 'Invalid email or password. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
