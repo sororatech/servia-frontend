@@ -1,64 +1,155 @@
-type RequestOptions = {
-  credentials?: RequestCredentials;
-  headers?: HeadersInit;
-};
+import axios from "axios";
 
-type ApiClient = {
-  get: <T>(path: string, options?: RequestOptions) => Promise<{ data: T }>;
-};
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-function buildUrl(path: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${baseUrl}${normalizedPath}`;
-}
+export const api = axios.create({
+  baseURL: API_URL,
+  headers: { "Content-Type": "application/json" },
+  timeout: 10000,
+  withCredentials: true,
+});
 
-function buildHeaders(headers?: HeadersInit) {
-  const authToken = getAuthToken();
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const publicRoutes = [
+      "/users/login/",
+      "/users/register/",
+      "/users/verify-email/",
+      "/users/resend-verification/",
+      "/users/password-reset/",
+    ];
 
-  return {
-    "Content-Type": "application/json",
-    ...(authToken ? { Authorization: `Token ${authToken}` } : {}),
-    ...headers,
-  };
-}
+    const isPublicRoute = publicRoutes.some((route) => config.url?.includes(route));
 
-function getAuthToken() {
-  if (typeof window === "undefined") {
-    return process.env.NEXT_PUBLIC_AUTH_TOKEN ?? null;
+    if (!isPublicRoute) {
+      const token = localStorage.getItem("auth_token");
+
+      if (token) {
+        const cleanToken = token.replace(/^["'](.+)["']$/, "$1");
+        config.headers.Authorization = `Token ${cleanToken}`;
+      }
+    }
   }
 
-  const fromStorage = window.localStorage.getItem("auth_token");
-  if (fromStorage) {
-    return fromStorage;
-  }
+  return config;
+});
 
-  const cookieEntries = document.cookie.split("; ");
-  const cookieToken = cookieEntries
-    .find((part) => part.startsWith("auth_token="))
-    ?.split("=")[1];
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      if (!window.location.pathname.includes("/login")) {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_role");
+        localStorage.removeItem("user_id");
 
-  if (cookieToken) {
-    return cookieToken;
-  }
+        document.cookie =
+          "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie =
+          "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-  return process.env.NEXT_PUBLIC_AUTH_TOKEN ?? null;
-}
-
-export const api: ApiClient = {
-  async get<T>(path: string, options: RequestOptions = {}) {
-    const response = await fetch(buildUrl(path), {
-      method: "GET",
-      credentials: options.credentials ?? "include",
-      headers: buildHeaders(options.headers),
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      throw new Error(`GET ${path} failed with status ${response.status}`);
+        window.location.href = "/login";
+      }
     }
 
-    const data = (await response.json()) as T;
-    return { data };
+    return Promise.reject(error);
+  },
+);
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  user_id: string;
+  user_type: "candidate" | "recruiter";
+  token: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+}
+
+export interface RegisterData {
+  user: {
+    email: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+  };
+  phone?: string;
+  nationality?: string;
+}
+
+export interface VerificationData {
+  email: string;
+  code: string;
+}
+
+export const authAPI = {
+  async login(credentials: LoginCredentials): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>("/users/login/", credentials);
+    return response.data;
+  },
+
+  async register(data: RegisterData): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>("/users/register/", data);
+    return response.data;
+  },
+
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>("/users/password-reset/", {
+      email,
+    });
+    return response.data;
+  },
+
+  async confirmPasswordReset(
+    uid: string,
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      "/users/password-reset/confirm/",
+      {
+        uid,
+        token,
+        new_password: newPassword,
+      },
+    );
+    return response.data;
+  },
+
+  async verifyEmail(data: VerificationData): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>("/users/verify-email/", data);
+    return response.data;
+  },
+
+  async resendVerificationCode(data: {
+    email: string;
+  }): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      "/users/resend-verification/",
+      data,
+    );
+    return response.data;
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await api.post("/users/logout/");
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_role");
+        localStorage.removeItem("user_id");
+        document.cookie =
+          "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        document.cookie =
+          "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+      }
+    }
   },
 };
