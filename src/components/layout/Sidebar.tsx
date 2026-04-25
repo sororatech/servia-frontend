@@ -44,7 +44,13 @@ export function Sidebar() {
     >
       <div className="relative flex items-center h-30 px-4 border-b border-white/10">
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'opacity-0 -translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
-          <Image src="/logo.png" alt="Servia AI" width={40} height={40} className="shrink-0 object-contain" />
+          <Image
+            src="/logo.png"
+            alt="Servia AI"
+            width={40}
+            height={40}
+            className="h-auto w-10 shrink-0 object-contain"
+          />
           <h3 className="text-lg mt-5 font-bold text-[var(--color-primary)] whitespace-nowrap">
             ServiaAI
           </h3>

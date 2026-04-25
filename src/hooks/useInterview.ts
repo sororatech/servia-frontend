@@ -16,6 +16,8 @@ import useWebSocket from "@/hooks/useWebSocket";
 
 const WS_OPEN = 1;
 const REFRESH_INTERVAL_MS = 5000;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type UseInterviewResult = {
   interview: LiveInterviewState;
@@ -134,6 +136,10 @@ function deriveWebSocketUrl(interviewId: string) {
   return authToken ? `${wsUrl}?token=${authToken}` : wsUrl;
 }
 
+function isValidInterviewId(interviewId: string) {
+  return UUID_PATTERN.test(interviewId);
+}
+
 function mapBackendStatus(status: string): LiveInterviewState["status"] {
   if (status === "in_progress" || status === "connected") {
     return "live";
@@ -183,8 +189,12 @@ export default function useInterview(interviewId: string): UseInterviewResult {
   const [error, setError] = useState<string | null>(null);
   const [startedAtMs, setStartedAtMs] = useState<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const hasValidInterviewId = useMemo(() => isValidInterviewId(interviewId), [interviewId]);
 
-  const webSocketUrl = useMemo(() => deriveWebSocketUrl(interviewId), [interviewId]);
+  const webSocketUrl = useMemo(
+    () => (hasValidInterviewId ? deriveWebSocketUrl(interviewId) : null),
+    [hasValidInterviewId, interviewId],
+  );
   const { lastMessage, readyState, error: socketError, sendMessage } =
     useWebSocket<LiveInterviewSocketEvent>(webSocketUrl, {
       enabled: Boolean(webSocketUrl),
@@ -208,6 +218,12 @@ export default function useInterview(interviewId: string): UseInterviewResult {
   }, [interviewId, sendMessage]);
 
   const refresh = useCallback(async () => {
+    if (!hasValidInterviewId) {
+      setError("This live interview link is invalid. Open a real session from the recruiter interviews page.");
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const [interviewResponse, conversationsResponse] = await Promise.all([
@@ -293,13 +309,17 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     } finally {
       setIsLoading(false);
     }
-  }, [interviewId]);
+  }, [hasValidInterviewId, interviewId]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
   useEffect(() => {
+    if (!hasValidInterviewId) {
+      return;
+    }
+
     const intervalId = window.setInterval(() => {
       void refresh();
     }, REFRESH_INTERVAL_MS);
@@ -307,10 +327,10 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [refresh]);
+  }, [hasValidInterviewId, refresh]);
 
   useEffect(() => {
-    if (readyState !== WS_OPEN) {
+    if (!hasValidInterviewId || readyState !== WS_OPEN) {
       return;
     }
 
@@ -326,7 +346,7 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     }));
 
     void refresh();
-  }, [readyState, refresh, startedAtMs]);
+  }, [hasValidInterviewId, readyState, refresh, startedAtMs]);
 
   useEffect(() => {
     if (interview.status !== "live" || startedAtMs === null) {
@@ -404,7 +424,9 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     interview,
     isLoading,
     error:
-      readyState === WS_OPEN && interview.transcript.length === 0
+      hasValidInterviewId &&
+      readyState === WS_OPEN &&
+      interview.transcript.length === 0
         ? socketError
         : error ?? socketError,
     streamStatus: readyState === WS_OPEN ? "connected" : "disconnected",

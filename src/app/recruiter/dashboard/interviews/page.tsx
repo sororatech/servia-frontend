@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { slugifyInterviewLabel } from "@/lib/interviewRoutes";
 
 type CandidateRecord = {
   id: string;
@@ -22,11 +25,38 @@ type ActiveInterviewRecord = {
   status: string;
 };
 
+type InterviewRecord = {
+  id: string;
+  candidate: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
 type PaginatedResponse<T> = {
   count: number;
   next: string | null;
   previous: string | null;
   results: T[];
+};
+
+type InterviewPageData = {
+  activeInterviews: Array<{
+    candidateId: string;
+    candidateName: string;
+    candidateEmail: string;
+    role: string;
+    status: string;
+    interviewId: string;
+  }>;
+  needsScheduling: Array<{
+    candidateId: string;
+    candidateName: string;
+    candidateEmail: string;
+    role: string;
+    status: string;
+    jobId: string;
+  }>;
 };
 
 function getApiUrl(path: string) {
@@ -35,20 +65,30 @@ function getApiUrl(path: string) {
   return `${baseUrl}${normalizedPath}`;
 }
 
-function getRequestHeaders() {
-  const authToken = process.env.NEXT_PUBLIC_AUTH_TOKEN;
+async function getRecruiterRequestHeaders() {
+  const cookieStore = await cookies();
+  const userType = cookieStore.get("user_type")?.value;
+  const authToken = cookieStore.get("auth_token")?.value;
+
+  if (userType !== "recruiter" || !authToken) {
+    return null;
+  }
 
   return {
     "Content-Type": "application/json",
-    ...(authToken ? { Authorization: `Token ${authToken}` } : {}),
+    Authorization: `Token ${authToken}`,
   };
 }
 
-async function fetchJson<T>(path: string): Promise<T> {
+async function fetchJson<T>(path: string, headers: HeadersInit): Promise<T> {
   const response = await fetch(getApiUrl(path), {
-    headers: getRequestHeaders(),
+    headers,
     cache: "no-store",
   });
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error("Recruiter session expired. Please sign in again.");
+  }
 
   if (!response.ok) {
     throw new Error(`Request failed for ${path} with status ${response.status}`);
@@ -57,12 +97,22 @@ async function fetchJson<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-function asArray<T>(payload: T[] | PaginatedResponse<T>) {
-  return Array.isArray(payload) ? payload : payload.results;
+function isActiveInterviewStatus(status: string) {
+  return ![
+    "completed",
+    "cancelled",
+    "canceled",
+    "ended",
+    "analysis_failed",
+  ].includes(status);
 }
 
-async function fetchAllPages<T>(path: string): Promise<T[]> {
-  const firstPage = await fetchJson<T[] | PaginatedResponse<T>>(path);
+function getInterviewTimestamp(interview: InterviewRecord) {
+  return Date.parse(interview.updated_at ?? interview.created_at ?? "");
+}
+
+async function fetchAllPages<T>(path: string, headers: HeadersInit): Promise<T[]> {
+  const firstPage = await fetchJson<T[] | PaginatedResponse<T>>(path, headers);
 
   if (Array.isArray(firstPage)) {
     return firstPage;
@@ -73,9 +123,13 @@ async function fetchAllPages<T>(path: string): Promise<T[]> {
 
   while (nextUrl) {
     const response = await fetch(nextUrl, {
-      headers: getRequestHeaders(),
+      headers,
       cache: "no-store",
     });
+
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Recruiter session expired. Please sign in again.");
+    }
 
     if (!response.ok) {
       throw new Error(`Request failed for ${nextUrl} with status ${response.status}`);
@@ -101,45 +155,36 @@ function formatStatusLabel(status: string) {
     .join(" ");
 }
 
-async function getInterviewCards() {
-  const [candidates, jobs] = await Promise.all([
-    fetchAllPages<CandidateRecord>("/candidates/candidates/"),
-    fetchAllPages<JobRecord>("/jobs/jobs/"),
+async function getInterviewCards(headers: HeadersInit) {
+  const [candidates, jobs, interviews] = await Promise.all([
+    fetchAllPages<CandidateRecord>("/candidates/candidates/", headers),
+    fetchAllPages<JobRecord>("/jobs/jobs/", headers),
+    fetchAllPages<InterviewRecord>("/interviews/interviews/", headers),
   ]);
 
   const jobTitleById = new Map(jobs.map((job) => [job.id, job.title]));
-
-  const activeInterviews = await Promise.all(
-    candidates.map(async (candidate) => {
-      try {
-        const response = await fetchJson<{
-          candidate_id: string;
-          interview_id: string;
-          status: string;
-        }>(
-          `/interviews/interviews/resolve-active/?candidate_id=${candidate.id}`,
-        );
-
-        return {
-          candidateId: response.candidate_id,
-          interviewId: response.interview_id,
-          status: response.status,
-        } satisfies ActiveInterviewRecord;
-      } catch {
-        return {
-          candidateId: candidate.id,
-          interviewId: null,
-          status: candidate.status,
-        } satisfies ActiveInterviewRecord;
-      }
-    }),
+  const activeInterviewByCandidateId = new Map<string, ActiveInterviewRecord>();
+  const sortedInterviews = [...interviews].sort(
+    (left, right) => getInterviewTimestamp(right) - getInterviewTimestamp(left),
   );
 
-  const activeInterviewByCandidateId = new Map(
-    activeInterviews.map((record) => [record.candidateId, record]),
-  );
+  for (const interview of sortedInterviews) {
+    if (!isActiveInterviewStatus(interview.status)) {
+      continue;
+    }
 
-  return candidates.map((candidate) => {
+    if (activeInterviewByCandidateId.has(interview.candidate)) {
+      continue;
+    }
+
+    activeInterviewByCandidateId.set(interview.candidate, {
+      candidateId: interview.candidate,
+      interviewId: interview.id,
+      status: interview.status,
+    });
+  }
+
+  const mappedCandidates = candidates.map((candidate) => {
     const activeInterview = activeInterviewByCandidateId.get(candidate.id);
 
     return {
@@ -147,14 +192,51 @@ async function getInterviewCards() {
       candidateName: formatCandidateName(candidate),
       candidateEmail: candidate.user.email || "",
       role: jobTitleById.get(candidate.job) ?? "Open Role",
-      status: formatStatusLabel(activeInterview?.status ?? candidate.status),
+      jobId: candidate.job,
+      candidateStatus: candidate.status,
+      activeInterviewStatus: activeInterview?.status ?? null,
       interviewId: activeInterview?.interviewId ?? null,
     };
   });
+
+  return {
+    activeInterviews: mappedCandidates
+      .filter(
+        (candidate): candidate is typeof candidate & { interviewId: string; activeInterviewStatus: string } =>
+          candidate.interviewId !== null && candidate.activeInterviewStatus !== null,
+      )
+      .map((candidate) => ({
+        candidateId: candidate.candidateId,
+        candidateName: candidate.candidateName,
+        candidateEmail: candidate.candidateEmail,
+        role: candidate.role,
+        status: formatStatusLabel(candidate.activeInterviewStatus),
+        interviewId: candidate.interviewId,
+      })),
+    needsScheduling: mappedCandidates
+      .filter(
+        (candidate) =>
+          candidate.candidateStatus === "shortlisted" && candidate.interviewId === null,
+      )
+      .map((candidate) => ({
+        candidateId: candidate.candidateId,
+        candidateName: candidate.candidateName,
+        candidateEmail: candidate.candidateEmail,
+        role: candidate.role,
+        status: formatStatusLabel(candidate.candidateStatus),
+        jobId: candidate.jobId,
+      })),
+  } satisfies InterviewPageData;
 }
 
 export default async function RecruiterInterviewsPage() {
-  const interviewCards = await getInterviewCards();
+  const headers = await getRecruiterRequestHeaders();
+
+  if (!headers) {
+    redirect("/login");
+  }
+
+  const { activeInterviews, needsScheduling } = await getInterviewCards(headers);
 
   return (
     <main className="min-h-screen bg-[#f8f5f2] px-4 py-10 sm:px-6 lg:px-10">
@@ -166,59 +248,100 @@ export default async function RecruiterInterviewsPage() {
           Open a live interview room from the list below.
         </p>
 
-        <div className="mt-8 grid gap-4">
-          {interviewCards.length > 0 ? (
-            interviewCards.map((interview) =>
-              interview.interviewId ? (
+        <section className="mt-8">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-[#171717]">Needs Scheduling</h2>
+              <p className="text-sm text-[#5e5752]">
+                Shortlisted candidates who are ready for an interview slot.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            {needsScheduling.length > 0 ? (
+              needsScheduling.map((candidate) => (
                 <Link
-                  key={interview.candidateId}
+                  key={candidate.candidateId}
                   href={{
-                    pathname: `/recruiter/dashboard/interviews/live/${interview.interviewId}`,
+                    pathname: `/recruiter/dashboard/interviews/schedule/${candidate.candidateId}`,
                     query: {
-                      candidateName: interview.candidateName,
-                      candidateEmail: interview.candidateEmail,
-                      candidateRole: interview.role,
+                      candidateName: candidate.candidateName,
+                      candidateEmail: candidate.candidateEmail,
+                      candidateRole: candidate.role,
+                      jobId: candidate.jobId,
                     },
                   }}
                   className="rounded-[1.5rem] border border-[#eaded8] bg-white px-5 py-5 shadow-sm transition hover:border-[#26b9c8] hover:shadow-md"
                 >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold text-[#171717]">
-                        {interview.candidateName}
-                      </h2>
-                      <p className="text-[#5e5752]">{interview.role}</p>
+                      <h3 className="text-xl font-semibold text-[#171717]">
+                        {candidate.candidateName}
+                      </h3>
+                      <p className="text-[#5e5752]">{candidate.role}</p>
+                      <p className="mt-1 text-sm text-[#7a726c]">{candidate.candidateEmail}</p>
                     </div>
-                    <span className="rounded-full bg-[#e9fbfd] px-4 py-2 text-sm font-semibold text-[#0c6c75]">
-                      {interview.status}
+                    <span className="rounded-full bg-[#ecfff4] px-4 py-2 text-sm font-semibold text-[#0f7b43]">
+                      {candidate.status}
                     </span>
                   </div>
                 </Link>
-              ) : (
-                <div
-                  key={interview.candidateId}
-                  className="rounded-[1.5rem] border border-dashed border-[#d8cbc3] bg-white/80 px-5 py-5"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h2 className="text-xl font-semibold text-[#171717]">
-                        {interview.candidateName}
-                      </h2>
-                      <p className="text-[#5e5752]">{interview.role}</p>
-                    </div>
-                    <span className="rounded-full bg-[#f5efeb] px-4 py-2 text-sm font-semibold text-[#7a6f69]">
-                      No Active Interview
-                    </span>
+              ))
+            ) : (
+              <div className="rounded-[1.5rem] border border-dashed border-[#d8cbc3] bg-white/80 px-5 py-8 text-center text-[#5e5752]">
+                No shortlisted candidates are waiting to be scheduled right now.
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="mt-10">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-[#171717]">Active Interviews</h2>
+              <p className="text-sm text-[#5e5752]">
+                Candidates with interviews that are scheduled, confirmed, or in progress.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            {activeInterviews.length > 0 ? (
+              activeInterviews.map((interview) => (
+              <Link
+                key={interview.candidateId}
+                href={{
+                  pathname: `/recruiter/dashboard/interviews/live/${slugifyInterviewLabel(interview.candidateName)}`,
+                  query: {
+                    interviewId: interview.interviewId,
+                    candidateName: interview.candidateName,
+                    candidateEmail: interview.candidateEmail,
+                    candidateRole: interview.role,
+                  },
+                }}
+                className="rounded-[1.5rem] border border-[#eaded8] bg-white px-5 py-5 shadow-sm transition hover:border-[#26b9c8] hover:shadow-md"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-[#171717]">
+                      {interview.candidateName}
+                    </h2>
+                    <p className="text-[#5e5752]">{interview.role}</p>
                   </div>
+                  <span className="rounded-full bg-[#e9fbfd] px-4 py-2 text-sm font-semibold text-[#0c6c75]">
+                    {interview.status}
+                  </span>
                 </div>
-              ),
-            )
+              </Link>
+            ))
           ) : (
             <div className="rounded-[1.5rem] border border-dashed border-[#d8cbc3] bg-white/80 px-5 py-8 text-center text-[#5e5752]">
-              No candidates were returned by the backend.
+              No candidates with active interviews were returned by the backend.
             </div>
           )}
-        </div>
+          </div>
+        </section>
       </div>
     </main>
   );

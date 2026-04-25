@@ -14,13 +14,35 @@ function buildUrl(path: string) {
 }
 
 function buildHeaders(headers?: HeadersInit) {
-  const authToken = process.env.NEXT_PUBLIC_AUTH_TOKEN;
+  const authToken = getAuthToken();
 
   return {
     "Content-Type": "application/json",
     ...(authToken ? { Authorization: `Token ${authToken}` } : {}),
     ...headers,
   };
+}
+
+function getAuthToken() {
+  if (typeof window === "undefined") {
+    return process.env.NEXT_PUBLIC_AUTH_TOKEN ?? null;
+  }
+
+  const fromStorage = window.localStorage.getItem("auth_token");
+  if (fromStorage) {
+    return fromStorage;
+  }
+
+  const cookieEntries = document.cookie.split("; ");
+  const cookieToken = cookieEntries
+    .find((part) => part.startsWith("auth_token="))
+    ?.split("=")[1];
+
+  if (cookieToken) {
+    return cookieToken;
+  }
+
+  return process.env.NEXT_PUBLIC_AUTH_TOKEN ?? null;
 }
 
 export const api: ApiClient = {
