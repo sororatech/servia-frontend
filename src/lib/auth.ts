@@ -2,11 +2,12 @@ export const AUTH_STORAGE = {
   saveAuth(token: string, type: 'candidate' | 'recruiter', userId: string, rememberMe: boolean) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token);
-      localStorage.setItem('user_type', type);
+      // FIXED: Changed 'user_type' to 'user_role' to match the cookie
+      localStorage.setItem('user_role', type); 
       localStorage.setItem('user_id', userId);
 
-      const maxAge = rememberMe ? 30 * 24 * 60 * 60 : ''; 
-      const expiry = maxAge ? `; max-age=${maxAge}` : '';
+      const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400; 
+      const expiry = `; max-age=${maxAge}`;
       
       document.cookie = `auth_token=${token}; path=/; samesite=lax${expiry}`;
       document.cookie = `user_role=${type}; path=/; samesite=lax${expiry}`;
@@ -14,12 +15,18 @@ export const AUTH_STORAGE = {
   },
 
   getToken: () => typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
-  getUserType: () => typeof window !== 'undefined' ? localStorage.getItem('user_type') as 'candidate' | 'recruiter' : null,
+  
+  // FIXED: Renamed function and key to user_role
+  getUserRole: () => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('user_role') as 'candidate' | 'recruiter';
+  },
   
   clear(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_type');
+      // FIXED: Changed to 'user_role'
+      localStorage.removeItem('user_role'); 
       localStorage.removeItem('user_id');
       document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
       document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";

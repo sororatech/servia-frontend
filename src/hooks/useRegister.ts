@@ -20,11 +20,10 @@ export const useRegister = (): UseRegisterReturn => {
 
     try {
       await authAPI.register(data);
-      
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 
-                          JSON.stringify(err.response?.data) || 
-                          'Registration failed. Please try again.';
+                           JSON.stringify(err.response?.data) || 
+                           'Registration failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
