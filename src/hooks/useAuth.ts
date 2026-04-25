@@ -24,10 +24,12 @@ export const useAuth = (): UseAuthReturn => {
     try {
       const response = await authAPI.login({ email, password });
       
-      if (rememberMe) {
-        AUTH_STORAGE.setToken(response.user_id.toString());
-        AUTH_STORAGE.setUserType(response.user_type);
-      }
+      AUTH_STORAGE.saveAuth(
+        response.token, 
+        response.user_type, 
+        response.user_id.toString(), 
+        rememberMe
+      );
       
       const redirectPath = getDashboardUrl(response.user_type);
       router.push(redirectPath);
@@ -42,13 +44,16 @@ export const useAuth = (): UseAuthReturn => {
   };
 
   const logout = async () => {
+    setLoading(true);
     try {
       await authAPI.logout();
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
       AUTH_STORAGE.clear();
+      setLoading(false);
       router.push('/login');
+      router.refresh();
     }
   };
 

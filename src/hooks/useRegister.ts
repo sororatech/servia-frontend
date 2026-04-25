@@ -19,9 +19,7 @@ export const useRegister = (): UseRegisterReturn => {
     setError(null);
 
     try {
-      const response = await authAPI.register(data);
-      
-      AUTH_STORAGE.setUserType(response.user_type);
+      await authAPI.register(data);
       
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 
