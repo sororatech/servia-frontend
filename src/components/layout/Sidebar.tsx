@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { api } from '@/lib/api'; 
 
 const Icons = {
   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
@@ -17,12 +18,43 @@ const Icons = {
 };
 
 function useProfile() {
-  return { name: 'Sarah Jenkins', role: 'Recruiter', isAdmin: false, avatar: null };
+  const [profile, setProfile] = useState({
+    name: 'User',
+    role: 'Candidate',
+    isAdmin: false,
+    avatar: null,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/users/profile/');
+        const data = response.data;
+        
+        setProfile({
+          name: `${data.first_name} ${data.last_name}`,
+          role: data.user_type === 'candidate' ? 'Candidate' : 'Recruiter',
+          isAdmin: false,
+          avatar: data.profile_photo,
+        });
+      } catch (error: any) {
+        console.error('Failed to fetch profile:', error);
+  
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  return { ...profile, isLoading };
 }
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { name, role, isAdmin, avatar } = useProfile();
+  const { name, role, isAdmin, avatar, isLoading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
@@ -88,15 +120,17 @@ export function Sidebar() {
       <div className="px-3 py-4 border-t border-white/10">
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
           <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-            {avatar ? (
+            {isLoading ? (
+              <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
+            ) : avatar ? (
               <Image src={avatar} alt={name || 'User'} width={36} height={36} className="rounded-full object-cover" />
             ) : (
               name?.charAt(0)?.toUpperCase() || 'U'
             )}
           </div>
           <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            <span className="text-white font-semibold text-sm truncate">{name || 'Loading...'}</span>
-            <span className="text-white/60 text-xs truncate">{role || 'Recruiter'}</span>
+            <span className="text-white font-semibold text-sm truncate">{isLoading ? 'Loading...' : name}</span>
+            <span className="text-white/60 text-xs truncate">{role}</span>
           </div>
         </div>
       </div>

@@ -13,7 +13,7 @@ export default function CandidateLayout({
 
   useEffect(() => {
     const token = AUTH_STORAGE.getToken();
-    const userType = AUTH_STORAGE.getUserType();
+    const userType = AUTH_STORAGE.getUserRole();
     
     if (!token || userType !== 'candidate') {
       router.push('/login');
