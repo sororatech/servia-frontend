@@ -37,6 +37,7 @@ export default function RegisterPage() {
   
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [touchedFields, setTouchedFields] = useState<{[key: string]: boolean}>({});
+  type TextFieldName = 'fullName' | 'email' | 'phone' | 'password' | 'confirmPassword';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -58,12 +59,12 @@ export default function RegisterPage() {
     setTouchedFields((prev) => ({ ...prev, [name]: true }));
   };
 
-  const handleBlur = (fieldName: keyof typeof formData) => {
+  const handleBlur = (fieldName: TextFieldName) => {
     setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
     validateField(fieldName, formData[fieldName]);
   };
 
-  const validateField = (name: string, value: string): boolean => {
+  const validateField = (name: TextFieldName, value: string): boolean => {
     let error = '';
     
     switch (name) {

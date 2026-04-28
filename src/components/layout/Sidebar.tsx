@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -18,17 +18,27 @@ const Icons = {
 };
 
 function useProfile() {
-  const userRole =
-    typeof window !== 'undefined' ? AUTH_STORAGE.getUserRole() : null;
-
-  const [profile] = useState({
+  const [profile, setProfile] = useState({
     name: 'User',
-    role: userRole === 'recruiter' ? 'Recruiter' : 'Candidate',
+    role: 'Candidate',
     isAdmin: false,
     avatar: null,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  return { ...profile, isLoading: false };
+  useEffect(() => {
+    const userRole = AUTH_STORAGE.getUserRole();
+    const userName = AUTH_STORAGE.getUserName();
+
+    setProfile((currentProfile) => ({
+      ...currentProfile,
+      name: userName || currentProfile.name,
+      role: userRole === 'recruiter' ? 'Recruiter' : 'Candidate',
+    }));
+    setIsLoading(false);
+  }, []);
+
+  return { ...profile, isLoading };
 }
 
 export function Sidebar() {

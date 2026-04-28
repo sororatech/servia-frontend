@@ -29,12 +29,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = AUTH_STORAGE.getToken();
-    const userType = AUTH_STORAGE.getUserType();
+    const userType = AUTH_STORAGE.getUserRole();
 
     if (token && userType) {
-      // Re-set cookies in case they were cleared while localStorage still has the token
-      AUTH_STORAGE.setToken(token);
-      AUTH_STORAGE.setUserType(userType);
       const returnUrl = searchParams.get('returnUrl');
       router.replace(returnUrl ?? getDashboardUrl(userType));
     }
@@ -65,9 +62,13 @@ export default function LoginPage() {
         throw new Error(payload.error ?? 'Unable to sign in right now.');
       }
 
-      AUTH_STORAGE.setToken(payload.token);
-      AUTH_STORAGE.setUserType(payload.user_type);
-      AUTH_STORAGE.setUserId(String(payload.user_id ?? ''));
+      AUTH_STORAGE.saveAuth(
+        payload.token,
+        payload.user_type,
+        String(payload.user_id ?? ''),
+        false,
+        `${payload.first_name ?? ''} ${payload.last_name ?? ''}`.trim() || payload.email,
+      );
       const returnUrl = searchParams.get('returnUrl');
       router.replace(returnUrl ?? getDashboardUrl(payload.user_type));
       router.refresh();

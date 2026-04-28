@@ -48,7 +48,7 @@ export default function ScheduleInterviewPage({
     setError(null);
 
     const token = AUTH_STORAGE.getToken();
-    const userType = AUTH_STORAGE.getUserType();
+    const userType = AUTH_STORAGE.getUserRole();
 
     if (!token || userType !== 'recruiter') {
       router.push('/login');
