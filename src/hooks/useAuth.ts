@@ -29,6 +29,7 @@ export const useAuth = (): UseAuthReturn => {
         response.user_type,
         response.user_id.toString(),
         rememberMe,
+        `${response.first_name} ${response.last_name}`.trim() || response.email,
       );
 
       const redirectPath = getDashboardUrl(response.user_type);
