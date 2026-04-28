@@ -61,7 +61,7 @@ async function fetchAllPages<T>(path: string): Promise<T[]> {
   while (nextUrl) {
     const authToken =
       typeof window !== "undefined" &&
-      window.localStorage.getItem("user_type") === "recruiter"
+      window.localStorage.getItem("user_role") === "recruiter"
         ? window.localStorage.getItem("auth_token")
         : process.env.NEXT_PUBLIC_AUTH_TOKEN ?? null;
     const response = await fetch(nextUrl, {

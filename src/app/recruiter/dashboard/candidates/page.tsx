@@ -23,7 +23,7 @@ function getApiUrl(path: string) {
 
 async function getRecruiterRequestHeaders() {
   const cookieStore = await cookies();
-  const userType = cookieStore.get("user_type")?.value;
+  const userType = cookieStore.get("user_role")?.value;
   const authToken = cookieStore.get("auth_token")?.value;
 
   if (userType !== "recruiter" || !authToken) {
