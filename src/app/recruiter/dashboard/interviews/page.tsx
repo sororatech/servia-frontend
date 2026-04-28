@@ -240,7 +240,7 @@ export default async function RecruiterInterviewsPage() {
 
   return (
     <main className="min-h-screen bg-[#f8f5f2] px-4 py-10 sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-7xl">
         <h1 className="text-3xl font-semibold text-[#171717]">
           Recruiter Interviews
         </h1>
