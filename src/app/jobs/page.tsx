@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Job {
   id: string;
@@ -24,30 +25,28 @@ export default function BrowseJobs() {
   });
   const router = useRouter();
 
-
   useEffect(() => {
     fetchJobs();
   }, []);
-
 
   const fetchJobs = async () => {
     try {
       setLoading(true);
       const response = await fetch('http://127.0.0.1:8000/jobs/jobs/');
-     
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-     
+      
       const data = await response.json();
-     
+      
       let jobsData: Job[] = [];
       if (Array.isArray(data)) {
         jobsData = data;
       } else if (data.results && Array.isArray(data.results)) {
         jobsData = data.results;
       }
-     
+      
       setJobs(jobsData);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
@@ -57,11 +56,9 @@ export default function BrowseJobs() {
     }
   };
 
-
   const normalizeJobType = (type: string) => {
     return type.toLowerCase().replace('_', '-');
   };
-
 
   const toggleJobType = (value: string) => {
     setFilters(prev => ({
@@ -72,7 +69,6 @@ export default function BrowseJobs() {
     }));
   };
 
-
   const toggleDepartment = (value: string) => {
     setFilters(prev => ({
       ...prev,
@@ -82,12 +78,10 @@ export default function BrowseJobs() {
     }));
   };
 
-
   const clearFilters = () => {
     setFilters({ jobType: [], department: [] });
     setSearchQuery('');
   };
-
 
   const filteredJobs = useMemo(() => {
     return jobs.filter(job => {
@@ -99,23 +93,19 @@ export default function BrowseJobs() {
         job.location.toLowerCase().includes(searchLower) ||
         job.department.toLowerCase().includes(searchLower);
 
-
       const jobTypeNormalized = normalizeJobType(job.employment_type);
       const matchesJobType =
         filters.jobType.length === 0 ||
         filters.jobType.includes(jobTypeNormalized);
-
 
       const deptNormalized = job.department.toLowerCase().replace('_', ' ');
       const matchesDepartment =
         filters.department.length === 0 ||
         filters.department.includes(deptNormalized);
 
-
       return matchesSearch && matchesJobType && matchesDepartment;
     });
   }, [jobs, searchQuery, filters]);
-
 
   return (
     <div className="min-h-screen bg-white">
@@ -123,22 +113,29 @@ export default function BrowseJobs() {
         <div className="max-w-7xl mx-auto px-8 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
+              <div className="w-10 h-10">
+                <Image
+                  src="/servia-logo.png"
+                  alt="Servia Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
             </div>
-           
+            
             <nav className="flex gap-8">
               <button className="text-teal-600 font-semibold text-base border-b-2 border-teal-600 pb-1">
                 Browse Jobs
               </button>
-              <button className="text-gray-400 hover:text-gray-600 font-medium text-base">
+              <button 
+                onClick={() => router.push('/candidate/dashboard')}
+                className="text-gray-400 hover:text-gray-600 font-medium text-base"
+              >
                 My Applications
               </button>
             </nav>
-
 
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -153,21 +150,26 @@ export default function BrowseJobs() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                <span className="text-orange-500 font-semibold text-sm">U</span>
-              </div>
+              <button 
+                onClick={() => router.push('/candidate/profile')}
+                className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+                title="Profile"
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
       </header>
-
 
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex gap-12">
           <aside className="w-56 flex-shrink-0">
             <div className="sticky top-8">
               <h3 className="font-bold text-gray-900 mb-6 text-base">Filters</h3>
-             
+              
               <div className="mb-8">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Job Type</h4>
                 <div className="flex flex-wrap gap-2">
@@ -189,7 +191,6 @@ export default function BrowseJobs() {
                   })}
                 </div>
               </div>
-
 
               <div>
                 <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Department</h4>
@@ -225,7 +226,6 @@ export default function BrowseJobs() {
                 </div>
               </div>
 
-
               {(filters.jobType.length > 0 || filters.department.length > 0 || searchQuery) && (
                 <div className="mt-6 pt-6 border-t border-gray-100">
                   <button
@@ -238,7 +238,6 @@ export default function BrowseJobs() {
               )}
             </div>
           </aside>
-
 
           <main className="flex-1">
             {loading ? (
@@ -268,24 +267,28 @@ export default function BrowseJobs() {
                     onClick={() => router.push(`/jobs/${job.id}`)}
                   >
                     <div className="flex items-start justify-between mb-5">
-                      <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                      <div className="w-12 h-12 rounded-xl border-2 border-gray-50 bg-gray-200 p-1.5 flex items-center justify-center">
+                        <Image
+                          src="/company-logo.png"
+                          alt="Company Logo"
+                          width={40}
+                          height={40}
+                          className="object-contain rounded"
+                        />
                       </div>
                       <span className="text-xs font-semibold text-teal-500 bg-teal-50 px-3 py-1 rounded-full">
                         NEW POST
                       </span>
                     </div>
-                   
+                    
                     <h3 className="font-bold text-gray-900 text-lg mb-2">
                       {job.title}
                     </h3>
-                   
+                    
                     <p className="text-sm text-teal-600 font-medium mb-4">
                       {job.location}
                     </p>
-                   
+                    
                     <div className="flex gap-2 mb-6">
                       <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium">
                         {job.employment_type.replace('_', ' ')}
@@ -294,7 +297,6 @@ export default function BrowseJobs() {
                         {job.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-
 
                     <button
                       className="w-full bg-teal-500 text-white py-3 rounded-xl hover:bg-teal-600 transition-colors font-semibold text-sm"
@@ -311,6 +313,3 @@ export default function BrowseJobs() {
     </div>
   );
 }
-
-
-

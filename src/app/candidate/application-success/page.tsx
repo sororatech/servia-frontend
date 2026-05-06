@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface JobInfo {
   title: string;
@@ -31,7 +32,7 @@ export default function ApplicationSuccess() {
 
   useEffect(() => {
     fetchApplicationData();
-  }, []);
+  }, [searchParams]);
 
   const getCookie = (name: string): string | null => {
     const value = `; ${document.cookie}`;
@@ -43,7 +44,45 @@ export default function ApplicationSuccess() {
   const fetchApplicationData = async () => {
     try {
       const token = getCookie('auth_token');
+      const applicationId = searchParams.get('applicationId');
       
+      if (applicationId) {
+        await fetchSpecificApplication(applicationId, token);
+      } else {
+        await fetchMostRecentApplication(token);
+      }
+    } catch (error) {
+      console.error('Error fetching application data', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSpecificApplication = async (appId: string, token: string | null) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/candidates/candidates/${appId}/`, {
+        headers: {
+          ...(token && { 'Authorization': `Token ${token}` }),
+        },
+      });
+      
+      if (response.ok) {
+        const appData = await response.json();
+        setApplicationData(appData);
+        
+        if (typeof appData.job === 'string') {
+          await fetchJobDetails(appData.job, token);
+        } else if (appData.job && typeof appData.job === 'object') {
+          setJobDetails(appData.job as JobInfo);
+        }
+      }
+    } catch (error) {
+      await fetchMostRecentApplication(getCookie('auth_token'));
+    }
+  };
+
+  const fetchMostRecentApplication = async (token: string | null) => {
+    try {
       const response = await fetch('http://127.0.0.1:8000/candidates/candidates/', {
         headers: {
           ...(token && { 'Authorization': `Token ${token}` }),
@@ -66,9 +105,7 @@ export default function ApplicationSuccess() {
         }
       }
     } catch (error) {
-      console.error('Error fetching application ', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching most recent application:', error);
     }
   };
 
@@ -241,10 +278,15 @@ export default function ApplicationSuccess() {
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-teal-500 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
+              <div className="w-9 h-9">
+                <Image
+                  src="/servia-logo.png"
+                  alt="Servia Logo"
+                  width={36}
+                  height={36}
+                  className="object-contain"
+                  priority
+                />
               </div>
             </div>
             
