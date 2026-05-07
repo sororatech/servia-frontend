@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { api } from "@/lib/api";
+import { AUTH_STORAGE } from "@/lib/auth";
 import type { ApiResponse } from "@/types/api";
 import type {
   BackendCandidate,
@@ -59,15 +60,11 @@ async function fetchAllPages<T>(path: string): Promise<T[]> {
   let nextUrl = firstPage.next;
 
   while (nextUrl) {
-    const authToken =
-      typeof window !== "undefined" &&
-      window.localStorage.getItem("user_role") === "recruiter"
-        ? window.localStorage.getItem("auth_token")
-        : process.env.NEXT_PUBLIC_AUTH_TOKEN ?? null;
+    const token = AUTH_STORAGE.getToken();
     const response = await fetch(nextUrl, {
       headers: {
         "Content-Type": "application/json",
-        ...(authToken ? { Authorization: `Token ${authToken}` } : {}),
+        ...(token ? { Authorization: `Token ${token}` } : {}),
       },
       cache: "no-store",
     });
@@ -103,6 +100,7 @@ async function loadCandidates(): Promise<CandidateListItem[]> {
       aiScore: candidate.ai_score,
       status: candidate.status,
       appliedAt: candidate.applied_at,
+      jobId: candidate.job,
     };
   });
 }

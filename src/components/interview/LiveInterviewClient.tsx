@@ -59,12 +59,6 @@ export default function LiveInterviewClient({
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.18),_transparent_28%),linear-gradient(180deg,#fcfcfb_0%,#f6f0ec_100%)] text-[#171717]">
       <div className="border-b border-black/8 bg-white/75 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-[linear-gradient(135deg,#26b9c8_0%,#7fe7f1_100%)] shadow-[0_10px_24px_rgba(38,185,200,0.28)]" />
-            <span className="text-[2rem] font-semibold tracking-[-0.04em] text-[#26b9c8]">
-              Servia AI
-            </span>
-          </div>
 
           <div className="space-y-1 text-center">
             <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#171717] sm:text-3xl">

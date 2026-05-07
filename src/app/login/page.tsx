@@ -1,146 +1,202 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { AUTH_STORAGE, getDashboardUrl } from '@/lib/auth';
-
-type LoginResponse = {
-  token: string;
-  user_id: number;
-  user_type: 'candidate' | 'recruiter';
-  email: string;
-  first_name: string;
-  last_name: string;
-};
-
-function getApiUrl(path: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  return `${baseUrl}${normalizedPath}`;
-}
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button, Footer } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, loading, error } = useAuth();
 
-  useEffect(() => {
-    const token = AUTH_STORAGE.getToken();
-    const userType = AUTH_STORAGE.getUserRole();
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
-    if (token && userType) {
-      const returnUrl = searchParams.get('returnUrl');
-      router.replace(returnUrl ?? getDashboardUrl(userType));
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const [persistentError, setPersistentError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: '' }));
     }
-  }, [router, searchParams]);
+  };
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRememberMe(e.target.checked);
+  };
+
+  const validateForm = (): boolean => {
+    const errors: { [key: string]: string } = {};
+    if (!formData.email.trim()) {
+      errors.email = 'Email address is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setPersistentError('');
 
     try {
-      const response = await fetch(getApiUrl('/users/login/'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      await login(formData.email, formData.password, rememberMe);
+    } catch (err: any) {
+      const errorCode = err.response?.data?.code;
 
-      const payload = (await response.json()) as Partial<LoginResponse> & {
-        error?: string;
-      };
-
-      if (!response.ok || !payload.token || !payload.user_type) {
-        throw new Error(payload.error ?? 'Unable to sign in right now.');
+      if (errorCode === 'EMAIL_NOT_VERIFIED') {
+        router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+        return;
       }
-
-      AUTH_STORAGE.saveAuth(
-        payload.token,
-        payload.user_type,
-        String(payload.user_id ?? ''),
-        false,
-        `${payload.first_name ?? ''} ${payload.last_name ?? ''}`.trim() || payload.email,
-      );
-      const returnUrl = searchParams.get('returnUrl');
-      router.replace(returnUrl ?? getDashboardUrl(payload.user_type));
-      router.refresh();
-    } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : 'Unable to sign in right now.',
-      );
-    } finally {
-      setIsSubmitting(false);
+      const message = err.response?.data?.error || 'Login failed';
+      setPersistentError(message);
+      setTimeout(() => setPersistentError(''), 5000);
     }
-  }
+  };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(38,185,200,0.12),_transparent_25%),linear-gradient(180deg,#f9f7f4_0%,#efe6df_100%)] p-4">
-      <div className="w-full max-w-md rounded-[2rem] border border-white/70 bg-white/90 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur-sm">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-[-0.04em] text-[#164e63]">
-            Welcome Back
-          </h1>
-          <p className="mt-3 text-sm text-[#5f5a55]">
-            Sign in to access your dashboard.
-          </p>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-1">
+        <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
+          <Image
+            src="/images/registerimg.png"
+            alt="ServiaAI background"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            priority
+          />
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
+
+          <div className="relative z-10 max-w-[460px] px-14 py-14 bg-white shadow-2xl rounded-[2px]">
+            <div className="mb-8">
+              <div className="mb-6">
+                <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain" />
+              </div>
+              <h2 className="text-2xl mb-3 leading-tight" style={{ color: '#0F2A44' }}>
+                The Ultimate Career Experience.
+              </h2>
+              <p className="text-gray-600 leading-relaxed text-sm">
+                Access high-stakes professional introductions and premium career opportunities designed for the ambitious.
+              </p>
+            </div>
+
+            <div className="mt-44 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E6F7FB' }}>
+                  <ShieldCheck className="w-5 h-5" style={{ color: '#26B9C8' }} />
+                </div>
+                <div>
+                  <h6 className="text-sm leading-none" style={{ color: '#0F2A44' }}>Verified Identity</h6>
+                  <p className="text-xs text-gray-500 leading-tight -mt-2" style={{ color: '#26B9C8' }}>Your professional data is encrypted</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#4f4a45]">
-              Email Address
-            </span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-[1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#1f1c19] outline-none transition focus:border-[#26b9c8]"
-              placeholder="sarah@grandhotel.com"
-              autoComplete="email"
-              required
-            />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-[#4f4a45]">
-              Password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-[1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#1f1c19] outline-none transition focus:border-[#26b9c8]"
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              required
-            />
-          </label>
-
-          {error ? (
-            <div className="rounded-[1rem] border border-[#efc7bf] bg-[#fff0ec] px-4 py-3 text-sm text-[#b13d2f]">
-              {error}
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-8 bg-white">
+          <div className="w-full max-w-md">
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold" style={{ color: '#0F2A44' }}>Welcome back</h2>
+              <p className="-mt-2 text-sm" style={{ color: '#26B9C8' }}>Please enter your details to sign in.</p>
             </div>
-          ) : null}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-full bg-[#26b9c8] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1598a6] disabled:cursor-not-allowed disabled:bg-[#8fd7de]"
-          >
-            {isSubmitting ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
+            <form onSubmit={handleSubmit} className="space-y-7">
+              {(persistentError || error) && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{persistentError || error}</div>
+              )}
+
+              <div className="space-y-2 mt-16">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                <input
+                  type="email" id="email" name="email" value={formData.email} onChange={handleChange}
+                  placeholder="name@company.com"
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
+                  style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                />
+                {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                  <Link href="/forgot-password" className="text-sm font-medium" style={{ color: '#26B9C8' }}>Forgot Password?</Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'} id="password" name="password" value={formData.password} onChange={handleChange}
+                    placeholder="••••••••"
+                    className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
+                    style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                    style={{ color: '#26B9C8' }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {validationErrors.password && <p className="text-sm text-red-600">{validationErrors.password}</p>}
+              </div>
+
+              <div className="flex items-center">
+                <input id="rememberMe" name="rememberMe" type="checkbox" checked={rememberMe} onChange={handleCheckboxChange} className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" />
+                <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">Remember me</label>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                variant="primary"
+                size="lg"
+                fullWidth
+                className="custom-button"
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Don&#39;t have an account?{' '}
+              <Link href="/register" className="font-medium" style={{ color: '#26B9C8' }}>Create Account</Link>
+            </p>
+          </div>
+        </div>
       </div>
-    </main>
+      <Footer />
+
+      <style jsx>{`
+        .custom-button {
+          background-color: #26B9C8 !important;
+          height: 48px !important;
+          min-height: 48px !important;
+          padding: 0 1.5rem !important;
+          border-radius: 9999px !important;
+        }
+        .custom-button:hover {
+          background-color: #20a8b6 !important;
+          opacity: 0.95 !important;
+        }
+        .custom-button:disabled {
+          opacity: 0.6 !important;
+        }
+      `}</style>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -18,27 +18,27 @@ const Icons = {
 };
 
 function useProfile() {
-  const [profile, setProfile] = useState({
-    name: 'User',
-    role: 'Candidate',
-    isAdmin: false,
-    avatar: null,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const userRole = AUTH_STORAGE.getUserRole();
-    const userName = AUTH_STORAGE.getUserName();
-
-    setProfile((currentProfile) => ({
-      ...currentProfile,
-      name: userName || currentProfile.name,
-      role: userRole === 'recruiter' ? 'Recruiter' : 'Candidate',
-    }));
-    setIsLoading(false);
+    setMounted(true);
   }, []);
 
-  return { ...profile, isLoading };
+  const firstName = mounted ? AUTH_STORAGE.getFirstName() : null;
+  const lastName = mounted ? AUTH_STORAGE.getLastName() : null;
+  const role = mounted ? AUTH_STORAGE.getUserRole() : null;
+
+  const name = firstName || lastName
+    ? `${firstName ?? ''} ${lastName ?? ''}`.trim()
+    : 'User';
+
+  return {
+    name,
+    role: role === 'candidate' ? 'Candidate' : 'Recruiter',
+    isAdmin: false,
+    avatar: null,
+    isLoading: !mounted,
+  };
 }
 
 export function Sidebar() {
@@ -116,7 +116,7 @@ export function Sidebar() {
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
           <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
             {isLoading ? (
-              <div className="h-6 w-6 rounded-full bg-white/20 animate-pulse" />
+              <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
             ) : avatar ? (
               <Image src={avatar} alt={name || 'User'} width={36} height={36} className="rounded-full object-cover" />
             ) : (

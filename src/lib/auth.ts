@@ -1,20 +1,11 @@
-// src/lib/auth.ts
-
 export const AUTH_STORAGE = {
-  saveAuth(
-    token: string,
-    type: 'candidate' | 'recruiter',
-    userId: string,
-    rememberMe: boolean,
-    name?: string,
-  ) {
+  saveAuth(token: string, type: 'candidate' | 'recruiter', userId: string, rememberMe: boolean, firstName?: string, lastName?: string) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token);
-      localStorage.setItem('user_role', type); 
+      localStorage.setItem('user_role', type);
       localStorage.setItem('user_id', userId);
-      if (name) {
-        localStorage.setItem('user_name', name);
-      }
+      if (firstName) localStorage.setItem('first_name', firstName);
+      if (lastName) localStorage.setItem('last_name', lastName);
 
       const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 86400; 
       const expiry = `; max-age=${maxAge}`;
@@ -25,21 +16,23 @@ export const AUTH_STORAGE = {
   },
 
   getToken: () => typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
+  
+  // FIXED: Renamed function and key to user_role
   getUserRole: () => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('user_role') as 'candidate' | 'recruiter';
   },
-  getUserName: () => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('user_name');
-  },
   
+  getFirstName: () => typeof window !== 'undefined' ? localStorage.getItem('first_name') : null,
+  getLastName: () => typeof window !== 'undefined' ? localStorage.getItem('last_name') : null,
+
   clear(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_role'); 
+      localStorage.removeItem('user_role');
       localStorage.removeItem('user_id');
-      localStorage.removeItem('user_name');
+      localStorage.removeItem('first_name');
+      localStorage.removeItem('last_name');
       document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
       document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     }

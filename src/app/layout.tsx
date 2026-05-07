@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import { Lexend } from "next/font/google";
 import "./globals.css";
-
-const lexend = Lexend({
-  variable: "--font-lexend",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "ServiaAI",
@@ -18,14 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${lexend.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className="h-full antialiased">
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col font-[--font-lexend]"
+        className="min-h-full flex flex-col"
       >
         {children}
       </body>

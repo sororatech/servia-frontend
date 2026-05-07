@@ -17,14 +17,10 @@
     "@hookform/resolvers": "^5.2.2",
     "axios": "^1.14.0",
     "clsx": "^2.1.1",
-<<<<<<< HEAD
     "country-flag-icons": "^1.6.15",
     "framer-motion": "^12.38.0",
     "libphonenumber-js": "^1.12.41",
     "lucide-react": "^1.8.0",
-=======
-    "framer-motion": "^12.38.0",
->>>>>>> 7574f23 (feat: add core shared components, legal pages, and fix build blockers)
     "next": "16.2.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",

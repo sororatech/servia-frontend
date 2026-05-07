@@ -111,7 +111,11 @@ export default function CandidateDashboard() {
           ? "Checking whether you have a live or scheduled interview..."
           : "Your applications, AI feedback, and interview status will appear here."}
       </p>
-      {error ? <p className="mt-4 text-sm text-[#b13d2f]">{error}</p> : null}
+      {error ? (
+        <p className="mt-4 text-sm text-[#b13d2f]">
+          {error}
+        </p>
+      ) : null}
     </main>
   );
 }
