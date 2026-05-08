@@ -4,18 +4,13 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { api } from "@/lib/api";
 import { AUTH_STORAGE } from "@/lib/auth";
 import type { ApiResponse } from "@/types/api";
+import { unwrapCollection } from "@/lib/responseUtils";
+import type { PaginatedResponse } from "@/lib/responseUtils";
 import type {
   BackendCandidate,
   BackendJobSummary,
   CandidateListItem,
 } from "@/types/candidate";
-
-type PaginatedResponse<T> = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-};
 
 type UseCandidatesResult = {
   candidates: CandidateListItem[];
@@ -26,24 +21,6 @@ type UseCandidatesResult = {
   error: string | null;
   refresh: () => void;
 };
-
-function unwrapCollection<T>(
-  payload: ApiResponse<T[]> | PaginatedResponse<T> | T[],
-): { items: T[]; next: string | null } {
-  if (Array.isArray(payload)) {
-    return { items: payload, next: null };
-  }
-
-  if ("data" in payload && Array.isArray(payload.data)) {
-    return { items: payload.data, next: null };
-  }
-
-  if ("results" in payload && Array.isArray(payload.results)) {
-    return { items: payload.results, next: payload.next };
-  }
-
-  return { items: [], next: null };
-}
 
 function formatCandidateName(candidate: BackendCandidate) {
   const fullName =

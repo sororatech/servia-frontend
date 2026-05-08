@@ -1,15 +1,12 @@
 import { cookies } from 'next/headers';
 import type { ApiResponse } from '@/types/api';
-
-export type PaginatedResponse<T> = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-};
+import { getApiBaseUrl } from '@/lib/config';
+import { unwrapCollection } from '@/lib/responseUtils';
+import type { PaginatedResponse } from '@/lib/responseUtils';
+export type { PaginatedResponse };
 
 export function getApiUrl(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
+  const base = getApiBaseUrl();
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
@@ -37,15 +34,6 @@ export async function fetchJson<T>(path: string, headers: HeadersInit): Promise<
   }
 
   return (await response.json()) as T;
-}
-
-function unwrapCollection<T>(
-  payload: ApiResponse<T[]> | PaginatedResponse<T> | T[],
-): { items: T[]; next: string | null } {
-  if (Array.isArray(payload)) return { items: payload, next: null };
-  if ('data' in payload && Array.isArray(payload.data)) return { items: payload.data, next: null };
-  if ('results' in payload) return { items: payload.results, next: payload.next };
-  return { items: [], next: null };
 }
 
 export async function fetchAllPages<T>(path: string, headers: HeadersInit): Promise<T[]> {

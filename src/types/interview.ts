@@ -44,6 +44,16 @@ export type AIReportRecord = {
   recommendation: 'hire' | 'hold' | 'reject' | null;
 };
 
+export type AIReportDetail = AIReportRecord & {
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  feedback: string;
+  extracted_skills: string[];
+  confidence: 'high' | 'medium' | 'low' | null;
+  created_at: string;
+};
+
 export type InterviewRow = {
   interviewId: string;
   candidateId: string;

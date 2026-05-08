@@ -7,6 +7,7 @@ const WS_CLOSED = 3;
 
 type UseWebSocketOptions = {
   enabled?: boolean;
+  protocols?: string[];
 };
 
 type UseWebSocketResult<TMessage> = {
@@ -20,7 +21,9 @@ export default function useWebSocket<TMessage = unknown>(
   url: string | null,
   options: UseWebSocketOptions = {},
 ): UseWebSocketResult<TMessage> {
-  const { enabled = true } = options;
+  const { enabled = true, protocols } = options;
+  const protocolsRef = useRef(protocols);
+  protocolsRef.current = protocols;
   const socketRef = useRef<WebSocket | null>(null);
   const [lastMessage, setLastMessage] = useState<TMessage | null>(null);
   const [readyState, setReadyState] = useState<number>(WS_CLOSED);
@@ -41,7 +44,10 @@ export default function useWebSocket<TMessage = unknown>(
       return;
     }
 
-    const socket = new WebSocket(url);
+    const activeProtocols = protocolsRef.current;
+    const socket = activeProtocols?.length
+      ? new WebSocket(url, activeProtocols)
+      : new WebSocket(url);
     socketRef.current = socket;
 
     socket.onopen = () => {

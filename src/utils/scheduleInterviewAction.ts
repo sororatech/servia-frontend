@@ -2,11 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-function getApiUrl(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
-  return `${base}${path.startsWith('/') ? path : `/${path}`}`;
-}
+import { getApiUrl } from '@/utils/serverFetch';
 
 export type CandidateContext = {
   candidateId: string;

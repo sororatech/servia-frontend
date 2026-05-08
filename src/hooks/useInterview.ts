@@ -12,6 +12,8 @@ import type {
   LiveInterviewState,
   TranscriptEntry,
 } from "@/types/api";
+import { unwrapCollection } from "@/lib/responseUtils";
+import type { PaginatedResponse } from "@/lib/responseUtils";
 import useWebSocket from "@/hooks/useWebSocket";
 
 const WS_OPEN = 1;
@@ -37,12 +39,6 @@ type BackendCandidate = {
   };
 };
 
-type PaginatedResponse<T> = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-};
 
 function createEmptyInterview(interviewId: string): LiveInterviewState {
   return {
@@ -118,12 +114,10 @@ function mergeTranscriptEntries(
 function deriveWebSocketUrl(interviewId: string) {
   const configuredUrl =
     process.env.NEXT_PUBLIC_WS_URL ?? process.env.NEXT_PUBLIC_WS_BASE_URL;
-  const authToken = process.env.NEXT_PUBLIC_AUTH_TOKEN;
 
   if (configuredUrl) {
     const baseUrl = configuredUrl.replace(/\/$/, "");
-    const wsUrl = `${baseUrl}/${interviewId}/`;
-    return authToken ? `${wsUrl}?token=${authToken}` : wsUrl;
+    return `${baseUrl}/${interviewId}/`;
   }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -132,8 +126,12 @@ function deriveWebSocketUrl(interviewId: string) {
   }
 
   const normalizedApiUrl = apiUrl.replace(/^http/, "ws").replace(/\/$/, "");
-  const wsUrl = `${normalizedApiUrl}/ws/interview/${interviewId}/`;
-  return authToken ? `${wsUrl}?token=${authToken}` : wsUrl;
+  return `${normalizedApiUrl}/ws/interview/${interviewId}/`;
+}
+
+function getWsProtocols(): string[] | undefined {
+  const token = process.env.NEXT_PUBLIC_AUTH_TOKEN;
+  return token ? ["auth", token] : undefined;
 }
 
 function isValidInterviewId(interviewId: string) {
@@ -163,23 +161,6 @@ function formatCandidateName(candidate: BackendCandidate | null) {
   return fullName || candidate.user.email || "";
 }
 
-function unwrapCollection<T>(
-  payload: ApiResponse<T[]> | PaginatedResponse<T> | T[],
-): T[] {
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  if ("data" in payload && Array.isArray(payload.data)) {
-    return payload.data;
-  }
-
-  if ("results" in payload && Array.isArray(payload.results)) {
-    return payload.results;
-  }
-
-  return [];
-}
 
 export default function useInterview(interviewId: string): UseInterviewResult {
   const [interview, setInterview] = useState<LiveInterviewState>(() =>
@@ -195,9 +176,11 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     () => (hasValidInterviewId ? deriveWebSocketUrl(interviewId) : null),
     [hasValidInterviewId, interviewId],
   );
+  const wsProtocols = useMemo(() => getWsProtocols(), []);
   const { lastMessage, readyState, error: socketError, sendMessage } =
     useWebSocket<LiveInterviewSocketEvent>(webSocketUrl, {
       enabled: Boolean(webSocketUrl),
+      protocols: wsProtocols,
     });
 
   const endInterview = useCallback(() => {
@@ -245,7 +228,7 @@ export default function useInterview(interviewId: string): UseInterviewResult {
           | PaginatedResponse<BackendInterviewConversation>
           | BackendInterviewConversation[],
       );
-      const filteredConversations = conversationPayload.filter(
+      const filteredConversations = conversationPayload.items.filter(
         (conversation) => conversation.interview === interviewId,
       );
 
