@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { api } from '@/lib/api';
 
 export default function CVUploadPage() {
   const router = useRouter();
@@ -13,13 +14,6 @@ export default function CVUploadPage() {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-
-  const getCookie = (name: string): string | null => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -62,31 +56,16 @@ export default function CVUploadPage() {
     setUploadProgress(10);
 
     try {
-      const token = getCookie('auth_token');
       const fileExtension = cvFile.name.split('.').pop()?.toLowerCase() || 'pdf';
       
       setUploadProgress(20);
       
-      const urlResponse = await fetch(
-        `http://127.0.0.1:8000/candidates/candidates/${applicationId}/upload-cv/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Token ${token}` }),
-          },
-          body: JSON.stringify({
-            file_extension: fileExtension,
-          }),
-        }
+      const urlResponse = await api.post(
+        `/candidates/candidates/${applicationId}/upload-cv/`,
+        { file_extension: fileExtension }
       );
+      const urlData = urlResponse.data;
 
-      if (!urlResponse.ok) {
-        const errorData = await urlResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to get upload URL');
-      }
-
-      const urlData = await urlResponse.json();
       setUploadProgress(40);
 
       const uploadResponse = await fetch(urlData.upload_url, {
@@ -103,25 +82,10 @@ export default function CVUploadPage() {
 
       setUploadProgress(70);
 
-      const confirmResponse = await fetch(
-        `http://127.0.0.1:8000/candidates/candidates/${applicationId}/confirm-cv/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Token ${token}` }),
-          },
-          body: JSON.stringify({
-            file_key: urlData.file_key,
-            filename: cvFile.name,
-          }),
-        }
+      const confirmResponse = await api.post(
+        `/candidates/candidates/${applicationId}/confirm-cv/`,
+        { file_key: urlData.file_key, filename: cvFile.name }
       );
-
-      if (!confirmResponse.ok) {
-        const errorData = await confirmResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to confirm upload');
-      }
 
       setUploadProgress(100);
       
@@ -129,9 +93,20 @@ export default function CVUploadPage() {
       
       router.push(`/candidate/application-success?applicationId=${applicationId}`);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      if (error.response?.status === 401) {
+        alert('Session expired. Please login again.');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_role');
+          window.location.href = '/login';
+        }
+        return;
+      }
+      
+      alert(`Upload failed: ${error.message || 'Unknown error'}`);
       setUploadProgress(0);
     } finally {
       setUploading(false);
@@ -144,12 +119,11 @@ export default function CVUploadPage() {
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9">
+              <div className="w-9 h-9 relative">
                 <Image
                   src="/servia-logo.png"
                   alt="Servia Logo"
-                  width={36}
-                  height={36}
+                  fill
                   className="object-contain"
                   priority
                 />

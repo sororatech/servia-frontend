@@ -3,17 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-interface Job {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  employment_type: string;
-  description: string;
-  posted_date: string;
-  is_active: boolean;
-}
+import { fetchJobs, Job } from '@/utils/jobApi';
 
 export default function BrowseJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -26,30 +16,16 @@ export default function BrowseJobs() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchJobs();
+    loadJobs();
   }, []);
 
-  const fetchJobs = async () => {
+  const loadJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:8000/jobs/jobs/');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      let jobsData: Job[] = [];
-      if (Array.isArray(data)) {
-        jobsData = data;
-      } else if (data.results && Array.isArray(data.results)) {
-        jobsData = data.results;
-      }
-      
-      setJobs(jobsData);
+      const data = await fetchJobs();
+      setJobs(data);
     } catch (error) {
-      console.error('Failed to fetch jobs:', error);
+      console.error('Failed to load jobs:', error);
       setJobs([]);
     } finally {
       setLoading(false);
@@ -113,12 +89,11 @@ export default function BrowseJobs() {
         <div className="max-w-7xl mx-auto px-8 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10">
+              <div className="w-10 h-10 relative">
                 <Image
                   src="/servia-logo.png"
                   alt="Servia Logo"
-                  width={40}
-                  height={40}
+                  fill
                   className="object-contain"
                   priority
                 />
@@ -267,12 +242,11 @@ export default function BrowseJobs() {
                     onClick={() => router.push(`/jobs/${job.id}`)}
                   >
                     <div className="flex items-start justify-between mb-5">
-                      <div className="w-12 h-12 rounded-xl border-2 border-gray-50 bg-gray-200 p-1.5 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl border-2 border-gray-50 bg-gray-200 p-1.5 relative flex items-center justify-center">
                         <Image
                           src="/company-logo.png"
                           alt="Company Logo"
-                          width={40}
-                          height={40}
+                          fill
                           className="object-contain rounded"
                         />
                       </div>

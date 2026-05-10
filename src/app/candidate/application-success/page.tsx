@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { api } from '@/lib/api';
 
 interface JobInfo {
   title: string;
@@ -34,22 +35,14 @@ export default function ApplicationSuccess() {
     fetchApplicationData();
   }, [searchParams]);
 
-  const getCookie = (name: string): string | null => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
-  };
-
   const fetchApplicationData = async () => {
     try {
-      const token = getCookie('auth_token');
       const applicationId = searchParams.get('applicationId');
       
       if (applicationId) {
-        await fetchSpecificApplication(applicationId, token);
+        await fetchSpecificApplication(applicationId);
       } else {
-        await fetchMostRecentApplication(token);
+        await fetchMostRecentApplication();
       }
     } catch (error) {
       console.error('Error fetching application data', error);
@@ -58,50 +51,38 @@ export default function ApplicationSuccess() {
     }
   };
 
-  const fetchSpecificApplication = async (appId: string, token: string | null) => {
+  const fetchSpecificApplication = async (appId: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/candidates/candidates/${appId}/`, {
-        headers: {
-          ...(token && { 'Authorization': `Token ${token}` }),
-        },
-      });
+      const response = await api.get(`/candidates/candidates/${appId}/`);
+      const appData = response.data;
       
-      if (response.ok) {
-        const appData = await response.json();
-        setApplicationData(appData);
-        
-        if (typeof appData.job === 'string') {
-          await fetchJobDetails(appData.job, token);
-        } else if (appData.job && typeof appData.job === 'object') {
-          setJobDetails(appData.job as JobInfo);
-        }
+      setApplicationData(appData);
+      
+      if (typeof appData.job === 'string') {
+        await fetchJobDetails(appData.job);
+      } else if (appData.job && typeof appData.job === 'object') {
+        setJobDetails(appData.job as JobInfo);
       }
     } catch (error) {
-      await fetchMostRecentApplication(getCookie('auth_token'));
+      console.error('Error fetching specific application:', error);
+      await fetchMostRecentApplication();
     }
   };
 
-  const fetchMostRecentApplication = async (token: string | null) => {
+  const fetchMostRecentApplication = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/candidates/candidates/', {
-        headers: {
-          ...(token && { 'Authorization': `Token ${token}` }),
-        },
-      });
+      const response = await api.get('/candidates/candidates/');
+      const data = response.data;
+      const applications = data.results || data;
       
-      if (response.ok) {
-        const data = await response.json();
-        const applications = data.results || data;
+      if (applications && applications.length > 0) {
+        const latestApp = applications[0];
+        setApplicationData(latestApp);
         
-        if (applications && applications.length > 0) {
-          const latestApp = applications[0];
-          setApplicationData(latestApp);
-          
-          if (typeof latestApp.job === 'string') {
-            await fetchJobDetails(latestApp.job, token);
-          } else if (latestApp.job && typeof latestApp.job === 'object') {
-            setJobDetails(latestApp.job as JobInfo);
-          }
+        if (typeof latestApp.job === 'string') {
+          await fetchJobDetails(latestApp.job);
+        } else if (latestApp.job && typeof latestApp.job === 'object') {
+          setJobDetails(latestApp.job as JobInfo);
         }
       }
     } catch (error) {
@@ -109,47 +90,27 @@ export default function ApplicationSuccess() {
     }
   };
 
-  const fetchJobDetails = async (jobId: string, token: string | null) => {
+  const fetchJobDetails = async (jobId: string) => {
     try {
-      const jobEndpoints = [
-        `http://127.0.0.1:8000/jobs/${jobId}/`,
-        `http://127.0.0.1:8000/api/jobs/${jobId}/`,
-        `http://127.0.0.1:8000/jobs/jobs/${jobId}/`,
-      ];
-      
-      let jobData = null;
-      
-      for (const endpoint of jobEndpoints) {
-        try {
-          const response = await fetch(endpoint, {
-            headers: {
-              ...(token && { 'Authorization': `Token ${token}` }),
-            },
-          });
-          
-          if (response.ok) {
-            jobData = await response.json();
-            break;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
+      const response = await api.get(`/jobs/jobs/${jobId}/`);
+      const jobData = response.data;
       
       if (!jobData) return;
       
+      const realTitle = jobData.title || jobData.position_title || jobData.role || 'Position Applied';
       const department = jobData.department || jobData.company || jobData.organization || 'Servia Hotels';
+      const location = jobData.location || jobData.work_location || '';
       
       setJobDetails({
-        title: jobData.title || 'Position Applied',
+        title: realTitle,
         department: department,
-        location: jobData.location || '',
+        location: location,
         company: jobData.company,
         recruiter: jobData.recruiter || jobData.hiring_manager || jobData.contact_person || null,
       });
       
       if (!jobData.recruiter && !jobData.hiring_manager) {
-        await fetchRecruiterInfo(department, token);
+        await fetchRecruiterInfo(department);
       }
       
     } catch (error) {
@@ -157,52 +118,37 @@ export default function ApplicationSuccess() {
     }
   };
 
-  const fetchRecruiterInfo = async (department: string, token: string | null) => {
+  const fetchRecruiterInfo = async (department: string) => {
     try {
-      const recruiterEndpoints = [
-        `http://127.0.0.1:8000/recruiters/?department=${encodeURIComponent(department)}`,
-        `http://127.0.0.1:8000/api/recruiters/?department=${encodeURIComponent(department)}`,
-        `http://127.0.0.1:8000/recruiters/`,
-      ];
+      const response = await api.get('/recruiters/', {
+        params: { department: department }
+      });
       
-      for (const endpoint of recruiterEndpoints) {
-        try {
-          const response = await fetch(endpoint, {
-            headers: {
-              ...(token && { 'Authorization': `Token ${token}` }),
-            },
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            let recruiter = null;
-            
-            if (Array.isArray(data) && data.length > 0) {
-              recruiter = data[0];
-            } else if (data.results && Array.isArray(data.results) && data.results.length > 0) {
-              recruiter = data.results[0];
-            } else if (data.name || data.full_name) {
-              recruiter = data;
-            }
-            
-            if (recruiter) {
-              setJobDetails(prev => prev ? {
-                ...prev,
-                recruiter: {
-                  name: recruiter.name || recruiter.full_name || 'Recruiter',
-                  title: recruiter.title || recruiter.role || 'Talent Acquisition',
-                  quote: recruiter.quote || recruiter.bio || recruiter.description || '',
-                }
-              } : prev);
-              return;
-            }
-          }
-        } catch (err) {
-          continue;
-        }
+      const data = response.data;
+      let recruiter = null;
+      
+      if (Array.isArray(data) && data.length > 0) {
+        recruiter = data[0];
+      } else if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+        recruiter = data.results[0];
+      } else if (data.name || data.full_name) {
+        recruiter = data;
       }
-    } catch (error) {
-      console.error('Error fetching recruiter info:', error);
+      
+      if (recruiter) {
+        setJobDetails(prev => prev ? {
+          ...prev,
+          recruiter: {
+            name: recruiter.name || recruiter.full_name || 'Talent Team',
+            title: recruiter.title || recruiter.role || 'Servia Hotels',
+            quote: recruiter.quote || recruiter.bio || recruiter.description || "We've received your application!",
+          }
+        } : prev);
+      }
+    } catch (error: any) {
+      if (error.response?.status !== 404) {
+        console.error('Error fetching recruiter info:', error);
+      }
     }
   };
 
@@ -278,12 +224,11 @@ export default function ApplicationSuccess() {
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9">
+              <div className="w-9 h-9 relative">
                 <Image
                   src="/servia-logo.png"
                   alt="Servia Logo"
-                  width={36}
-                  height={36}
+                  fill
                   className="object-contain"
                   priority
                 />

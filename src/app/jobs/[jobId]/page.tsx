@@ -3,18 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-interface Job {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  employment_type: string;
-  description: string;
-  requirements: string;
-  posted_date: string;
-  is_active: boolean;
-}
+import { fetchJob, createApplication, Job } from '@/utils/jobApi';
 
 export default function JobDetail() {
   const params = useParams();
@@ -24,84 +13,47 @@ export default function JobDetail() {
   const [applying, setApplying] = useState(false);
 
   useEffect(() => {
-    fetchJob();
+    loadJob();
   }, [params.jobId]);
 
-  const fetchJob = async () => {
+  const loadJob = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://127.0.0.1:8000/jobs/jobs/${params.jobId}/`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const data = await fetchJob(params.jobId as string);
       setJob(data);
     } catch (error) {
-      console.error('Failed to fetch job:', error);
+      console.error('Failed to load job:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getCookie = (name: string): string | null => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
-  };
-
   const handleApply = async () => {
     try {
       setApplying(true);
+      const result = await createApplication(params.jobId as string);
       
-      const token = getCookie('auth_token');
-      
-      const response = await fetch('http://127.0.0.1:8000/candidates/candidates/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Token ${token}` }),
-        },
-        body: JSON.stringify({
-          job: params.jobId,
-        }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const applicationId = data.id;
-        
-        if (data.exists) {
-          alert('You have already applied to this job! Redirecting to your application...');
-        } else {
-          alert('Application started! Please upload your CV.');
-        }
-        
-        if (applicationId) {
-          router.push(`/candidate/dashboard/cv?application=${applicationId}`);
-        } else {
-          router.push('/candidate/dashboard/cv');
-        }
+      if (result.exists) {
+        alert('You have already applied to this job! Redirecting to your application...');
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        
-        if (response.status === 401) {
-          alert('Please login to apply for jobs.');
-          router.push('/login');
-        } else if (response.status === 403) {
-          alert('Authentication failed. Please login again.');
-          router.push('/login');
-        } else if (response.status === 400) {
-          alert(`Validation error: ${JSON.stringify(errorData)}`);
-        } else {
-          alert(`Failed to apply: ${response.status}`);
-        }
+        alert('Application started! Please upload your CV.');
       }
-    } catch (error) {
-      console.error('Error applying:', error);
-      alert('Failed to start application. Please try again.');
+      
+      const applicationId = result.id;
+      router.push(`/candidate/dashboard/cv?application=${applicationId}`);
+      
+    } catch (error: any) {
+      if (error.message === 'UNAUTHORIZED') {
+        alert('Please login to apply for jobs.');
+        router.push('/login');
+      } else if (error.message === 'FORBIDDEN') {
+        alert('Authentication failed. Please login again.');
+        router.push('/login');
+      } else if (error.message.startsWith('VALIDATION_ERROR:')) {
+        alert(`Validation error: ${error.message.split(':')[1]}`);
+      } else {
+        alert('Failed to start application. Please try again.');
+      }
     } finally {
       setApplying(false);
     }
@@ -134,18 +86,22 @@ export default function JobDetail() {
     );
   }
 
+  const displaySalary = job.salary || job.salary_range || 'Not specified';
+  const displayRequirements = job.requirements?.split('\n').filter(r => r.trim()) || [];
+  const displaySkills = job.core_skills?.length ? job.core_skills : [];
+  const openingsRemaining = job.openings_remaining;
+
   return (
     <div className="min-h-screen bg-white">
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9">
+              <div className="w-9 h-9 relative">
                 <Image
                   src="/servia-logo.png"
                   alt="Servia Logo"
-                  width={36}
-                  height={36}
+                  fill
                   className="object-contain"
                   priority
                 />
@@ -185,53 +141,55 @@ export default function JobDetail() {
           <div className="w-80 flex-shrink-0">
             <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-l-2xl p-6 border border-r-0 border-gray-100 sticky top-8 h-full flex flex-col">
               <div className="mb-4">
-                <div className="p-1 mb-4">
+                <div className="p-1 mb-4 relative">
                   <Image
                     src="/specific-logo.png"
                     alt="Specific Logo"
-                    width={40}
-                    height={40}
+                    fill
                     className="object-contain rounded"
                   />
                 </div>
 
-                <h1 className="font-bold text-gray-900 mb-10">
+                <h3 className="font-bold text-black mb-2 text-lg leading-tight" title={job.title}>
                   {job.title}
-                </h1>
-                <p className="text-teal-600 font-medium text-xs mb-4">
+                </h3>
+                <p className="text-teal-600 font-medium text-xs mb-4 truncate" title={`${job.department} • ${job.location}`}>
                   {job.department} • {job.location}
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   <div className="bg-white rounded-lg p-3 border border-gray-100">
                     <p className="text-xs text-gray-400 uppercase font-semibold mb-0.5">Salary</p>
-                    <p className="text-xs font-bold text-gray-900">$10k - $18k</p>
+                    <p className="text-xs font-bold text-gray-900 truncate" title={displaySalary}>
+                      {displaySalary}
+                    </p>
                   </div>
                   <div className="bg-white rounded-lg p-3 border border-gray-100">
                     <p className="text-xs text-gray-400 uppercase font-semibold mb-0.5">Type</p>
-                    <p className="text-xs font-bold text-gray-900">{job.employment_type.replace('_', ' ')}</p>
+                    <p className="text-xs font-bold text-gray-900 truncate" title={job.employment_type.replace('_', ' ')}>
+                      {job.employment_type.replace('_', ' ')}
+                    </p>
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <h3 className="text-xs font-normal text-teal-600 uppercase mb-2">
-                    Core Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                      PMS
-                    </span>
-                    <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                      Conflict resolution
-                    </span>
-                    <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                      Leadership
-                    </span>
-                    <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                      Customer Service
-                    </span>
+                {displaySkills.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-xs font-normal text-teal-600 uppercase mb-2">
+                      Core Skills
+                    </h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {displaySkills.map((skill, index) => (
+                        <span 
+                          key={index}
+                          className="px-2.5 py-1 bg-blue-100 text-gray-700 text-xs font-medium rounded-full truncate"
+                          title={skill}
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <div className="mt-auto pt-4 border-t border-gray-200">
@@ -249,7 +207,14 @@ export default function JobDetail() {
                     'Apply Now'
                   )}
                 </button>
-                <p className="text-xs text-gray-400 text-center mt-2">
+                
+                {typeof openingsRemaining === 'number' && openingsRemaining > 0 && (
+                  <p className="text-xs text-gray-600 text-center mt-2 font-medium truncate">
+                    {openingsRemaining} {openingsRemaining === 1 ? 'opening' : 'openings'} remaining
+                  </p>
+                )}
+                
+                <p className="text-xs text-gray-400 text-center mt-2 truncate">
                   Applications close in 4 days.
                 </p>
               </div>
@@ -258,8 +223,8 @@ export default function JobDetail() {
 
           <div className="flex-1">
             <div className="bg-white rounded-r-2xl p-6 border border-gray-100 h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">About the Role</h2>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg text-gray-900">About the Role</h3>
                 <button
                   onClick={() => router.push('/jobs')}
                   className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
@@ -272,51 +237,31 @@ export default function JobDetail() {
 
               <div className="mb-4">
                 <p className="text-gray-600 leading-relaxed mb-3 text-sm">
-                  {job.description || `At Hilton Hotel, we are crafting exceptional hospitality experiences for discerning guests. As a ${job.title}, you will be the primary architect of our front desk operations, working directly with management and housekeeping teams to transform check-ins, inquiries, and guest requests into seamless, memorable interactions.`}
-                </p>
-
-                <p className="text-gray-600 leading-relaxed mb-3 text-sm">
-                  We value managers who think in systems, not just shifts. You will own front desk workflows from reservations and concierge services through to check-outs and feedback loops, ensuring every guest touchpoint feels intuitive, personalized, and impeccably polished.
+                  {job.description || `At Servia Hotels, we are crafting exceptional hospitality experiences for discerning guests. As a ${job.title}, you will be the primary architect of our front desk operations, working directly with management and housekeeping teams to transform check-ins, inquiries, and guest requests into seamless, memorable interactions.`}
                 </p>
               </div>
 
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-3">
-                  Key Requirements
-                </h3>
-                <ul className="space-y-2.5">
-                  <li className="flex items-start gap-2">
-                    <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-600 leading-relaxed text-sm">
-                      3+ years in hospitality front desk operations, with proven guest service leadership.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-600 leading-relaxed text-sm">
-                      Strong systems thinking for managing reservations, check-ins, and team workflows.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-gray-600 leading-relaxed text-sm">
-                      Excellent communication skills to handle inquiries, resolve issues, and drive guest satisfaction.
-                    </span>
-                  </li>
-                </ul>
-              </div>
+              {displayRequirements.length > 0 && (
+                <div>
+                  <h3 className="text-gray-900 mb-3">
+                    Key Requirements
+                  </h3>
+                  <ul className="space-y-2.5">
+                    {displayRequirements.map((requirement, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-gray-600 leading-relaxed text-sm">
+                          {requirement.replace(/^[\s•\-\*]+/, '').trim()}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
