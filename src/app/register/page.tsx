@@ -246,7 +246,6 @@ export default function RegisterPage() {
                 {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
               </div>
 
-              {/* Phone number — key fix: shrink the country button on xs, let phone input flex-1 */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
                 <div className="flex gap-1.5 sm:gap-2">
