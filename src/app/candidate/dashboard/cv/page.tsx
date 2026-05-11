@@ -83,9 +83,10 @@ export default function CVUploadPage() {
       setUploadProgress(70);
 
       const confirmResponse = await api.post(
-        `/candidates/candidates/${applicationId}/confirm-cv/`,
-        { file_key: urlData.file_key, filename: cvFile.name }
-      );
+  `/candidates/candidates/${applicationId}/confirm-cv/`,
+  { file_key: urlData.file_key, filename: cvFile.name },
+  { timeout: 60000 }  // ← Add this option: 60 second timeout
+);
 
       setUploadProgress(100);
       

@@ -86,10 +86,25 @@ export default function JobDetail() {
     );
   }
 
-  const displaySalary = job.salary || job.salary_range || 'Not specified';
+  const salaryAmount = job.salary_range || job.salary || (job.salary_min && job.salary_max ? `${job.salary_min} - ${job.salary_max}` : 'Not specified');
+  const salaryCurrency = job.salary_currency || '';
+  const salaryPeriod = job.salary_period || '';
+  const salaryDetail = salaryCurrency || salaryPeriod ? `${salaryCurrency}/${salaryPeriod}` : '';
+
+  let formattedDeadline: string | null = null;
+  if (job.application_deadline) {
+    const date = new Date(job.application_deadline);
+    if (!isNaN(date.getTime())) {
+      formattedDeadline = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+  }
+
   const displayRequirements = job.requirements?.split('\n').filter(r => r.trim()) || [];
   const displaySkills = job.core_skills?.length ? job.core_skills : [];
-  const openingsRemaining = job.openings_remaining;
 
   return (
     <div className="min-h-screen bg-white">
@@ -138,98 +153,98 @@ export default function JobDetail() {
 
       <div className="max-w-5xl mx-auto px-8 py-8">
         <div className="flex">
-          <div className="w-80 flex-shrink-0">
-            <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-l-2xl p-6 border border-r-0 border-gray-100 sticky top-8 h-full flex flex-col">
-              <div className="mb-4">
-                <div className="p-1 mb-4 relative">
-                  <Image
-                    src="/specific-logo.png"
-                    alt="Specific Logo"
-                    fill
-                    className="object-contain rounded"
-                  />
-                </div>
-
-                <h3 className="font-bold text-black mb-2 text-lg leading-tight" title={job.title}>
-                  {job.title}
-                </h3>
-                <p className="text-teal-600 font-medium text-xs mb-4 truncate" title={`${job.department} • ${job.location}`}>
-                  {job.department} • {job.location}
-                </p>
-
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div className="bg-white rounded-lg p-3 border border-gray-100">
-                    <p className="text-xs text-gray-400 uppercase font-semibold mb-0.5">Salary</p>
-                    <p className="text-xs font-bold text-gray-900 truncate" title={displaySalary}>
-                      {displaySalary}
-                    </p>
+          <div className="flex w-full shadow-xl rounded-2xl overflow-hidden">
+            <div className="w-80 flex-shrink-0">
+              <div className="bg-gradient-to-br from-blue-50 to-teal-50 p-6 h-full flex flex-col">
+                <div className="mb-4">
+                  <div className="w-16 h-16 relative mb-2">
+                    <Image
+                      src="/specific-logo.png"
+                      alt="Company Logo"
+                      fill
+                      className="object-contain"
+                    />
                   </div>
-                  <div className="bg-white rounded-lg p-3 border border-gray-100">
-                    <p className="text-xs text-gray-400 uppercase font-semibold mb-0.5">Type</p>
-                    <p className="text-xs font-bold text-gray-900 truncate" title={job.employment_type.replace('_', ' ')}>
-                      {job.employment_type.replace('_', ' ')}
-                    </p>
-                  </div>
-                </div>
 
-                {displaySkills.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-xs font-normal text-teal-600 uppercase mb-2">
-                      Core Skills
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {displaySkills.map((skill, index) => (
-                        <span 
-                          key={index}
-                          className="px-2.5 py-1 bg-blue-100 text-gray-700 text-xs font-medium rounded-full truncate"
-                          title={skill}
-                        >
-                          {skill}
-                        </span>
-                      ))}
+                  <h3 className="font-bold text-black mb-2 text-lg leading-tight" title={job.title}>
+                    {job.title}
+                  </h3>
+                  <p className="text-teal-600 font-medium text-xs mb-4 truncate" title={`${job.department} • ${job.location}`}>
+                    {job.department} • {job.location}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="bg-white rounded-lg p-2 border border-gray-100 text-center">
+                      <p className="text-[10px] text-gray-400 uppercase font-semibold mb-0.5">Salary</p>
+                      <p className="text-xs font-bold text-gray-900 leading-tight">
+                        {salaryAmount}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-lg p-2 border border-gray-100">
+                      <p className="text-[10px] text-gray-400 uppercase font-semibold mb-0.5 text-center">Type</p>
+                      <p className="text-xs font-bold text-gray-900 truncate text-center" title={job.employment_type.replace('_', ' ')}>
+                        {job.employment_type.replace('_', ' ')}
+                      </p>
                     </div>
                   </div>
-                )}
-              </div>
 
-              <div className="mt-auto pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleApply}
-                  disabled={applying}
-                  className="w-full bg-teal-500 text-white py-3 rounded-xl hover:bg-teal-600 transition-colors font-semibold text-xs shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {applying ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Applying...
-                    </>
-                  ) : (
-                    'Apply Now'
+                  {displaySkills.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-normal text-teal-600 uppercase mb-2">
+                        Core Skills
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {displaySkills.map((skill, index) => (
+                          <span 
+                            key={index}
+                            className="px-2.5 py-1 bg-blue-100 text-gray-700 text-xs font-medium rounded-full truncate"
+                            title={skill}
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </button>
-                
-                {typeof openingsRemaining === 'number' && openingsRemaining > 0 && (
-                  <p className="text-xs text-gray-600 text-center mt-2 font-medium truncate">
-                    {openingsRemaining} {openingsRemaining === 1 ? 'opening' : 'openings'} remaining
-                  </p>
-                )}
-                
-                <p className="text-xs text-gray-400 text-center mt-2 truncate">
-                  Applications close in 4 days.
-                </p>
+                </div>
+
+                <div className="mt-auto pt-4 border-t border-gray-200">
+                  <button
+                    onClick={handleApply}
+                    disabled={applying}
+                    className="w-full bg-teal-500 text-white py-3 rounded-xl hover:bg-teal-600 transition-colors font-semibold text-xs shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {applying ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Applying...
+                      </>
+                    ) : (
+                      'Apply Now'
+                    )}
+                  </button>
+                  
+                  {formattedDeadline ? (
+                    <p className="text-xs text-gray-600 text-center mt-3 font-medium">
+                      Applications close on <span className="text-gray-900 font-bold">{formattedDeadline}</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400 text-center mt-3 font-medium">
+                      No application deadline
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex-1">
-            <div className="bg-white rounded-r-2xl p-6 border border-gray-100 h-full">
-              <div className="flex items-center justify-between">
+            <div className="flex-1 bg-white p-6">
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg text-gray-900">About the Role</h3>
                 <button
                   onClick={() => router.push('/jobs')}
-                  className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+                  className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
                 >
-                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>

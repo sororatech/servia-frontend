@@ -14,8 +14,14 @@ export interface Job {
   is_active?: boolean;
   salary?: string;
   salary_range?: string;
+  salary_min?: number | string;
+  salary_max?: number | string;
+  salary_currency?: string;
+  salary_period?: string;
   core_skills?: string[];
   openings_remaining?: number;
+  application_deadline?: string | null; 
+  created_at?: string;
 }
 
 export interface ApplicationResponse {
