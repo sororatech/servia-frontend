@@ -143,7 +143,6 @@ export default function VerifyEmailForm() {
     <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
         
-        {/* Left: info panel */}
         <div className="space-y-5 sm:space-y-6">
           <div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
@@ -176,7 +175,6 @@ export default function VerifyEmailForm() {
           </div>
         </div>
 
-        {/* Right: code input card */}
         <div className="space-y-4">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
             <div className="mb-6">
@@ -184,7 +182,6 @@ export default function VerifyEmailForm() {
                 Verification Code
               </h5>
               
-              {/* OTP inputs — key fix: use gap + auto sizing so they never overflow on small screens */}
               <div className="flex gap-2 sm:gap-3 justify-between mb-6 sm:mb-8">
                 {code.map((digit, index) => (
                   <input
