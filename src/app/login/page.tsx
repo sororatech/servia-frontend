@@ -69,7 +69,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
-        {/* Left panel */}
         <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
           <Image
             src="/images/registerimg.png"
@@ -108,7 +107,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right panel */}
         <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-white overflow-y-auto">
           <div className="w-full max-w-md">
             <div className="mb-8 sm:mb-12">
