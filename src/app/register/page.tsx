@@ -239,310 +239,282 @@ export default function RegisterPage() {
   const passwordStrength = formData.password ? getPasswordStrength(formData.password) : null;
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Image with Overlay */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden">
-        <Image
-          src="/images/registerimg.png"
-          alt="ServiaAI registration background"
-          fill
-          className="object-cover"
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          priority
-        />
-        <div 
-          className="absolute inset-0"
-          style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }}
-        />
-      </div>
+    <div className="min-h-screen flex flex-col overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Side - Image with Overlay */}
+        <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
+          <Image
+            src="/images/registerimg.png"
+            alt="ServiaAI registration background"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            priority
+          />
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }}
+          />
+        </div>
 
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold" style={{ color: '#26B9C8' }}>
-              Create your account
-            </h1>
-            <p className="mt-2" style={{ color: '#26B9C8' }}>
-              Start your journey
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Error Alert */}
-            {(error || validationErrors.submit) && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                {error || validationErrors.submit}
-              </div>
-            )}
-
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                onBlur={() => handleBlur('fullName')}
-                placeholder="Enter your full name"
-                maxLength={100}
-                className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${
-                  validationErrors.fullName ? 'border-red-500' : 'border-gray-300'
-                }`}
-                style={{ 
-                  backgroundColor: touchedFields.fullName ? '#ffffff' : '#D9E4EA', 
-                  color: '#1a202c',
-                }}
-              />
-              {validationErrors.fullName && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
-              )}
+        {/* Right Side - Form */}
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-white overflow-y-auto">
+          <div className="w-full max-w-lg">
+            <div className="mb-8 sm:mb-10">
+              <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#26B9C8' }}>
+                Create your account
+              </h1>
+              <p className="mt-2" style={{ color: '#26B9C8' }}>
+                Start your journey
+              </p>
             </div>
 
-            {/* Email Address */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={() => handleBlur('email')}
-                placeholder="name@company.com"
-                maxLength={254}
-                className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${
-                  validationErrors.email ? 'border-red-500' : 'border-gray-300'
-                }`}
-                style={{ 
-                  backgroundColor: touchedFields.email ? '#ffffff' : '#D9E4EA', 
-                  color: '#1a202c',
-                }}
-              />
-              {validationErrors.email && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
-              )}
-            </div>
-
-            {/* Phone Number with Country Code */}
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number <span className="text-gray-400">(Optional)</span>
-              </label>
-              <div className="flex gap-2">
-                <select
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  style={{ minWidth: '120px' }}
-                >
-                  {countryCodes.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.label}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('phone')}
-                  placeholder="912345678"
-                  maxLength={15}
-                  className={`flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${
-                    validationErrors.phone ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  style={{ 
-                    backgroundColor: touchedFields.phone ? '#ffffff' : '#D9E4EA', 
-                    color: '#1a202c',
-                  }}
-                />
-              </div>
-              {validationErrors.phone && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
-              )}
-            </div>
-
-            {/* Password with Toggle */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
-                  placeholder="Min. 8 characters"
-                  maxLength={128}
-                  className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${
-                    validationErrors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  style={{ 
-                    backgroundColor: touchedFields.password ? '#ffffff' : '#D9E4EA', 
-                    color: '#1a202c',
-                  }}
-                />
-                <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              
-              {/* Password Requirements Checklist */}
-              {formData.password && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className={passwordRequirements.length ? 'text-green-600' : 'text-gray-400'}>
-                      {passwordRequirements.length ? '✓' : '○'}
-                    </span>
-                    <span className={passwordRequirements.length ? 'text-gray-700' : 'text-gray-400'}>
-                      At least 8 characters
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className={passwordRequirements.uppercase ? 'text-green-600' : 'text-gray-400'}>
-                      {passwordRequirements.uppercase ? '✓' : '○'}
-                    </span>
-                    <span className={passwordRequirements.uppercase ? 'text-gray-700' : 'text-gray-400'}>
-                      One uppercase letter
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className={passwordRequirements.lowercase ? 'text-green-600' : 'text-gray-400'}>
-                      {passwordRequirements.lowercase ? '✓' : '○'}
-                    </span>
-                    <span className={passwordRequirements.lowercase ? 'text-gray-700' : 'text-gray-400'}>
-                      One lowercase letter
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className={passwordRequirements.number ? 'text-green-600' : 'text-gray-400'}>
-                      {passwordRequirements.number ? '✓' : '○'}
-                    </span>
-                    <span className={passwordRequirements.number ? 'text-gray-700' : 'text-gray-400'}>
-                      One number
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className={passwordRequirements.special ? 'text-green-600' : 'text-gray-400'}>
-                      {passwordRequirements.special ? '✓' : '○'}
-                    </span>
-                    <span className={passwordRequirements.special ? 'text-gray-700' : 'text-gray-400'}>
-                      One special character
-                    </span>
-                  </div>
-                  <div className={`mt-1 text-xs font-medium ${passwordStrength?.color}`}>
-                    Password strength: {passwordStrength?.message}
-                  </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Alert */}
+              {(error || validationErrors.submit) && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {error || validationErrors.submit}
                 </div>
               )}
-              {validationErrors.password && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
-              )}
-            </div>
 
-            {/* Confirm Password with Toggle */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
+              {/* Full Name */}
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
                 <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
+                  type="text"
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleChange}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  placeholder="Re-enter password"
-                  maxLength={128}
-                  className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${
-                    validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                  onBlur={() => handleBlur('fullName')}
+                  placeholder="Enter your full name"
+                  maxLength={100}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
+                    validationErrors.fullName ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  style={{ 
-                    backgroundColor: touchedFields.confirmPassword ? '#ffffff' : '#D9E4EA', 
+                  style={{
+                    backgroundColor: touchedFields.fullName ? '#ffffff' : '#D9E4EA',
                     color: '#1a202c',
                   }}
                 />
-                <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showConfirmPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
+                {validationErrors.fullName && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
+                )}
               </div>
-              {validationErrors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
-              )}
-            </div>
 
-            {/* Terms Checkbox */}
-            <div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5">
+              {/* Email Address */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('email')}
+                  placeholder="name@company.com"
+                  maxLength={254}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
+                    validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  style={{
+                    backgroundColor: touchedFields.email ? '#ffffff' : '#D9E4EA',
+                    color: '#1a202c',
+                  }}
+                />
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+                )}
+              </div>
+
+              {/* Phone Number with Country Code */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span className="text-gray-400">(Optional)</span>
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="px-3 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    style={{ minWidth: '120px' }}
+                  >
+                    {countryCodes.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.label}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('phone')}
+                    placeholder="912345678"
+                    maxLength={15}
+                    className={`flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
+                      validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    style={{
+                      backgroundColor: touchedFields.phone ? '#ffffff' : '#D9E4EA',
+                      color: '#1a202c',
+                    }}
+                  />
+                </div>
+                {validationErrors.phone && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+                )}
+              </div>
+
+              {/* Password with Toggle */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('password')}
+                    placeholder="Min. 8 characters"
+                    maxLength={128}
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
+                      validationErrors.password ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    style={{
+                      backgroundColor: touchedFields.password ? '#ffffff' : '#D9E4EA',
+                      color: '#1a202c',
+                    }}
+                  />
+                  <svg
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
+                    style={{ color: '#26B9C8' }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+
+                {/* Password Requirements Checklist */}
+                {formData.password && (
+                  <div className="mt-2 space-y-1">
+                    {[
+                      { met: passwordRequirements.length, text: 'At least 8 characters' },
+                      { met: passwordRequirements.uppercase, text: 'One uppercase letter' },
+                      { met: passwordRequirements.lowercase, text: 'One lowercase letter' },
+                      { met: passwordRequirements.number, text: 'One number' },
+                      { met: passwordRequirements.special, text: 'One special character' },
+                    ].map((req, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs">
+                        <span className={req.met ? 'text-green-600' : 'text-gray-400'}>{req.met ? '✓' : '○'}</span>
+                        <span className={req.met ? 'text-gray-700' : 'text-gray-400'}>{req.text}</span>
+                      </div>
+                    ))}
+                    <div className={`mt-1 text-xs font-medium ${passwordStrength?.color}`}>
+                      Password strength: {passwordStrength?.message}
+                    </div>
+                  </div>
+                )}
+                {validationErrors.password && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+                )}
+              </div>
+
+              {/* Confirm Password with Toggle */}
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('confirmPassword')}
+                    placeholder="Re-enter password"
+                    maxLength={128}
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
+                      validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    style={{
+                      backgroundColor: touchedFields.confirmPassword ? '#ffffff' : '#D9E4EA',
+                      color: '#1a202c',
+                    }}
+                  />
+                  <svg
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
+                    style={{ color: '#26B9C8' }}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {validationErrors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
+                )}
+              </div>
+
+              {/* Terms Checkbox */}
+              <div>
+                <div className="flex items-start gap-3">
                   <input
                     id="agreeToTerms"
                     name="agreeToTerms"
                     type="checkbox"
                     checked={formData.agreeToTerms}
                     onChange={handleChange}
-                    className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
+                    className="w-4 h-4 mt-0.5 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
                   />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="agreeToTerms" className="text-gray-600">
+                  <label htmlFor="agreeToTerms" className="text-sm text-gray-600">
                     I agree to the{' '}
                     <Link href="/terms" className="text-teal-600 hover:text-teal-500 font-medium" target="_blank">
                       Terms of Service
@@ -554,35 +526,34 @@ export default function RegisterPage() {
                     .
                   </label>
                 </div>
+                {validationErrors.agreeToTerms && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.agreeToTerms}</p>
+                )}
               </div>
-              {validationErrors.agreeToTerms && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.agreeToTerms}</p>
-              )}
-            </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              style={{ backgroundColor: '#26B9C8' }}
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                style={{ backgroundColor: '#26B9C8' }}
+              >
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </form>
 
-          {/* Login Link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium" style={{ color: '#26B9C8' }}>
-              Login here
-            </Link>
-          </p>
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium" style={{ color: '#26B9C8' }}>
+                Login here
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 p-4">
+      <div className="bg-gray-50 border-t border-gray-200 p-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-sm text-gray-600">
             <span className="font-semibold">ServiaAI</span>

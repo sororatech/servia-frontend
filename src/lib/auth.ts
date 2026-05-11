@@ -17,7 +17,6 @@ export const AUTH_STORAGE = {
 
   getToken: () => typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
   
-  // FIXED: Renamed function and key to user_role
   getUserRole: () => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('user_role') as 'candidate' | 'recruiter';
