@@ -202,19 +202,19 @@ export default function RegisterPage() {
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
         </div>
         
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-6 lg:p-10 bg-white overflow-y-auto">
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-white overflow-y-auto">
           <div className="w-full max-w-lg">
-            <div className="mb-10">
-              <h2 className="text-3xl lg:text-4xl font-bold" style={{ color: '#0F2A44' }}>Create your account</h2>
+            <div className="mb-8 sm:mb-10">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: '#0F2A44' }}>Create your account</h2>
               <p className="-mt-3" style={{ color: '#26B9C8' }}>Start your journey</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-7">
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
               {(error || validationErrors.submit) && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error || validationErrors.submit}</div>
               )}
 
-              <div className=" space-y-2">
+              <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Full Name <span className="text-red-500">*</span></label>
                 <input 
                   type="text" 
@@ -224,7 +224,7 @@ export default function RegisterPage() {
                   onBlur={() => handleBlur('fullName')} 
                   placeholder="Enter your full name" 
                   maxLength={100} 
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'}`} 
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'}`} 
                   style={{ backgroundColor: touchedFields.fullName ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
                 />
                 {validationErrors.fullName && <p className="text-sm text-red-600">{validationErrors.fullName}</p>}
@@ -240,38 +240,39 @@ export default function RegisterPage() {
                   onBlur={() => handleBlur('email')} 
                   placeholder="name@company.com" 
                   maxLength={254} 
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`} 
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`} 
                   style={{ backgroundColor: touchedFields.email ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
                 />
                 {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
               </div>
 
+              {/* Phone number — key fix: shrink the country button on xs, let phone input flex-1 */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <div className="flex gap-2">
-                  <div className="relative" ref={countryDropdownRef}>
+                <div className="flex gap-1.5 sm:gap-2">
+                  <div className="relative flex-shrink-0" ref={countryDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="flex items-center gap-2 px-3 py-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 transition min-w-[100px]"
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 transition w-[84px] sm:w-[110px]"
                     >
-                      <span className="text-xl">{selectedCountry.flag}</span>
-                      <span className="text-sm font-medium text-gray-700">{countryCode}</span>
-                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+                      <span className="text-lg sm:text-xl leading-none">{selectedCountry.flag}</span>
+                      <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">{countryCode}</span>
+                      <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-50 mt-1 w-72 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                      <div className="absolute z-50 mt-1 w-64 sm:w-72 max-h-60 sm:max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
                         {countries.map((country) => (
                           <button
                             key={country.code}
                             type="button"
                             onClick={() => handleCountrySelect(country)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition text-left ${countryCode === country.dialCode ? 'bg-teal-50' : ''}`}
+                            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 hover:bg-gray-50 transition text-left ${countryCode === country.dialCode ? 'bg-teal-50' : ''}`}
                           >
-                            <span className="text-xl">{country.flag}</span>
-                            <span className="flex-1 text-sm text-gray-700">{country.name}</span>
-                            <span className="text-sm text-gray-500">{country.dialCode}</span>
+                            <span className="text-lg sm:text-xl">{country.flag}</span>
+                            <span className="flex-1 text-xs sm:text-sm text-gray-700 truncate">{country.name}</span>
+                            <span className="text-xs sm:text-sm text-gray-500 flex-shrink-0">{country.dialCode}</span>
                           </button>
                         ))}
                       </div>
@@ -284,9 +285,9 @@ export default function RegisterPage() {
                     value={formData.phone} 
                     onChange={handleChange} 
                     onBlur={() => handleBlur('phone')} 
-                    placeholder="Enter phone number" 
+                    placeholder="Phone number" 
                     maxLength={15} 
-                    className={`flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.phone ? 'border-red-500' : 'border-gray-300'}`} 
+                    className={`flex-1 min-w-0 px-3 sm:px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.phone ? 'border-red-500' : 'border-gray-300'}`} 
                     style={{ backgroundColor: touchedFields.phone ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
                   />
                 </div>
@@ -309,21 +310,21 @@ export default function RegisterPage() {
                     onBlur={() => handleBlur('password')} 
                     placeholder="Enter password" 
                     maxLength={128} 
-                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`} 
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`} 
                     style={{ backgroundColor: touchedFields.password ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
                   />
-                  <Lock className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" color="#26B9C8" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="#26B9C8" />
                   <button 
                     type="button" 
                     onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3.5 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
                     style={{ color: '#26B9C8' }}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 </div>
@@ -359,21 +360,21 @@ export default function RegisterPage() {
                     onBlur={() => handleBlur('confirmPassword')} 
                     placeholder="Re-enter password" 
                     maxLength={128} 
-                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`} 
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`} 
                     style={{ backgroundColor: touchedFields.confirmPassword ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
                   />
-                  <Lock className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" color="#26B9C8" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="#26B9C8" />
                   <button 
                     type="button" 
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
-                    className="absolute right-3.5 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
                     style={{ color: '#26B9C8' }}
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 </div>
@@ -388,7 +389,7 @@ export default function RegisterPage() {
                     type="checkbox" 
                     checked={formData.agreeToTerms} 
                     onChange={handleChange} 
-                    className="w-4 h-4 mt-0.5 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" 
+                    className="w-4 h-4 mt-0.5 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" 
                   />
                   <label htmlFor="agreeToTerms" className="ml-2 text-sm text-gray-600">
                     I agree to the <Link href="/terms-of-service" className="font-medium" style={{ color: '#26B9C8' }} target="_blank">Terms of Service</Link> and <Link href="/privacy-policy" className="font-medium" style={{ color: '#26B9C8' }} target="_blank">Privacy Policy</Link>.
@@ -415,7 +416,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-        <Footer />
+      <Footer />
       <style jsx>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-10px); }
@@ -424,7 +425,6 @@ export default function RegisterPage() {
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
-        
         .custom-button {
           background-color: #26B9C8 !important;
           height: 48px !important;

@@ -120,14 +120,14 @@ export default function VerifyEmailForm() {
     return (
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Email Verified!</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Email Verified!</h1>
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
               Your email has been successfully verified. Redirecting you to login...
             </p>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -140,27 +140,28 @@ export default function VerifyEmailForm() {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+    <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
         
-        <div className="space-y-6">
+        {/* Left: info panel */}
+        <div className="space-y-5 sm:space-y-6">
           <div>
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
               <span style={{ color: '#0F2A44' }}>Confirm it&apos;s </span>
               <span style={{ color: '#26B9C8' }}>really </span>
               <span style={{ color: '#0F2A44' }}>you.</span>
             </h1>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
               We&#39;ve sent a 6-digit verification code to{' '}
-              <span className="font-semibold text-gray-900">{email || 'your email'}</span>. 
+              <span className="font-semibold text-gray-900 break-all">{email || 'your email'}</span>. 
               To keep your curated workspace secure, please enter it below.
             </p>
           </div>
 
-          <div className="rounded-xl px-5 py-4 border" style={{ backgroundColor: '#F0F4F7', borderColor: '#E0EFFF' }}>
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#DAE2FF' }}>
-                <Mail className="w-5 h-5" style={{ color: '#26B9C8' }} />
+          <div className="rounded-xl px-4 sm:px-5 py-4 border" style={{ backgroundColor: '#F0F4F7', borderColor: '#E0EFFF' }}>
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#DAE2FF' }}>
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#26B9C8' }} />
               </div>
               <div>
                 <h5 className="font-semibold text-sm mb-1" style={{ color: '#0F2A44' }}>Check your inbox</h5>
@@ -175,14 +176,16 @@ export default function VerifyEmailForm() {
           </div>
         </div>
 
-        <div className="space-y-4"> 
-          <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-10">
+        {/* Right: code input card */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
             <div className="mb-6">
-              <h5 className="text-sm font-semibold uppercase tracking-wider mb-6" style={{ color: '#26B9C8' }}>
+              <h5 className="text-sm font-semibold uppercase tracking-wider mb-5 sm:mb-6" style={{ color: '#26B9C8' }}>
                 Verification Code
               </h5>
               
-              <div className="flex gap-3 justify-between mb-8">
+              {/* OTP inputs — key fix: use gap + auto sizing so they never overflow on small screens */}
+              <div className="flex gap-2 sm:gap-3 justify-between mb-6 sm:mb-8">
                 {code.map((digit, index) => (
                   <input
                     key={index}
@@ -195,14 +198,14 @@ export default function VerifyEmailForm() {
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={handlePaste}
-                    className="w-12 h-12 sm:w-14 sm:h-14 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition bg-gray-50"
+                    className="flex-1 min-w-0 aspect-square text-center text-xl sm:text-2xl font-bold border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition bg-gray-50"
                     disabled={loading}
                   />
                 ))}
               </div>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-5 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                   {error}
                 </div>
               )}
@@ -212,8 +215,8 @@ export default function VerifyEmailForm() {
                 onClick={handleVerify}
                 disabled={loading || code.join('').length !== 6}
                 fullWidth
-                className="custom-button mb-8 mt-3"
-                style={{ height: '54px', minHeight: '54px', fontWeight: '700', opacity: '1' }}
+                className="custom-button mb-6 sm:mb-8 mt-3"
+                style={{ height: '48px', minHeight: '48px', fontWeight: '700', opacity: '1' }}
               >
                 {loading ? 'Verifying...' : 'Verify Email'}
               </Button>
@@ -248,6 +251,23 @@ export default function VerifyEmailForm() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .custom-button {
+          background-color: #26B9C8 !important;
+          height: 48px !important;
+          min-height: 48px !important;
+          padding: 0 1.5rem !important;
+          border-radius: 9999px !important;
+        }
+        .custom-button:hover {
+          background-color: #20a8b6 !important;
+          opacity: 0.95 !important;
+        }
+        .custom-button:disabled {
+          opacity: 0.6 !important;
+        }
+      `}</style>
     </div>
   );
 }
