@@ -4,11 +4,16 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { fetchJobs, Job } from '@/utils/jobApi';
+import { api } from '@/lib/api';
+
+type DepartmentGroup = Record<string, { value: string; label: string }[]>;
 
 export default function BrowseJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [departmentGroups, setDepartmentGroups] = useState<DepartmentGroup>({});
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     jobType: [] as string[],
     department: [] as string[],
@@ -17,6 +22,7 @@ export default function BrowseJobs() {
 
   useEffect(() => {
     loadJobs();
+    loadDepartmentCategories();
   }, []);
 
   const loadJobs = async () => {
@@ -29,6 +35,16 @@ export default function BrowseJobs() {
       setJobs([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadDepartmentCategories = async () => {
+    try {
+      const response = await api.get('/jobs/departments/categories/');
+      setDepartmentGroups(response.data);
+    } catch (error) {
+      console.error('Failed to load department categories:', error);
+      setDepartmentGroups({});
     }
   };
 
@@ -54,9 +70,51 @@ export default function BrowseJobs() {
     }));
   };
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
   const clearFilters = () => {
     setFilters({ jobType: [], department: [] });
     setSearchQuery('');
+  };
+
+  const getPostedDateBadge = (dateStr?: string): string => {
+    if (!dateStr) return 'Recently Posted';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    });
+  };
+
+  const getDeadlineText = (deadline?: string | null): { text: string; className: string } | null => {
+    if (!deadline) return null;
+    
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+    const diffTime = deadlineDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return { text: 'Closed', className: 'text-gray-400' };
+    if (diffDays === 0) return { text: '• Closes today', className: 'text-red-500 font-medium' };
+    if (diffDays === 1) return { text: '• 1 day left', className: 'text-orange-500 font-medium' };
+    if (diffDays <= 3) return { text: `• ${diffDays} days left`, className: 'text-orange-500' };
+    if (diffDays <= 7) return { text: `• ${diffDays} days left`, className: 'text-yellow-600' };
+    return { text: `• ${diffDays} days remaining`, className: 'text-green-400' };
   };
 
   const filteredJobs = useMemo(() => {
@@ -74,7 +132,7 @@ export default function BrowseJobs() {
         filters.jobType.length === 0 ||
         filters.jobType.includes(jobTypeNormalized);
 
-      const deptNormalized = job.department.toLowerCase().replace('_', ' ');
+      const deptNormalized = job.department.toLowerCase().replace(/_/g, ' ');
       const matchesDepartment =
         filters.department.length === 0 ||
         filters.department.includes(deptNormalized);
@@ -167,42 +225,98 @@ export default function BrowseJobs() {
                 </div>
               </div>
 
-              <div>
+              <div className="mb-8">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Department</h4>
-                <div className="space-y-3">
-                  {['Front Office', 'Housekeeping', 'Marketing', 'Security'].map(dept => {
-                    const deptValue = dept.toLowerCase();
-                    const isActive = filters.department.includes(deptValue);
+                <div className="space-y-1">
+                  {Object.entries(departmentGroups).map(([category, depts]) => {
+                    const allValues = depts.map(d => d.value);
+                    const selectedCount = allValues.filter(v => filters.department.includes(v)).length;
+                    const isExpanded = expandedCategories.includes(category);
+                    
                     return (
-                      <div
-                        key={dept}
-                        onClick={() => toggleDepartment(deptValue)}
-                        className="flex items-center gap-3 cursor-pointer group"
-                      >
+                      <div key={category}>
                         <div
-                          className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
-                            isActive
-                              ? 'bg-teal-500 border-teal-500'
-                              : 'border-gray-300 group-hover:border-teal-400'
-                          }`}
+                          onClick={() => toggleCategory(category)}
+                          className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded px-2 transition-colors"
                         >
-                          {isActive && (
-                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm font-semibold text-gray-800">
+                              {category}
+                            </span>
+                            {selectedCount > 0 && (
+                              <span className="text-xs text-teal-600 font-medium">
+                                ({selectedCount})
+                              </span>
+                            )}
+                          </div>
+                          <svg
+                            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
                         </div>
-                        <span className={`text-sm ${isActive ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                          {dept}
-                        </span>
+                        
+                        {isExpanded && (
+                          <div className="pl-4 space-y-0.5 pb-2">
+                            {depts.map((dept) => {
+                              const isSelected = filters.department.includes(dept.value);
+                              return (
+                                <div
+                                  key={dept.value}
+                                  onClick={() => toggleDepartment(dept.value)}
+                                  className={`flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded text-sm transition-colors ${
+                                    isSelected 
+                                      ? 'bg-teal-50 text-teal-700 font-medium' 
+                                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                  }`}
+                                >
+                                  <span>{dept.label}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                 </div>
               </div>
 
+              {filters.department.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Selected</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {filters.department.map((deptValue) => {
+                      const deptLabel = Object.values(departmentGroups)
+                        .flat()
+                        .find((d) => d.value === deptValue)?.label || deptValue;
+                      
+                      return (
+                        <span
+                          key={deptValue}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-teal-50 text-teal-700 text-xs rounded-md"
+                        >
+                          {deptLabel}
+                          <button
+                            onClick={() => toggleDepartment(deptValue)}
+                            className="hover:text-teal-900"
+                          >
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {(filters.jobType.length > 0 || filters.department.length > 0 || searchQuery) && (
-                <div className="mt-6 pt-6 border-t border-gray-100">
+                <div className="pt-6 border-t border-gray-100">
                   <button
                     onClick={clearFilters}
                     className="text-sm text-teal-600 hover:text-teal-700 font-medium"
@@ -235,50 +349,78 @@ export default function BrowseJobs() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-6">
-                {filteredJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all cursor-pointer"
-                    onClick={() => router.push(`/jobs/${job.id}`)}
-                  >
-                    <div className="flex items-start justify-between mb-5">
-                      <div className="w-12 h-12 rounded-xl border-2 border-gray-50 bg-gray-200 p-1.5 relative flex items-center justify-center">
-                        <Image
-                          src="/company-logo.png"
-                          alt="Company Logo"
-                          fill
-                          className="object-contain rounded"
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-teal-500 bg-teal-50 px-3 py-1 rounded-full">
-                        NEW POST
-                      </span>
-                    </div>
-                    
-                    <h3 className="font-bold text-gray-900 text-lg mb-2">
-                      {job.title}
-                    </h3>
-                    
-                    <p className="text-sm text-teal-600 font-medium mb-4">
-                      {job.location}
-                    </p>
-                    
-                    <div className="flex gap-2 mb-6">
-                      <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium">
-                        {job.employment_type.replace('_', ' ')}
-                      </span>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium">
-                        {job.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-
-                    <button
-                      className="w-full bg-teal-500 text-white py-3 rounded-xl hover:bg-teal-600 transition-colors font-semibold text-sm"
+                {filteredJobs.map((job) => {
+                  const postedDate = getPostedDateBadge(job.created_at);
+                  const deadlineText = getDeadlineText(job.application_deadline);
+                  
+                  return (
+                    <div
+                      key={job.id}
+                      className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all cursor-pointer"
+                      onClick={() => router.push(`/jobs/${job.id}`)}
                     >
-                      View Details
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 rounded-xl border-2 border-gray-50 bg-gray-200 p-1.5 relative flex items-center justify-center">
+                          <Image
+                            src="/company-logo.png"
+                            alt="Company Logo"
+                            fill
+                            className="object-contain rounded"
+                          />
+                        </div>
+                        
+                        <div className="text-right">
+                          <span className="text-xs font-semibold text-gray-500 bg-gray-50 px-3 py-1 rounded-full block">
+                            {postedDate}
+                          </span>
+                          {deadlineText && (
+                            <span className={`text-[10px] mt-0.5 block ${deadlineText.className}`}>
+                              {deadlineText.text}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">
+                        {job.title}
+                      </h3>
+                      
+                      <p className="text-sm text-teal-600 font-medium mb-4">
+                        {job.location}
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-md font-medium">
+                          {job.employment_type.replace('_', ' ')}
+                        </span>
+                        <span className={`text-xs px-3 py-1.5 rounded-md font-medium ${
+                          job.is_active 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {job.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+
+                      <button
+                        className={`w-full py-3 rounded-xl font-semibold text-sm transition-colors ${
+                          deadlineText?.text === '• Closed'
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'bg-teal-500 text-white hover:bg-teal-600'
+                        }`}
+                        disabled={deadlineText?.text === '• Closed'}
+                      >
+                        {deadlineText?.text === '• Closed' ? 'Application Closed' : 'View Details'}
+                      </button>
+
+                      {typeof job.openings_remaining === 'number' && job.openings_remaining > 0 && (
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                          {job.openings_remaining} {job.openings_remaining === 1 ? 'opening' : 'openings'} remaining
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </main>
