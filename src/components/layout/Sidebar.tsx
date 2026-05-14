@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AUTH_STORAGE } from '@/lib/auth';
+import { authAPI } from '@/lib/api';
 
 const Icons = {
   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
@@ -15,6 +16,7 @@ const Icons = {
   Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
   ChevronLeft: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>,
   ChevronRight: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>,
+  Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
 };
 
 function useProfile() {
@@ -43,8 +45,21 @@ function useProfile() {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { name, role, isAdmin, avatar, isLoading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await authAPI.logout();
+    } catch {
+      // ignore — clear local state regardless
+    }
+    AUTH_STORAGE.clear();
+    router.push('/login');
+  }
 
   const menuItems = [
     { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview },
@@ -93,6 +108,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={`
                 flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
                 ${isActive 
@@ -112,7 +128,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-white/10 flex flex-col gap-3">
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
           <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
             {isLoading ? (
@@ -128,6 +144,18 @@ export function Sidebar() {
             <span className="text-white/60 text-xs truncate">{role}</span>
           </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-full text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
+          title={isCollapsed ? 'Log out' : undefined}
+        >
+          <span className="shrink-0 flex items-center justify-center w-5 h-5"><Icons.Logout /></span>
+          <span className={`whitespace-nowrap text-sm transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+            {loggingOut ? 'Logging out…' : 'Log out'}
+          </span>
+        </button>
       </div>
     </aside>
   );

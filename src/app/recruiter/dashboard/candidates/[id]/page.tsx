@@ -4,7 +4,8 @@ import { ArrowLeft, FileText, Video, Download } from 'lucide-react';
 import { getRecruiterHeaders, fetchJson } from '@/utils/serverFetch';
 import AIScoreBadge from '@/components/recruiter/AIScoreBadge';
 import CandidateStatusSelect from '@/components/recruiter/CandidateStatusSelect';
-import type { BackendCandidateDetail, BackendJobSummary } from '@/types/candidate';
+import type { BackendCandidateDetail } from '@/types/candidate';
+import type { BackendJobSummary } from '@/types/job';
 
 type Props = {
   params: Promise<{ id: string }>;

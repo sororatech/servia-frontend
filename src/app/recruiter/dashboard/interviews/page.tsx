@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import ScheduleInterviewButton from '@/components/recruiter/ScheduleInterviewButton';
 import InterviewTable from '@/components/recruiter/InterviewTable';
 import ShortlistedCandidates from '@/components/recruiter/ShortlistedCandidates';
-import { getRecruiterHeaders } from '@/utils/serverFetch';
+import { getRecruiterHeaders, SessionExpiredError } from '@/utils/serverFetch';
 import { getInterviewsPageData } from '@/hooks/useInterviewsPageData';
 
 export default async function RecruiterInterviewsPage() {
@@ -12,7 +12,15 @@ export default async function RecruiterInterviewsPage() {
     redirect('/login');
   }
 
-  const { stats, interviews, shortlisted } = await getInterviewsPageData(headers);
+  let pageData: Awaited<ReturnType<typeof getInterviewsPageData>>;
+  try {
+    pageData = await getInterviewsPageData(headers);
+  } catch (error) {
+    if (error instanceof SessionExpiredError) redirect('/api/auth/clear-session');
+    throw error;
+  }
+
+  const { stats, interviews, shortlisted } = pageData;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
