@@ -6,6 +6,7 @@ import { useApplicationSuccess } from '@/hooks/useApplicationSuccess';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
+import { Footer } from '@/components/layout/Footer';
 
 export default function ApplicationSuccess() {
   const router = useRouter();
@@ -55,10 +56,10 @@ export default function ApplicationSuccess() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-8 py-12">
+      <div className="flex-1 max-w-7xl mx-auto px-8 py-12 w-full">
         <div className="grid grid-cols-2 gap-12">
           <div className="space-y-8">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#26B9C8] text-xs font-semibold">
@@ -186,6 +187,7 @@ export default function ApplicationSuccess() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

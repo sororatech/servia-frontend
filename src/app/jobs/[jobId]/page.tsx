@@ -6,6 +6,7 @@ import { useJobDetail } from '@/hooks/useJob';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
+import { Footer } from '@/components/layout/Footer';
 
 export default function JobDetail() {
   const params = useParams();
@@ -33,10 +34,10 @@ export default function JobDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto px-8 py-8">
+      <div className="flex-1 max-w-5xl mx-auto px-8 py-8 w-full">
         <div className="flex w-full shadow-xl rounded-2xl overflow-hidden">
           <div className="w-80 flex-shrink-0 bg-gradient-to-br from-blue-50 to-[#26B9C8]/10 p-6 flex flex-col">
             
@@ -143,6 +144,7 @@ export default function JobDetail() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -24,39 +24,30 @@ export const useJobDetail = (jobId: string | undefined) => {
   const [applying, setApplying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  // ✅ Ref to track mounted state (prevents state updates after unmount)
   const isMountedRef = useRef(true);
-  // ✅ Ref to store active timeout ID (ensures cleanup on unmount)
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ✅ FIX: Properly initialize isMountedRef on mount AND cleanup on unmount
   useEffect(() => {
-    isMountedRef.current = true;  // ✅ Set to true when component mounts
+    isMountedRef.current = true;  
     return () => {
-      isMountedRef.current = false;  // Set to false when component unmounts
-      // Clear any pending setTimeout to prevent memory leaks
+      isMountedRef.current = false;  
       if (redirectTimerRef.current) {
         clearTimeout(redirectTimerRef.current);
         redirectTimerRef.current = null;
       }
     };
-  }, []); // Empty deps = runs only on mount/unmount
+  }, []); 
 
-  // ✅ safeRedirect: Stores timeout in ref and checks mounted state before executing
   const safeRedirect = useCallback((url: string, delayMs = 0) => {
-    // Clear any existing pending redirect to avoid stacking timeouts
     if (redirectTimerRef.current) {
       clearTimeout(redirectTimerRef.current);
       redirectTimerRef.current = null;
     }
     
     if (delayMs === 0) {
-      // Immediate redirect - no setTimeout needed
       router.push(url);
     } else {
-      // Store timeout in ref so cleanup effect can clear it on unmount
       redirectTimerRef.current = setTimeout(() => {
-        // Only execute redirect if component is still mounted
         if (isMountedRef.current) {
           router.push(url);
         }
@@ -64,10 +55,8 @@ export const useJobDetail = (jobId: string | undefined) => {
     }
   }, [router]);
 
-  // ✅ Load job when jobId changes
   useEffect(() => {
     if (!jobId) {
-      // No jobId means invalid route - stop loading and show error
       setLoading(false);
       setErrorMessage('Invalid job ID');
       return;
@@ -89,7 +78,6 @@ export const useJobDetail = (jobId: string | undefined) => {
           setErrorMessage('Failed to load job details. Please try again.');
         }
       } finally {
-        // ✅ Always stop loading, even if component unmounts (safe because setLoading is idempotent)
         if (!isCancelled) {
           setLoading(false);
         }
@@ -98,13 +86,11 @@ export const useJobDetail = (jobId: string | undefined) => {
 
     loadJob();
 
-    // Cleanup: prevent state updates if component unmounts during fetch
     return () => {
       isCancelled = true;
     };
-  }, [jobId]); // Re-run when jobId changes
+  }, [jobId]); 
 
-  // ✅ handleApply: Immediate redirect for new applications, safeRedirect for existing
   const handleApply = useCallback(async () => {
     if (!jobId) {
       setErrorMessage('Invalid job ID');
@@ -121,7 +107,6 @@ export const useJobDetail = (jobId: string | undefined) => {
       
       if (!isMountedRef.current) return;
       
-      // ✅ Support both id and application_id fields from backend
       const applicationId = result.id || result.application_id;
       
       if (!applicationId) {
@@ -131,7 +116,6 @@ export const useJobDetail = (jobId: string | undefined) => {
         return;
       }
       
-      // ✅ NEW APPLICATION: Immediate redirect (no setTimeout = no cleanup needed)
       if (!result.exists) {
         // Clear any pending redirects first
         if (redirectTimerRef.current) {
@@ -142,7 +126,6 @@ export const useJobDetail = (jobId: string | undefined) => {
         return;
       }
       
-      // ✅ EXISTING APPLICATION: Use safeRedirect with cleanup guarantee
       setErrorMessage('You have already applied to this job. Redirecting...');
       safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 1500);
       
@@ -151,7 +134,6 @@ export const useJobDetail = (jobId: string | undefined) => {
       
       console.error('Apply error:', error);
       
-      // Auth errors → redirect to login with return URL
       if (error.message === 'UNAUTHORIZED' || error.message === 'FORBIDDEN') {
         setErrorMessage('Please login to continue.');
         const returnTo = encodeURIComponent(`/jobs/${jobId}`);
@@ -159,12 +141,10 @@ export const useJobDetail = (jobId: string | undefined) => {
         return;
       }
       
-      // Validation errors (including "already applied" from backend)
       if (error.message.startsWith('VALIDATION_ERROR:')) {
         const validationMsg = error.message.split(':')[1];
         try {
           const parsed = JSON.parse(validationMsg);
-          // ✅ If backend returns exists: true with id, redirect immediately
           if (parsed.exists && parsed.id) {
             router.push(`/candidate/dashboard/cv?application=${parsed.id}`);
             return;
@@ -177,7 +157,6 @@ export const useJobDetail = (jobId: string | undefined) => {
         return;
       }
       
-      // Generic error
       setErrorMessage('Failed to start application. Please try again.');
       
     } finally {

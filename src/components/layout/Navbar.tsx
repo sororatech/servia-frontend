@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/lib/api';
+import { SearchInput } from '../ui/SearchInput';
 
 const isAuthenticated = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -57,15 +58,16 @@ export function Navbar() {
   }, [isLoggedIn]);
 
   const navLinks = useMemo(() => [
-    { href: '/jobs', label: 'Browse Jobs' },
-    { href: '/candidate/dashboard', label: 'My Applications' },
+    { href: '/', label: 'Browse Jobs' },
+    { href: '/candidate/applications', label: 'My Applications' },
+    { href: '/candidate/profile', label: 'Profile' },
   ], []);
 
   const isActive = (href: string) => {
     if (pathname === href || pathname.startsWith(href + '/')) {
       return true;
     }
-    if (href === '/jobs') {
+    if (href === '/') {
       const extraJobPaths = [
         '/candidate/dashboard/cv',
         '/candidate/application-success',
@@ -147,11 +149,7 @@ export function Navbar() {
 
             <div className="hidden lg:flex items-center justify-end gap-4">
               <div className="w-full max-w-[240px]">
-                <input 
-                  type="text" 
-                  placeholder="Search roles..." 
-                  className="w-full px-4 py-2 rounded-full bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-[#26B9C8]"
-                />
+                <SearchInput placeholder="Search roles..." />
               </div>
 
               <div className="flex items-center gap-3">
@@ -166,7 +164,9 @@ export function Navbar() {
                     <div className="w-8 h-8 rounded-full bg-[#26B9C8] text-gray-900 flex items-center justify-center font-bold text-sm">
                       {getInitial()}
                     </div>
-                 
+                    <span className="text-sm font-semibold text-gray-700 hidden xl:block">
+                      {userName}
+                    </span>
                   </button>
                 ) : (
                   <Link 
