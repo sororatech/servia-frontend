@@ -4,6 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useCVUpload } from '@/hooks/useCVUpload';
 import { MAX_CV_SIZE_MB } from '@/utils/cvUpload';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { Navbar } from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/Button';
 
 export default function CVUploadPage() {
   const router = useRouter();
@@ -23,6 +26,7 @@ export default function CVUploadPage() {
     handleDrop,
     handleSubmit,
     clearError,
+    removeFile,
     
     formatFileSize,
     isFileTooLarge,
@@ -32,49 +36,7 @@ export default function CVUploadPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 relative">
-                <Image
-                  src="/servia-logo.png"
-                  alt="Servia Logo"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 36px"
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </div>
-            
-            <nav className="flex gap-8">
-              <button 
-                onClick={() => router.push('/jobs')}
-                className="text-teal-600 font-semibold text-sm border-b-2 border-teal-600 pb-0.5"
-              >
-                Browse Jobs
-              </button>
-              <button 
-                onClick={() => router.push('/candidate/dashboard')}
-                className="text-gray-400 hover:text-gray-600 font-medium text-sm"
-              >
-                My Applications
-              </button>
-            </nav>
-
-            <button 
-              onClick={() => router.push('/candidate/profile')}
-              className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
-              title="Profile"
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center gap-3">
@@ -85,15 +47,17 @@ export default function CVUploadPage() {
             <span className="text-gray-900 text-sm font-medium">Personal Details</span>
           </div>
           <div className="w-12 h-px bg-gray-200"></div>
-          <button 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => router.push('/candidate/dashboard/video')}
-            className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+            className="!p-0 !h-auto flex items-center gap-2 hover:opacity-70 transition-opacity"
           >
             <div className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center">
               <span className="text-gray-400 text-xs font-medium">2</span>
             </div>
             <span className="text-gray-400 text-sm font-medium hover:text-gray-600 transition-colors">Video Intro</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -105,7 +69,7 @@ export default function CVUploadPage() {
                 <span className="text-gray-900">Start your</span>
                 <br />
                 <span>
-                  <span className="text-teal-500">curated </span>
+                  <span className="text-[#26B9C8]">curated </span>
                   <span className="text-gray-900">journey.</span>
                 </span>
               </h1>
@@ -120,7 +84,7 @@ export default function CVUploadPage() {
 
             <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 w-110">
               <div className="flex flex-col items-start text-left">
-                <svg className="w-7 h-7 text-teal-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-7 h-7 text-[#26B9C8] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 <h3 className="text-base font-semibold text-gray-900 mb-1.5">Privacy First</h3>
@@ -142,16 +106,19 @@ export default function CVUploadPage() {
                     <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
-                    <p className="text-sm text-red-700">{errorMessage}</p>
-                    <button
+                    <p className="text-sm text-red-700 flex-1">{errorMessage}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       type="button"
                       onClick={clearError}
-                      className="ml-auto text-red-400 hover:text-red-600"
+                      className="!p-1 !h-auto text-red-400 hover:text-red-600"
+                      aria-label="Clear error"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -163,7 +130,7 @@ export default function CVUploadPage() {
                       name="full_name"
                       required
                       disabled={uploading}
-                      className="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-gray-50 disabled:opacity-50"
+                      className="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#26B9C8] text-sm bg-gray-50 disabled:opacity-50"
                       placeholder="Alex Rivera"
                     />
                   </div>
@@ -174,7 +141,7 @@ export default function CVUploadPage() {
                       name="work_email"
                       required
                       disabled={uploading}
-                      className="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-gray-50 disabled:opacity-50"
+                      className="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#26B9C8] text-sm bg-gray-50 disabled:opacity-50"
                       placeholder="alex@company.com"
                     />
                   </div>
@@ -188,7 +155,7 @@ export default function CVUploadPage() {
                       name="current_location"
                       required
                       disabled={uploading}
-                      className="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-gray-50 pl-12 disabled:opacity-50"
+                      className="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#26B9C8] text-sm bg-gray-50 pl-12 disabled:opacity-50"
                       placeholder="e.g. London, United Kingdom"
                     />
                     <svg className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +172,7 @@ export default function CVUploadPage() {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors ${
-                      isDragging ? 'border-teal-500 bg-teal-50' : 'border-gray-300 hover:border-teal-400 bg-gray-50'
+                      isDragging ? 'border-[#26B9C8] bg-[#26B9C8]/10' : 'border-gray-300 hover:border-[#26B9C8] bg-gray-50'
                     } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
@@ -215,30 +182,50 @@ export default function CVUploadPage() {
                     </div>
                     
                     {cvFile ? (
-                      <div>
+                      <div className="relative">
                         <p className="text-sm font-semibold text-gray-900 mb-1">{cvFile.name}</p>
                         <p className={`text-xs ${isFileTooLarge(cvFile) ? 'text-red-500' : 'text-gray-500'}`}>
                           {formatFileSize(cvFile.size)} MB
                           {isFileTooLarge(cvFile) && ` • Too large (max ${MAX_CV_SIZE_MB}MB)`}
                         </p>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          type="button"
+                          onClick={removeFile}
+                          disabled={uploading}
+                          className="!p-0 !h-auto mt-3 text-xs font-medium text-[#26B9C8] hover:opacity-80 transition-opacity disabled:opacity-50"
+                        >
+                          ✕ Remove file
+                        </Button>
                       </div>
                     ) : (
                       <div>
                         <p className="text-sm font-medium text-gray-700 mb-2">Drag and drop your CV</p>
                         <p className="text-xs text-gray-500 mb-4">PDF, DOCX up to {MAX_CV_SIZE_MB}MB</p>
-                        <label className="inline-block">
+                        
+                        <div>
                           <input
                             type="file"
+                            id="cv-file-input"
                             accept=".pdf,.doc,.docx"
                             onChange={handleFileChange}
                             disabled={uploading}
                             className="hidden"
                             required
                           />
-                          <span className="px-5 py-2.5 bg-teal-500 text-white text-xs font-semibold rounded-lg cursor-pointer hover:bg-teal-600 transition-colors disabled:opacity-50">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            type="button"
+                            onClick={() => document.getElementById('cv-file-input')?.click()}
+                            className="!rounded-lg cursor-pointer disabled:opacity-50"
+                            disabled={uploading}
+                          >
                             Choose File
-                          </span>
-                        </label>
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -246,28 +233,32 @@ export default function CVUploadPage() {
 
                 {uploading && (
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-teal-500 h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                    <div className="bg-[#26B9C8] h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                   </div>
                 )}
 
                 <div className="flex justify-between items-center pt-4">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     type="button"
                     onClick={() => router.back()}
                     disabled={uploading}
-                    className="text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors disabled:opacity-50"
+                    className="font-semibold text-[#26B9C8] hover:text-[#20a8b6] transition-colors disabled:opacity-50"
                   >
                     Save Draft
-                  </button>
-                  <button
+                  </Button>
+                  
+                  <Button
+                    variant="primary"
+                    size="md"
                     type="submit"
                     disabled={uploading || !cvFile}
-                    className="px-10 py-3.5 bg-teal-500 text-white text-sm font-semibold rounded-full hover:bg-teal-600 transition-colors shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    isLoading={uploading}
+                    className="!rounded-full px-10 py-3.5 shadow-lg shadow-[#26B9C8]/30 disabled:cursor-not-allowed"
                   >
-                    {uploading ? (
-                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Uploading...</>
-                    ) : 'Submit'}
-                  </button>
+                    {uploading ? 'Uploading...' : 'Submit'}
+                  </Button>
                 </div>
               </form>
             </div>

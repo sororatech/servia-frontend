@@ -21,8 +21,25 @@ export function Navbar() {
     { href: '/candidate/applications', label: 'My Applications' },
   ], []);
 
-  const isActive = (href: string) => 
-    pathname === href || pathname.startsWith(href + '/');
+
+const isActive = (href: string) => {
+  if (pathname === href || pathname.startsWith(href + '/')) {
+    return true;
+  }
+
+  if (href === '/jobs') {
+    const extraJobPaths = [
+      '/candidate/dashboard/cv',
+      '/candidate/application-success',
+    ];
+
+    if (extraJobPaths.some(path => pathname.startsWith(path))) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
   return (
     <>

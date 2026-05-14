@@ -3,11 +3,15 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useApplicationSuccess } from '@/hooks/useApplicationSuccess';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { Navbar } from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/Button';
 
 export default function ApplicationSuccess() {
   const router = useRouter();
   
   const {
+    applicationData,
     loading,
     error,
     
@@ -22,20 +26,14 @@ export default function ApplicationSuccess() {
     getDisplayRecruiter,
   } = useApplicationSuccess();
 
-  const status = 'Applied'; 
+  const status = applicationData?.status?.toLowerCase() || 'applied';
+  
   const displayJobTitle = getDisplayJobTitle();
   const displayCompany = getDisplayCompany();
   const displayRecruiter = getDisplayRecruiter();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-500 text-sm">Loading application details...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton variant="page" />;
   }
 
   if (error) {
@@ -43,12 +41,14 @@ export default function ApplicationSuccess() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4 text-sm">{error}</p>
-          <button
+          <Button 
+            variant="ghost" 
+            size="sm" 
             onClick={() => window.location.reload()}
-            className="text-teal-600 hover:text-teal-700 font-medium text-xs"
+            className="font-medium text-red-600 hover:text-red-700"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -56,54 +56,12 @@ export default function ApplicationSuccess() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 relative">
-                <Image
-                  src="/servia-logo.png"
-                  alt="Servia Logo"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 36px"
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </div>
-            
-            <nav className="flex gap-8">
-              <button 
-                onClick={() => router.push('/jobs')}
-                className="text-teal-600 font-semibold text-sm border-b-2 border-teal-600 pb-0.5"
-              >
-                Browse Jobs
-              </button>
-              <button 
-                onClick={() => router.push('/candidate/dashboard')}
-                className="text-gray-400 hover:text-gray-600 font-medium text-sm"
-              >
-                My Applications
-              </button>
-            </nav>
-
-            <button 
-              onClick={() => router.push('/candidate/profile')}
-              className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
-              title="Profile"
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="grid grid-cols-2 gap-12">
           <div className="space-y-8">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-teal-600 text-xs font-semibold">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#26B9C8] text-xs font-semibold">
               SUBMISSION SUCCESSFUL
             </div>
 
@@ -115,15 +73,15 @@ export default function ApplicationSuccess() {
               Your professional profile has been successfully delivered to the hiring team. You've taken the first step toward your next career move.
             </p>
 
-            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
-              <h2 className="text-sm font-semibold text-black mb-6">
+            <div className="bg-gray-50 text-gray-400 rounded-2xl p-8 border border-gray-100">
+              <h4 className="text-sm font-semibold text-black mb-6">
                 What happens next?
-              </h2>
+              </h4>
               
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-teal-400 text-xs font-bold">01</span>
+                    <span className="text-[#26B9C8] text-xs font-bold">01</span>
                   </div>
                   <div>
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -134,7 +92,7 @@ export default function ApplicationSuccess() {
 
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-teal-400 text-xs font-bold">02</span>
+                    <span className="text-[#26B9C8] text-xs font-bold">02</span>
                   </div>
                   <div>
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -145,7 +103,7 @@ export default function ApplicationSuccess() {
 
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-teal-400 text-xs font-bold">03</span>
+                    <span className="text-[#26B9C8] text-xs font-bold">03</span>
                   </div>
                   <div>
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -157,18 +115,23 @@ export default function ApplicationSuccess() {
             </div>
 
             <div className="flex gap-4">
-              <button
+              <Button
+                variant="primary"
+                size="md"
                 onClick={handleViewDashboard}
-                className="px-8 py-3 bg-teal-500 text-white font-semibold rounded-full hover:bg-teal-600 transition-colors shadow-lg shadow-teal-500/30"
+                className="!rounded-full px-8 py-3 shadow-lg shadow-[#26B9C8]/30"
               >
                 View Dashboard
-              </button>
-              <button
+              </Button>
+              
+              <Button
+                variant="secondary"
+                size="md"
                 onClick={handleReturnToJobs}
-                className="px-8 py-3 border-2 border-teal-500 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors"
+                className="!rounded-full px-8 py-3 border-2"
               >
                 Return to Job Listings
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -188,13 +151,13 @@ export default function ApplicationSuccess() {
               <h3 className="text-xl font-bold text-gray-900 mb-1">
                 {displayJobTitle}
               </h3>
-              <p className="text-teal-600 text-sm font-medium mb-4">
+              <p className="text-[#26B9C8] text-sm font-medium mb-4">
                 {displayCompany}
               </p>
 
               <div className="mb-4">
                 <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div className={`h-full ${getProgressWidth(status)} bg-teal-500 rounded-full transition-all duration-500`}></div>
+                  <div className={`h-full ${getProgressWidth(status)} bg-[#26B9C8] rounded-full transition-all duration-500`}></div>
                 </div>
                 <div className="flex justify-between mt-2">
                   <span className={`text-xs font-semibold ${getStatusColor('applied')}`}>APPLIED</span>
@@ -213,7 +176,7 @@ export default function ApplicationSuccess() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">{displayRecruiter.name}</p>
-                  <p className="text-xs text-teal-600">{displayRecruiter.title}</p>
+                  <p className="text-xs text-[#26B9C8]">{displayRecruiter.title}</p>
                 </div>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed italic">
