@@ -1,18 +1,35 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { useBrowseJobs } from '@/hooks/useJob';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Button } from '@/components/ui/Button';
 
+const isAuthenticated = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return !!localStorage.getItem('auth_token');
+};
+
 export default function BrowseJobs() {
+  const router = useRouter();
   const {
     jobs, loading, searchQuery, setSearchQuery, departmentGroups,
     expandedCategories, filters, toggleJobType, toggleDepartment,
     toggleCategory, clearFilters, getPostedDate, getDeadlineText,
     goToJob, goToDashboard, goToProfile
   } = useBrowseJobs();
+
+  const handleViewJobDetails = (jobId: string) => {
+    if (!isAuthenticated()) {
+      const redirectUrl = encodeURIComponent(`/jobs/${jobId}`);
+      router.push(`/login?redirect=${redirectUrl}`);
+      return;
+    }
+    
+    router.push(`/jobs/${jobId}`);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -22,29 +39,29 @@ export default function BrowseJobs() {
         <aside className="w-56 flex-shrink-0">
           <div className="sticky top-8">
             <h3 className="font-bold text-gray-900 mb-6 text-base">Filters</h3>
-           <div className="mb-8">
-  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Job Type</h4>
-  <div className="flex flex-wrap gap-2">
-    {['Full-time', 'Part-time', 'Contract'].map(type => {
-      const isActive = filters.jobType.includes(type.toLowerCase());
-      return (
-        <Button
-          key={type}
-          variant={isActive ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => toggleJobType(type.toLowerCase())}
-          className={`!rounded-md transition-all duration-200 ${
-            isActive 
-              ? '' 
-              : '!text-gray-500 !border-2 !border-[#26B9C8] hover:!outline-2 hover:!outline-[#26B9C8] hover:!outline-offset-2'
-          }`}
-        >
-          {type}
-        </Button>
-      );
-    })}
-  </div>
-</div>
+            <div className="mb-8">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Job Type</h4>
+              <div className="flex flex-wrap gap-2">
+                {['Full-time', 'Part-time', 'Contract'].map(type => {
+                  const isActive = filters.jobType.includes(type.toLowerCase());
+                  return (
+                    <Button
+                      key={type}
+                      variant={isActive ? 'primary' : 'ghost'}
+                      size="sm"
+                      onClick={() => toggleJobType(type.toLowerCase())}
+                      className={`!rounded-md transition-all duration-200 ${
+                        isActive 
+                          ? '' 
+                          : '!text-gray-500 !border-2 !border-[#26B9C8] hover:!outline-2 hover:!outline-[#26B9C8] hover:!outline-offset-2'
+                      }`}
+                    >
+                      {type}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
 
             <div className="mb-8">
               <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Department</h4>
@@ -157,7 +174,7 @@ export default function BrowseJobs() {
                 const isClosed = deadlineText?.text === 'Closed';
                 
                 return (
-                  <div key={job.id} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all cursor-pointer" onClick={() => goToJob(job.id)}>
+                  <div key={job.id} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all cursor-pointer" onClick={() => handleViewJobDetails(job.id)}>
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 rounded-xl border-2 border-gray-50 bg-gray-200 p-1.5 relative flex items-center justify-center">
                         <Image src="/company-logo.png" alt="Company Logo" fill className="object-contain rounded" />
@@ -182,7 +199,7 @@ export default function BrowseJobs() {
                       className="!rounded-xl"
                       onClick={(e) => {
                         e.stopPropagation();
-                        goToJob(job.id);
+                        handleViewJobDetails(job.id);
                       }}
                     >
                       {isClosed ? 'Application Closed' : 'View Details'}
