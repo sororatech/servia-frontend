@@ -58,7 +58,7 @@ export function Navbar() {
 
   const navLinks = useMemo(() => [
     { href: '/jobs', label: 'Browse Jobs' },
-    { href: '/candidate/applications', label: 'My Applications' },
+    { href: '/candidate/dashboard', label: 'My Applications' },
   ], []);
 
   const isActive = (href: string) => {

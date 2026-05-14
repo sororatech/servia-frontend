@@ -25,10 +25,12 @@ export const useAuth = (): UseAuthReturn => {
       const response = await authAPI.login({ email, password });
       
       AUTH_STORAGE.saveAuth(
-        response.token, 
-        response.user_type, 
-        response.user_id.toString(), 
-        rememberMe
+        response.token,
+        response.user_type,
+        response.user_id.toString(),
+        rememberMe,
+        response.first_name,
+        response.last_name,
       );
       
       const redirectPath = getDashboardUrl(response.user_type);

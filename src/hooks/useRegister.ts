@@ -1,3 +1,4 @@
+// src/hooks/useRegister.ts
 'use client';
 
 import { useState } from 'react';
@@ -19,7 +20,14 @@ export const useRegister = (): UseRegisterReturn => {
     setError(null);
 
     try {
-      await authAPI.register(data);
+      const response = await authAPI.register(data);
+
+      AUTH_STORAGE.saveAuth(
+        response.token,
+        response.user_type,
+        response.user_id.toString(),
+        false,
+      );
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 
                            JSON.stringify(err.response?.data) || 
