@@ -39,5 +39,5 @@ export const AUTH_STORAGE = {
 };
 
 export function getDashboardUrl(userType: 'candidate' | 'recruiter'): string {
-  return userType === 'candidate' ? '/candidate/dashboard' : '/recruiter/dashboard';
+  return userType === 'candidate' ? '/jobs' : '/recruiter/dashboard';
 }
