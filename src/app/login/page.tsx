@@ -6,8 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui';
-import { Footer } from '@/components/ui';
+import { Button, Footer } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -71,13 +70,13 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
         <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
-          <Image 
-            src="/images/registerimg.png" 
-            alt="ServiaAI background" 
-            fill 
+          <Image
+            src="/images/registerimg.png"
+            alt="ServiaAI background"
+            fill
             className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 45vw" 
-            priority 
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            priority
           />
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
           
@@ -165,8 +164,8 @@ export default function LoginPage() {
                 <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">Remember me</label>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 variant="primary"
                 size="lg"

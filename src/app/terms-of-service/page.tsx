@@ -14,9 +14,8 @@ export default function TermsOfService() {
             <Image 
               src="/logo.png" 
               alt="ServiaAI" 
-              width={140} 
-              height={45} 
-              className="h-10 w-auto" 
+              width={125} 
+              height={40} 
               priority 
             />
           </Link>
