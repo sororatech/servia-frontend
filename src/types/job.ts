@@ -18,6 +18,7 @@ export type BackendJob = {
   id: string;
   title: string;
   description: string;
+  responsibilities?: string;
   requirements: string;
   department: string;
   shift_type: string;

@@ -1,32 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useMemo, useState } from "react";
-import type { JobListItem } from "@/types/candidate";
+import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
+import { deleteJob } from "@/utils/deleteJob";
+import type { JobListItem } from "@/types/job";
+
+const PAGE_SIZE = 20;
 
 function formatDate(timestamp: string) {
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) return "Unknown";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
-type JobsGridProps = {
-  initialJobs: JobListItem[];
-  error?: string | null;
-};
+type Props = { initialJobs: JobListItem[]; error?: string | null };
 
-export default function JobsGrid({ initialJobs, error = null }: JobsGridProps) {
+export default function JobsGrid({ initialJobs, error = null }: Props) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [employmentTypeFilter, setEmploymentTypeFilter] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "most_applications" | "title_az">("newest");
+  const [page, setPage] = useState(1);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
   const deferredSearch = useDeferredValue(search);
+
+  const departments = useMemo(
+    () => Array.from(new Set(initialJobs.map((j) => j.department).filter(Boolean))).sort(),
+    [initialJobs],
+  );
+  const employmentTypes = useMemo(
+    () => Array.from(new Set(initialJobs.map((j) => j.employmentType).filter(Boolean))).sort(),
+    [initialJobs],
+  );
 
   const filtered = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
-    return initialJobs.filter((job) => {
+    let result = initialJobs.filter((job) => {
+      if (deletedIds.has(job.id)) return false;
       const matchesSearch =
         !q ||
         job.title.toLowerCase().includes(q) ||
@@ -35,24 +50,74 @@ export default function JobsGrid({ initialJobs, error = null }: JobsGridProps) {
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" ? job.isActive : !job.isActive);
-      return matchesSearch && matchesStatus;
+      const matchesDept = !departmentFilter || job.department === departmentFilter;
+      const matchesEmp = !employmentTypeFilter || job.employmentType === employmentTypeFilter;
+      return matchesSearch && matchesStatus && matchesDept && matchesEmp;
     });
-  }, [initialJobs, deferredSearch, statusFilter]);
+
+    switch (sortBy) {
+      case "oldest":
+        result = [...result].sort((a, b) => a.postedAt.localeCompare(b.postedAt));
+        break;
+      case "most_applications":
+        result = [...result].sort((a, b) => b.candidateCount - a.candidateCount);
+        break;
+      case "title_az":
+        result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      default:
+        result = [...result].sort((a, b) => b.postedAt.localeCompare(a.postedAt));
+    }
+
+    return result;
+  }, [initialJobs, deferredSearch, statusFilter, departmentFilter, employmentTypeFilter, sortBy, deletedIds]);
+
+  const hasFilters =
+    !!search || statusFilter !== "all" || !!departmentFilter || !!employmentTypeFilter;
+  const paginated = filtered.slice(0, page * PAGE_SIZE);
+  const hasMore = filtered.length > paginated.length;
+
+  useEffect(() => { setPage(1); }, [deferredSearch, statusFilter, departmentFilter, employmentTypeFilter, sortBy]);
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("all");
+    setDepartmentFilter("");
+    setEmploymentTypeFilter("");
+    setPage(1);
+  }
+
+  function handleDelete(jobId: string) {
+    setDeleteError(null);
+    startTransition(async () => {
+      const result = await deleteJob(jobId);
+      if (result.ok) {
+        setDeletedIds((prev) => new Set([...prev, jobId]));
+        setConfirmDeleteId(null);
+      } else {
+        setDeleteError(result.error ?? "Failed to delete job.");
+        setConfirmDeleteId(null);
+      }
+    });
+  }
+
+  const selectClass =
+    "rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-[1400px]">
-       
+
+        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#171717] sm:text-5xl">
-              Open Requisitions
+              My Job Postings
             </h1>
             <p className="mt-3 max-w-2xl text-lg text-[#635b55]">
-              Manage active job postings and tracking.
+              Manage active job postings and track applications.
             </p>
           </div>
-
           <Link
             href="/recruiter/dashboard/jobs/create"
             className="inline-flex items-center gap-2 rounded-full border border-[#cfecef] bg-white px-5 py-3 text-sm font-semibold text-[#0c6c75] transition hover:border-[#26b9c8] hover:bg-[#f0fdff]"
@@ -61,99 +126,197 @@ export default function JobsGrid({ initialJobs, error = null }: JobsGridProps) {
           </Link>
         </div>
 
-        
-        <div className="mb-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
-          <label className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-[#5c5550]">Search</span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title, department, or location"
-              className="rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]"
-            />
-          </label>
-
-          <label className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-[#5c5550]">Status</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-              className="rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]"
-            >
-              <option value="all">All statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </label>
+        {/* Filters */}
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_160px_180px_200px_160px]">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by title, department, or location"
+            className={selectClass}
+          />
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} className={selectClass}>
+            <option value="all">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className={selectClass}>
+            <option value="">All departments</option>
+            {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select value={employmentTypeFilter} onChange={(e) => setEmploymentTypeFilter(e.target.value)} className={selectClass}>
+            <option value="">All types</option>
+            {employmentTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className={selectClass}>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="most_applications">Most Applications</option>
+            <option value="title_az">Title A–Z</option>
+          </select>
         </div>
 
-       
+        {hasFilters && (
+          <div className="mb-4">
+            <button
+              onClick={clearFilters}
+              className="text-sm font-semibold text-[#0c6c75] underline-offset-2 hover:underline"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
+
+        {/* API error */}
         {error && (
           <div className="mb-6 rounded-2xl border border-[#efc7bf] bg-[#fff0ec] px-5 py-4 text-sm font-medium text-[#b13d2f]">
             {error}
           </div>
         )}
 
-       
-        {!error && filtered.length === 0 ? (
-          <div className="rounded-[2rem] border border-black/10 bg-white/85 px-6 py-20 text-center text-sm text-[#766f69] shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-            No jobs match the current filters.
-          </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((job) => (
-              <article
-                key={job.id}
-                className="flex flex-col rounded-[2rem] border border-black/10 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm"
-              >
-               
-                <h2 className="text-xl font-bold text-[#171717]">{job.title}</h2>
-                <p className="mt-1 text-sm text-[#635b55]">{job.department}</p>
-                <p className="mt-0.5 text-sm text-[#635b55]">{job.location}</p>
-
-             
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
-                    {job.employmentType}
-                  </span>
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                      job.isActive
-                        ? "border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]"
-                        : "border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]"
-                    }`}
-                  >
-                    {job.isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
-
-              
-                <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
-                  <div>
-                    <p className="text-xs text-[#9a9088]">Candidates</p>
-                    <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#9a9088]">Shortlisted</p>
-                    <p className="mt-1 text-2xl font-bold text-[#171717]">{job.shortlistedCount}</p>
-                  </div>
-                </div>
-
-               
-                <div className="mt-5 flex items-center justify-between">
-                  <p className="text-xs text-[#9a9088]">Posted {formatDate(job.postedAt)}</p>
-                  <Link
-                    href={`/recruiter/dashboard/jobs/${job.id}`}
-                    className="text-sm font-semibold text-[#0c6c75] transition hover:underline"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </article>
-            ))}
+        {/* Delete error */}
+        {deleteError && (
+          <div className="mb-6 rounded-2xl border border-[#efc7bf] bg-[#fff0ec] px-5 py-4 text-sm font-medium text-[#b13d2f] flex items-center justify-between">
+            {deleteError}
+            <button onClick={() => setDeleteError(null)} className="ml-4 text-[#b13d2f]/60 hover:text-[#b13d2f]">✕</button>
           </div>
         )}
+
+        {/* Empty states */}
+        {!error && filtered.length === 0 ? (
+          hasFilters ? (
+            <div className="rounded-[2rem] border border-black/10 bg-white/85 px-6 py-20 text-center shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+              <p className="text-base font-semibold text-[#3a3330]">No jobs match your filters</p>
+              <p className="mt-1 text-sm text-[#9a9088]">Try adjusting or clearing your filters</p>
+              <button
+                onClick={clearFilters}
+                className="mt-5 rounded-full border border-[#cfecef] bg-white px-5 py-2.5 text-sm font-semibold text-[#0c6c75] hover:bg-[#f0fdff]"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-[2rem] border border-black/10 bg-white/85 px-6 py-24 text-center shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#e8f8fa]">
+                <svg className="h-10 w-10 text-[#26b9c8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-lg font-semibold text-[#3a3330]">No job postings yet</p>
+              <p className="mt-1 text-sm text-[#9a9088]">Create your first job posting to start receiving applications</p>
+              <Link
+                href="/recruiter/dashboard/jobs/create"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#26b9c8] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1fa8b6]"
+              >
+                + Create your first job
+              </Link>
+            </div>
+          )
+        ) : (
+          <>
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {paginated.map((job) => (
+                <article
+                  key={job.id}
+                  className="flex flex-col rounded-[2rem] border border-black/10 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm"
+                >
+                  <h2 className="text-xl font-bold text-[#171717]">{job.title}</h2>
+                  <p className="mt-1 text-sm text-[#635b55]">{job.department}</p>
+                  <p className="mt-0.5 text-sm text-[#635b55]">{job.location}</p>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
+                      {job.employmentType}
+                    </span>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                        job.isActive
+                          ? "border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]"
+                          : "border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]"
+                      }`}
+                    >
+                      {job.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
+                    <div>
+                      <p className="text-xs text-[#9a9088]">Candidates</p>
+                      <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#9a9088]">Shortlisted</p>
+                      <p className="mt-1 text-2xl font-bold text-[#171717]">{job.shortlistedCount}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-between">
+                    <p className="text-xs text-[#9a9088]">Posted {formatDate(job.postedAt)}</p>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/recruiter/dashboard/jobs/${job.id}/edit`}
+                        className="text-sm font-semibold text-[#635b55] transition hover:text-[#0c6c75]"
+                      >
+                        Edit
+                      </Link>
+                      <Link
+                        href={`/recruiter/dashboard/jobs/${job.id}`}
+                        className="text-sm font-semibold text-[#0c6c75] transition hover:underline"
+                      >
+                        View
+                      </Link>
+                      <button
+                        onClick={() => setConfirmDeleteId(job.id)}
+                        className="text-sm font-semibold text-[#b13d2f]/60 transition hover:text-[#b13d2f]"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="mt-10 flex justify-center">
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  className="rounded-full border border-[#ddd5cf] bg-white px-8 py-3 text-sm font-semibold text-[#3a3330] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+                >
+                  Load More ({filtered.length - paginated.length} remaining)
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
+            <h3 className="text-lg font-bold text-[#171717]">Delete this job?</h3>
+            <p className="mt-2 text-sm text-[#635b55]">
+              This action cannot be undone. Existing applications linked to this job may also be affected.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={isPending}
+                className="flex-1 rounded-full border border-[#ddd5cf] bg-white px-4 py-2.5 text-sm font-semibold text-[#635b55] transition hover:border-[#26b9c8]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDeleteId)}
+                disabled={isPending}
+                className="flex-1 rounded-full bg-[#b13d2f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#9a3326] disabled:opacity-60"
+              >
+                {isPending ? "Deleting…" : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

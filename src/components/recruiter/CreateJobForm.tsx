@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createJob } from '@/utils/createJob';
-import type { JobFormChoices } from '@/types/job';
+import { updateJob } from '@/utils/updateJob';
+import type { JobFormChoices, BackendJob } from '@/types/job';
 
 const EXPERIENCE_LEVELS = [
   { value: 'entry', label: 'Entry Level (0–1 yrs)' },
@@ -26,17 +27,32 @@ function validate(fields: {
   shift_type: string;
   description: string;
   requirements: string;
+  core_skills: string[];
 }): FieldErrors {
   const errors: FieldErrors = {};
   if (!fields.title.trim()) errors.title = 'Job title is required.';
+  else if (fields.title.length > 200) errors.title = 'Title must be 200 characters or fewer.';
   if (!fields.department) errors.department = 'Department is required.';
   if (!fields.category) errors.category = 'Category is required.';
   if (!fields.location.trim()) errors.location = 'Location is required.';
   if (!fields.employment_type) errors.employment_type = 'Employment type is required.';
   if (!fields.shift_type) errors.shift_type = 'Shift type is required.';
   if (!fields.description.trim()) errors.description = 'Job description is required.';
+  else if (fields.description.trim().length < 50) errors.description = 'Description must be at least 50 characters.';
   if (!fields.requirements.trim()) errors.requirements = 'Requirements are required.';
+  if (fields.core_skills.length === 0) errors.core_skills = 'At least one required skill must be added.';
   return errors;
+}
+
+function findDepartmentGroup(categoryValue: string, departmentCategories: Record<string, { value: string; label: string }[]>): string {
+  for (const [group, choices] of Object.entries(departmentCategories)) {
+    if (choices.some((c) => c.value === categoryValue)) return group;
+  }
+  return '';
+}
+
+function formatDate(iso: string) {
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso));
 }
 
 const inputClass =
@@ -44,29 +60,55 @@ const inputClass =
 const errorClass = 'mt-1 text-xs text-[#b13d2f]';
 const labelClass = 'block text-sm font-semibold text-[#3a3330] mb-1.5';
 
-export default function CreateJobForm({ choices }: { choices: JobFormChoices }) {
+type Props = {
+  choices: JobFormChoices;
+  initialJob?: BackendJob;
+};
+
+export default function CreateJobForm({ choices, initialJob }: Props) {
+  const isEditing = !!(initialJob?.id);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [pendingMode, setPendingMode] = useState<'publish' | 'draft' | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [skillInput, setSkillInput] = useState('');
   const [skillFocused, setSkillFocused] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const initialCategory = initialJob?.department ?? '';
+  const initialDepartment = initialCategory
+    ? findDepartmentGroup(initialCategory, choices.departmentCategories)
+    : '';
 
   const [fields, setFields] = useState({
-    title: '',
-    department: '',       
-    category: '',         
-    location: '',
-    employment_type: '',
-    shift_type: '',
-    description: '',
-    responsibilities: '',
-    requirements: '',
-    core_skills: [] as string[],
-    experience_level: '', 
-    is_active: true,
+    title: initialJob?.title ?? '',
+    department: initialDepartment,
+    category: initialCategory,
+    location: initialJob?.location ?? '',
+    employment_type: initialJob?.employment_type ?? '',
+    shift_type: initialJob?.shift_type ?? '',
+    description: initialJob?.description ?? '',
+    responsibilities: initialJob?.responsibilities ?? '',
+    requirements: initialJob?.requirements ?? '',
+    core_skills: initialJob?.core_skills ?? ([] as string[]),
+    experience_level: '',
+    is_active: initialJob?.is_active ?? true,
   });
+
+  const isDirty = isEditing
+    ? fields.title !== (initialJob?.title ?? '') ||
+      fields.description !== (initialJob?.description ?? '') ||
+      fields.requirements !== (initialJob?.requirements ?? '')
+    : fields.title !== '' || fields.description !== '' || fields.requirements !== '';
+
+  useEffect(() => {
+    if (!isDirty || toast) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty, toast]);
 
   function set<K extends keyof typeof fields>(key: K, value: (typeof fields)[K]) {
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -92,39 +134,51 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
     set('core_skills', fields.core_skills.filter((s) => s !== skill));
   }
 
-  function handleSubmit() {
+  function handleSubmit(mode: 'publish' | 'draft') {
+    if (pendingMode) return;
     const errors = validate(fields);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
     }
     setApiError(null);
+    setPendingMode(mode);
+
+    const payload = {
+      title: fields.title.trim(),
+      description: fields.description.trim(),
+      responsibilities: fields.responsibilities.trim() || undefined,
+      requirements: fields.requirements.trim(),
+      department: fields.category,
+      shift_type: fields.shift_type,
+      employment_type: fields.employment_type,
+      location: fields.location.trim(),
+      is_active: mode === 'publish',
+      core_skills: fields.core_skills.length > 0 ? fields.core_skills : undefined,
+    };
 
     startTransition(async () => {
-      const result = await createJob({
-        title: fields.title.trim(),
-        description: fields.description.trim(),
-        responsibilities: fields.responsibilities.trim() || undefined,
-        requirements: fields.requirements.trim(),
-        department: fields.category,  
-        shift_type: fields.shift_type,
-        employment_type: fields.employment_type,
-        location: fields.location.trim(),
-        is_active: fields.is_active,
-        core_skills: fields.core_skills.length > 0 ? fields.core_skills : undefined,
-      });
+      const result = isEditing
+        ? await updateJob(initialJob!.id, payload)
+        : await createJob(payload);
 
       if (result.ok) {
-        router.push(`/recruiter/dashboard/jobs/${result.jobId}`);
+        const message = mode === 'publish'
+          ? (isEditing ? 'Job updated successfully!' : 'Job published successfully!')
+          : 'Job saved as draft.';
+        setToast(message);
+        setTimeout(() => router.push(`/recruiter/dashboard/jobs/${result.jobId}`), 2000);
       } else {
         setApiError(result.error);
+        setPendingMode(null);
       }
     });
   }
 
-  const previewDept = fields.department && fields.category
-    ? `${fields.department} · ${choices.departments.find((d) => d.value === fields.category)?.label ?? '—'}`
-    : '—';
+  const previewDept =
+    fields.department && fields.category
+      ? `${fields.department} · ${choices.departments.find((d) => d.value === fields.category)?.label ?? '—'}`
+      : '—';
   const previewEmp = choices.employmentTypes.find((e) => e.value === fields.employment_type)?.label ?? '—';
   const previewShift = choices.shiftTypes.find((s) => s.value === fields.shift_type)?.label ?? '—';
 
@@ -132,7 +186,7 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-[1400px]">
 
-      
+        {/* Header */}
         <div className="mb-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
@@ -143,29 +197,39 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
-            <h1 className="text-2xl font-bold text-[#171717] sm:text-3xl">Create New Job</h1>
+            <h1 className="text-2xl font-bold text-[#171717] sm:text-3xl">
+              {isEditing ? 'Edit Job' : 'Create New Job'}
+            </h1>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setShowPreview((v) => !v)}
-              className="rounded-full border border-[#ddd5cf] bg-white px-5 py-2.5 text-sm font-semibold text-[#3a3330] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
-            >
-              {showPreview ? 'Edit Form' : 'Preview Job'}
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isPending}
-              className="rounded-full bg-[#26b9c8] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1fa8b6] disabled:opacity-60"
-            >
-              {isPending ? 'Posting…' : 'Post Job'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowPreview((v) => !v)}
+            className="rounded-full border border-[#ddd5cf] bg-white px-5 py-2.5 text-sm font-semibold text-[#3a3330] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+          >
+            {showPreview ? 'Edit Form' : 'Preview Job'}
+          </button>
         </div>
 
-     
+        {/* Edit mode: last updated banner */}
+        {isEditing && (
+          <div className="mb-5 rounded-2xl border border-[#ddd5cf] bg-white px-5 py-3 text-sm text-[#635b55]">
+            Last updated: {formatDate(initialJob!.updated_at)}
+            {initialJob!.candidate_count > 0 && (
+              <span className="ml-3 font-semibold text-[#c97a1a]">
+                ⚠ This job has {initialJob!.candidate_count} application{initialJob!.candidate_count !== 1 ? 's' : ''} — changes may affect existing candidates.
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Toast */}
+        {toast && (
+          <div className="mb-6 rounded-2xl border border-[#b8ead2] bg-[#ecfff4] px-5 py-4 text-sm font-semibold text-[#0f7b43]">
+            ✓ {toast} Redirecting…
+          </div>
+        )}
+
+        {/* API error */}
         {apiError && (
           <div className="mb-6 rounded-2xl border border-[#efc7bf] bg-[#fff0ec] px-5 py-4 text-sm font-medium text-[#b13d2f]">
             {apiError}
@@ -173,7 +237,7 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
         )}
 
         {showPreview ? (
-          
+          /* Preview */
           <div className="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -189,52 +253,40 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                   {previewShift || 'Shift Type'}
                 </span>
                 <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${fields.is_active ? 'border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]' : 'border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]'}`}>
-                  {fields.is_active ? 'Active' : 'Inactive'}
+                  {fields.is_active ? 'Active' : 'Draft'}
                 </span>
               </div>
             </div>
-
             <section className="mt-8">
               <h3 className="text-lg font-semibold text-[#171717]">Description</h3>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">
-                {fields.description || '—'}
-              </p>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">{fields.description || '—'}</p>
             </section>
-
             {fields.responsibilities && (
               <section className="mt-8">
                 <h3 className="text-lg font-semibold text-[#171717]">Responsibilities</h3>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">
-                  {fields.responsibilities}
-                </p>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">{fields.responsibilities}</p>
               </section>
             )}
-
             <section className="mt-8">
               <h3 className="text-lg font-semibold text-[#171717]">Requirements</h3>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">
-                {fields.requirements || '—'}
-              </p>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">{fields.requirements || '—'}</p>
             </section>
-
             {fields.core_skills.length > 0 && (
               <section className="mt-8">
                 <h3 className="text-lg font-semibold text-[#171717]">Required Skills</h3>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {fields.core_skills.map((s) => (
-                    <span key={s} className="rounded-full border border-[#cfecef] bg-[#e8f8fa] px-3 py-1 text-xs font-semibold text-[#0c6c75]">
-                      {s}
-                    </span>
+                    <span key={s} className="rounded-full border border-[#cfecef] bg-[#e8f8fa] px-3 py-1 text-xs font-semibold text-[#0c6c75]">{s}</span>
                   ))}
                 </div>
               </section>
             )}
           </div>
         ) : (
-         
+          /* Form */
           <div className="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
 
-            
+            {/* Section: Basic Info */}
             <h2 className="text-base font-bold text-[#171717]">Basic Info</h2>
             <hr className="mt-2 mb-6 border-[#ece4de]" />
 
@@ -244,11 +296,17 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                 <input
                   type="text"
                   value={fields.title}
+                  maxLength={200}
                   onChange={(e) => set('title', e.target.value)}
                   placeholder="e.g. Front Desk Manager"
                   className={inputClass}
                 />
-                {fieldErrors.title && <p className={errorClass}>{fieldErrors.title}</p>}
+                <div className="mt-1 flex justify-between">
+                  {fieldErrors.title
+                    ? <p className={errorClass}>{fieldErrors.title}</p>
+                    : <span />}
+                  <span className="text-xs text-[#9a9088]">{fields.title.length}/200</span>
+                </div>
               </div>
 
               <div>
@@ -326,31 +384,17 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                 </select>
                 {fieldErrors.shift_type && <p className={errorClass}>{fieldErrors.shift_type}</p>}
               </div>
-
-              <div className="flex items-end pb-1">
-                <label className="flex cursor-pointer items-center gap-3">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={fields.is_active}
-                      onChange={(e) => set('is_active', e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div className={`relative h-6 w-11 rounded-full transition-colors ${fields.is_active ? 'bg-[#26b9c8]' : 'bg-[#d5cdc8]'}`}>
-                      <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${fields.is_active ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
-                    </div>
-                  </div>
-                  <span className="text-sm font-semibold text-[#3a3330]">Post as Active</span>
-                </label>
-              </div>
             </div>
 
-          
+            {/* Section: Job Description */}
             <h2 className="mt-10 text-base font-bold text-[#171717]">Job Description</h2>
             <hr className="mt-2 mb-6 border-[#ece4de]" />
 
             <div>
-              <label className={labelClass}>Description <span className="text-[#b13d2f]">*</span></label>
+              <label className={labelClass}>
+                Description <span className="text-[#b13d2f]">*</span>
+                <span className="ml-2 font-normal text-[#9a9088]">(min 50 characters)</span>
+              </label>
               <textarea
                 value={fields.description}
                 onChange={(e) => set('description', e.target.value)}
@@ -358,10 +402,16 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                 placeholder="Describe the role and what makes it great…"
                 className={`${inputClass} resize-y`}
               />
-              {fieldErrors.description && <p className={errorClass}>{fieldErrors.description}</p>}
+              <div className="mt-1 flex justify-between">
+                {fieldErrors.description
+                  ? <p className={errorClass}>{fieldErrors.description}</p>
+                  : <span />}
+                <span className={`text-xs ${fields.description.length < 50 ? 'text-[#9a9088]' : 'text-[#0f7b43]'}`}>
+                  {fields.description.length} chars
+                </span>
+              </div>
             </div>
 
-            
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <div>
                 <h2 className="text-base font-bold text-[#171717]">Responsibilities</h2>
@@ -389,13 +439,15 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
               </div>
             </div>
 
-            
+            {/* Section: AI Configuration */}
             <h2 className="mt-10 text-base font-bold text-[#171717]">AI Configuration</h2>
             <hr className="mt-2 mb-6 border-[#ece4de]" />
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
-                <label className={labelClass}>Required Skills</label>
+                <label className={labelClass}>
+                  Required Skills <span className="text-[#b13d2f]">*</span>
+                </label>
                 <div className="relative">
                   <div className={`${inputClass} flex min-h-[48px] h-auto flex-wrap gap-2 py-2`}>
                     {fields.core_skills.map((skill) => (
@@ -426,7 +478,6 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                     />
                   </div>
 
-                  
                   {skillFocused && (() => {
                     const q = skillInput.trim().toLowerCase();
                     const suggestions = choices.suggestedSkills.filter(
@@ -452,7 +503,9 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
                     ) : null;
                   })()}
                 </div>
-                <p className="mt-1 text-xs text-[#9a9088]">Pick from suggestions or type and press Enter to add a custom skill</p>
+                {fieldErrors.core_skills
+                  ? <p className={errorClass}>{fieldErrors.core_skills}</p>
+                  : <p className="mt-1 text-xs text-[#9a9088]">Pick from suggestions or type and press Enter to add a custom skill</p>}
               </div>
 
               <div>
@@ -470,22 +523,35 @@ export default function CreateJobForm({ choices }: { choices: JobFormChoices }) 
               </div>
             </div>
 
-           
-            <div className="mt-10 flex justify-end gap-3">
+            {/* Actions */}
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
               <Link
                 href="/recruiter/dashboard/jobs"
                 className="rounded-full border border-[#ddd5cf] bg-white px-6 py-3 text-sm font-semibold text-[#635b55] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
               >
                 Cancel
               </Link>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isPending}
-                className="rounded-full bg-[#26b9c8] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#1fa8b6] disabled:opacity-60"
-              >
-                {isPending ? 'Posting…' : 'Post Job'}
-              </button>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSubmit('draft')}
+                  disabled={!!pendingMode || isPending}
+                  className="rounded-full border border-[#ddd5cf] bg-white px-6 py-3 text-sm font-semibold text-[#635b55] transition hover:border-[#26b9c8] hover:text-[#0c6c75] disabled:opacity-60"
+                >
+                  {pendingMode === 'draft' ? 'Saving…' : 'Save as Draft'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSubmit('publish')}
+                  disabled={!!pendingMode || isPending}
+                  className="rounded-full bg-[#26b9c8] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#1fa8b6] disabled:opacity-60"
+                >
+                  {pendingMode === 'publish'
+                    ? (isEditing ? 'Saving…' : 'Publishing…')
+                    : (isEditing ? 'Save Changes' : 'Publish Job')}
+                </button>
+              </div>
             </div>
           </div>
         )}
