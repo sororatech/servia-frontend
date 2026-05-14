@@ -17,7 +17,6 @@ export const AUTH_STORAGE = {
 
   getToken: () => typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
   
-  // FIXED: Renamed function and key to user_role
   getUserRole: () => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('user_role') as 'candidate' | 'recruiter';
@@ -29,7 +28,7 @@ export const AUTH_STORAGE = {
   clear(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_role'); 
       localStorage.removeItem('user_id');
       localStorage.removeItem('first_name');
       localStorage.removeItem('last_name');
@@ -40,5 +39,5 @@ export const AUTH_STORAGE = {
 };
 
 export function getDashboardUrl(userType: 'candidate' | 'recruiter'): string {
-  return userType === 'candidate' ? '/candidate/dashboard' : '/recruiter/dashboard';
+  return userType === 'candidate' ? '/jobs' : '/recruiter/dashboard';
 }

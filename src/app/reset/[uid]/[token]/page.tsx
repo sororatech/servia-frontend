@@ -94,14 +94,14 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Password Reset Successful!</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Password Reset Successful!</h1>
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
               Your password has been successfully reset. Redirecting you to login...
             </p>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -116,47 +116,53 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center p-4 lg:p-8 max-w-7xl mx-auto w-full">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
         
-        <div className="flex flex-col justify-center p-4 lg:p-8">
-          <div className="mb-8">
-            <div className="flex justify-center lg:justify-start mb-6">
-              <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain" />
+        <div className="flex flex-col justify-center p-2 sm:p-4 lg:p-8">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex justify-center lg:justify-start mb-4 sm:mb-6">
+              <Image
+                src="/logo.png"
+                alt="ServiaAI Logo"
+                width={64}
+                height={64}
+                className="object-contain w-12 h-12 sm:w-16 sm:h-16"
+              />
             </div>
             
-            <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-3 text-center lg:text-left">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-3 text-center lg:text-left">
               <span style={{ color: '#0F2A44' }}>Secure your </span>
               <span style={{ color: '#26B9C8' }}>professional</span>
               <span style={{ color: '#0F2A44' }}> future.</span>
             </h1>
             
-            <p className="text-gray-600 leading-relaxed text-center lg:text-left mt-7">
+            <p className="text-gray-600 leading-relaxed text-center lg:text-left mt-5 sm:mt-7 text-sm sm:text-base">
               We take your privacy seriously. Resetting your password ensures your curated career journey remains exclusively yours.
             </p>
           </div>
 
-          <div className="rounded-xl px-6 py-2.5 border mx-auto lg:mx-0 mt-5" style={{ backgroundColor: '#F0F4F7', maxWidth: '520px' }}>
-            <div className="flex flex-col items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center">
-                <svg className="w-7 h-7" fill="none" stroke="#26B9C8" viewBox="0 0 24 24">
+          <div className="rounded-xl px-4 sm:px-6 py-2.5 border mx-auto lg:mx-0 mt-4 sm:mt-5 w-full" style={{ backgroundColor: '#F0F4F7', maxWidth: '520px' }}>
+            <div className="flex flex-col items-start gap-2 sm:gap-3">
+              <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="#26B9C8" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
               <div>
                 <h6 className="font-semibold text-sm mb-1 -mt-2" style={{ color: '#0F2A44' }}>Instant</h6>
-                <p className="text-sm text-gray-600 ">
-                  Update synced across all <br /> devices immediately.
+                <p className="text-sm text-gray-600">
+                  Update synced across all devices immediately.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-center p-4 lg:p-8">
+        <div className="flex items-center justify-center p-2 sm:p-4 lg:p-8">
           <div className="w-full max-w-md">
-            <div className="bg-white rounded-2xl shadow-xl p-8 py-12">
-              <div className="mb-8">
-                <h2 className="text-2xl font-semibold mb-2" style={{ color: '#0F2A44' }}>
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 py-8 sm:py-12">
+              <div className="mb-6 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-2" style={{ color: '#0F2A44' }}>
                   Reset Password
                 </h2>
                 <p className="text-sm -mt-3" style={{ color: '#26B9C8' }}>
@@ -165,14 +171,14 @@ export default function ResetPasswordPage() {
               </div>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
-                  <label htmlFor="newPassword" className="block text-xs mb-4 font-semibold uppercase tracking-wider mt-12" style={{ color: '#0F2A44' }}>
+                  <label htmlFor="newPassword" className="block text-xs mb-3 sm:mb-4 font-semibold uppercase tracking-wider mt-8 sm:mt-12" style={{ color: '#0F2A44' }}>
                     NEW PASSWORD
                   </label>
                   <div className="relative">
@@ -182,23 +188,25 @@ export default function ResetPasswordPage() {
                       name="newPassword"
                       value={formData.newPassword}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-sm sm:text-base"
                       style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
                       placeholder="Enter new password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                      className="absolute right-3 inset-y-0 focus:outline-none p-1"
                       style={{ color: '#26B9C8' }}
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword
+                        ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                        : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0F2A44' }}>
+                  <label htmlFor="confirmPassword" className="block mb-3 sm:mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0F2A44' }}>
                     CONFIRM NEW PASSWORD
                   </label>
                   <div className="relative">
@@ -208,17 +216,19 @@ export default function ResetPasswordPage() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-sm sm:text-base"
                       style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
                       placeholder="Confirm new password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-1"
                       style={{ color: '#26B9C8' }}
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showConfirmPassword
+                        ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                        : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                     </button>
                   </div>
                   {validationErrors.confirmPassword && (
@@ -226,21 +236,21 @@ export default function ResetPasswordPage() {
                   )}
                 </div>
 
-                <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className={`w-2 h-2 rounded-full ${passwordRequirements.minLength ? 'bg-teal-500' : 'bg-gray-300'}`} />
+                <div className="rounded-lg p-3 sm:p-4 space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <div className={`w-2 h-2 flex-shrink-0 rounded-full ${passwordRequirements.minLength ? 'bg-teal-500' : 'bg-gray-300'}`} />
                     <span className={passwordRequirements.minLength ? 'font-medium' : ''} style={{ color: passwordRequirements.minLength ? '#26B9C8' : '#0F2A44' }}>
                       At least 8 characters long
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className={`w-2 h-2 rounded-full ${passwordRequirements.hasNumber ? 'bg-teal-500' : 'bg-gray-300'}`} />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <div className={`w-2 h-2 flex-shrink-0 rounded-full ${passwordRequirements.hasNumber ? 'bg-teal-500' : 'bg-gray-300'}`} />
                     <span className={passwordRequirements.hasNumber ? 'font-medium' : ''} style={{ color: passwordRequirements.hasNumber ? '#26B9C8' : '#0F2A44' }}>
                       Includes a number or symbol
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className={`w-2 h-2 rounded-full ${passwordRequirements.passwordsMatch ? 'bg-teal-500' : 'bg-gray-300'}`} />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <div className={`w-2 h-2 flex-shrink-0 rounded-full ${passwordRequirements.passwordsMatch ? 'bg-teal-500' : 'bg-gray-300'}`} />
                     <span className={passwordRequirements.passwordsMatch ? 'font-medium' : ''} style={{ color: passwordRequirements.passwordsMatch ? '#26B9C8' : '#0F2A44' }}>
                       Passwords match
                     </span>
@@ -252,13 +262,13 @@ export default function ResetPasswordPage() {
                   disabled={loading || Object.keys(validationErrors).length > 0}
                   fullWidth
                   className="custom-button"
-                  style={{ height: '54px', minHeight: '54px' }}
+                  style={{ height: '48px', minHeight: '48px' }}
                 >
                   {loading ? 'Resetting Password...' : 'Reset Password'}
                 </Button>
               </form>
 
-              <div className="mt-6 text-center">
+              <div className="mt-5 sm:mt-6 text-center">
                 <Link href="/login" className="text-sm font-medium" style={{ color: '#26B9C8' }}>
                   Back to Sign In
                 </Link>
