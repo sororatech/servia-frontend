@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { getApiBaseUrl } from './config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = getApiBaseUrl();
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -12,9 +13,9 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const publicRoutes = [
-      '/users/login/', 
-      '/users/register/', 
-      '/users/verify-email/', 
+      '/users/login/',
+      '/users/register/',
+      '/users/verify-email/',
       '/users/resend-verification/',
       '/users/password-reset/'
     ];
@@ -23,12 +24,10 @@ api.interceptors.request.use((config) => {
 
     if (!isPublicRoute) {
       const token = localStorage.getItem('auth_token');
-      
+
       if (token) {
         const cleanToken = token.replace(/^["'](.+)["']$/, '$1');
         config.headers.Authorization = `Token ${cleanToken}`;
-        
-        console.log(`📡 API Request to ${config.url} with token:`, cleanToken);
       } else {
         console.warn(`⚠️ No token found in localStorage for: ${config.url}`);
       }
@@ -43,12 +42,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       if (!window.location.pathname.includes('/login')) {
         localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_type');
+        localStorage.removeItem('user_role');
         localStorage.removeItem('user_id');
-        
+
         document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        
+
         window.location.href = '/login';
       }
     }
@@ -133,7 +132,7 @@ export const authAPI = {
     } finally {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_type');
+        localStorage.removeItem('user_role');
         localStorage.removeItem('user_id');
         document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";

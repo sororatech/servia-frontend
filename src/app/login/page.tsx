@@ -6,8 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui';
-import { Footer } from '@/components/ui';
+import { Button, Footer } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,8 +53,8 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password, rememberMe);
-    } catch (err:any) {
-      const errorCode=err.response?.data?.code;
+    } catch (err: any) {
+      const errorCode = err.response?.data?.code;
 
       if (errorCode === 'EMAIL_NOT_VERIFIED') {
         router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
@@ -71,16 +70,16 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
         <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
-          <Image 
-            src="/images/registerimg.png" 
-            alt="ServiaAI background" 
-            fill 
+          <Image
+            src="/images/registerimg.png"
+            alt="ServiaAI background"
+            fill
             className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 45vw" 
-            priority 
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            priority
           />
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
-          
+
           <div className="relative z-10 max-w-[460px] px-14 py-14 bg-white shadow-2xl rounded-[2px]">
             <div className="mb-8">
               <div className="mb-6">
@@ -117,7 +116,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-7">
               {(persistentError || error) && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{persistentError ||error}</div>
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{persistentError || error}</div>
               )}
 
               <div className="space-y-2 mt-16">
@@ -143,18 +142,14 @@ export default function LoginPage() {
                     className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
                     style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
                   />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)} 
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 transform -translate-y-1/2 focus:outline-none"
                     style={{ color: '#26B9C8' }}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
                 {validationErrors.password && <p className="text-sm text-red-600">{validationErrors.password}</p>}
@@ -165,8 +160,8 @@ export default function LoginPage() {
                 <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">Remember me</label>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 variant="primary"
                 size="lg"
