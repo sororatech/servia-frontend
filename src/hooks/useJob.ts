@@ -268,25 +268,34 @@ export const useBrowseJobs = () => {
     setSearchQuery('');
   }, []);
 
-  const filteredJobs = useMemo(() => {
-    return jobs.filter(job => {
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch = !searchQuery || 
-        job.title.toLowerCase().includes(searchLower) ||
-        job.description.toLowerCase().includes(searchLower) ||
-        job.location.toLowerCase().includes(searchLower) ||
-        job.department.toLowerCase().includes(searchLower);
+ const filteredJobs = useMemo(() => {
+  const now = Date.now(); 
+  
+  return jobs.filter(job => {
+    if (job.application_deadline) {
+      const deadlineTime = new Date(job.application_deadline).getTime();
+      if (deadlineTime < now) {
+        return false; 
+      }
+    }
 
-      const matchesJobType = filters.jobType.length === 0 || 
-        filters.jobType.includes(normalizeJobType(job.employment_type));
-      
-      const deptNormalized = job.department.toLowerCase().replace(/_/g, ' ');
-      const matchesDepartment = filters.department.length === 0 || 
-        filters.department.includes(deptNormalized);
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery || 
+      job.title.toLowerCase().includes(searchLower) ||
+      job.description.toLowerCase().includes(searchLower) ||
+      job.location.toLowerCase().includes(searchLower) ||
+      job.department.toLowerCase().includes(searchLower);
 
-      return matchesSearch && matchesJobType && matchesDepartment;
-    });
-  }, [jobs, searchQuery, filters]);
+    const matchesJobType = filters.jobType.length === 0 || 
+      filters.jobType.includes(normalizeJobType(job.employment_type));
+    
+    const deptNormalized = job.department.toLowerCase().replace(/_/g, ' ');
+    const matchesDepartment = filters.department.length === 0 || 
+      filters.department.includes(deptNormalized);
+
+    return matchesSearch && matchesJobType && matchesDepartment;
+  });
+}, [jobs, searchQuery, filters]);
 
   return {
     jobs: filteredJobs,
