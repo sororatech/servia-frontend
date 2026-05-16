@@ -1,7 +1,12 @@
 import { redirect } from 'next/navigation';
-import { fetchAllPages, SessionExpiredError } from '@/utils/serverFetch';
+import { fetchJson, SessionExpiredError } from '@/utils/serverFetch';
 import { humanize } from '@/utils/formatters';
 import type { BackendJob, JobListItem } from '@/types/job';
+
+type JobsPage = {
+  results?: BackendJob[];
+  count?: number;
+};
 
 export type JobsPageData = {
   jobs: JobListItem[];
@@ -10,7 +15,9 @@ export type JobsPageData = {
 
 export async function loadJobs(headers: HeadersInit): Promise<JobsPageData> {
   try {
-    const raw = await fetchAllPages<BackendJob>('/jobs/jobs/', headers);
+    const page = await fetchJson<JobsPage | BackendJob[]>('/jobs/jobs/?page_size=200&ordering=-created_at', headers);
+    const raw: BackendJob[] = Array.isArray(page) ? page : (page.results ?? []);
+
     const seen = new Set<string>();
     const jobs = raw
       .filter((job) => {
@@ -27,6 +34,8 @@ export async function loadJobs(headers: HeadersInit): Promise<JobsPageData> {
         isActive: job.is_active,
         candidateCount: job.candidate_count,
         shortlistedCount: job.shortlisted_count,
+        openingsCount: job.openings_count ?? 1,
+        openingsRemaining: job.openings_remaining ?? (job.openings_count ?? 1),
         postedAt: job.created_at,
       }));
 

@@ -28,6 +28,7 @@ function validate(fields: {
   description: string;
   requirements: string;
   core_skills: string[];
+  openings_count: string;
 }): FieldErrors {
   const errors: FieldErrors = {};
   if (!fields.title.trim()) errors.title = 'Job title is required.';
@@ -41,6 +42,10 @@ function validate(fields: {
   else if (fields.description.trim().length < 50) errors.description = 'Description must be at least 50 characters.';
   if (!fields.requirements.trim()) errors.requirements = 'Requirements are required.';
   if (fields.core_skills.length === 0) errors.core_skills = 'At least one required skill must be added.';
+  if (fields.openings_count !== '') {
+    const n = Number(fields.openings_count);
+    if (!Number.isInteger(n) || n < 1) errors.openings_count = 'Must be a whole number of at least 1.';
+  }
   return errors;
 }
 
@@ -70,11 +75,9 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingMode, setPendingMode] = useState<'publish' | 'draft' | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [skillInput, setSkillInput] = useState('');
-  const [skillFocused, setSkillFocused] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const initialCategory = initialJob?.department ?? '';
@@ -94,6 +97,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
     requirements: initialJob?.requirements ?? '',
     core_skills: initialJob?.core_skills ?? ([] as string[]),
     experience_level: '',
+    openings_count: initialJob?.openings_count != null ? String(initialJob.openings_count) : '',
     is_active: initialJob?.is_active ?? true,
   });
 
@@ -155,6 +159,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
       location: fields.location.trim(),
       is_active: mode === 'publish',
       core_skills: fields.core_skills.length > 0 ? fields.core_skills : undefined,
+      openings_count: fields.openings_count !== '' ? Number(fields.openings_count) : undefined,
     };
 
     startTransition(async () => {
@@ -175,13 +180,6 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
     });
   }
 
-  const previewDept =
-    fields.department && fields.category
-      ? `${fields.department} · ${choices.departments.find((d) => d.value === fields.category)?.label ?? '—'}`
-      : '—';
-  const previewEmp = choices.employmentTypes.find((e) => e.value === fields.employment_type)?.label ?? '—';
-  const previewShift = choices.shiftTypes.find((s) => s.value === fields.shift_type)?.label ?? '—';
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-[1400px]">
@@ -201,13 +199,6 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
               {isEditing ? 'Edit Job' : 'Create New Job'}
             </h1>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowPreview((v) => !v)}
-            className="rounded-full border border-[#ddd5cf] bg-white px-5 py-2.5 text-sm font-semibold text-[#3a3330] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
-          >
-            {showPreview ? 'Edit Form' : 'Preview Job'}
-          </button>
         </div>
 
         {/* Edit mode: last updated banner */}
@@ -236,55 +227,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
           </div>
         )}
 
-        {showPreview ? (
-          /* Preview */
-          <div className="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h2 className="text-3xl font-bold text-[#171717]">{fields.title || 'Job Title'}</h2>
-                <p className="mt-1 text-base text-[#635b55]">{previewDept}</p>
-                <p className="mt-0.5 text-base text-[#635b55]">{fields.location || 'Location'}</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
-                  {previewEmp || 'Employment Type'}
-                </span>
-                <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
-                  {previewShift || 'Shift Type'}
-                </span>
-                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${fields.is_active ? 'border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]' : 'border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]'}`}>
-                  {fields.is_active ? 'Active' : 'Draft'}
-                </span>
-              </div>
-            </div>
-            <section className="mt-8">
-              <h3 className="text-lg font-semibold text-[#171717]">Description</h3>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">{fields.description || '—'}</p>
-            </section>
-            {fields.responsibilities && (
-              <section className="mt-8">
-                <h3 className="text-lg font-semibold text-[#171717]">Responsibilities</h3>
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">{fields.responsibilities}</p>
-              </section>
-            )}
-            <section className="mt-8">
-              <h3 className="text-lg font-semibold text-[#171717]">Requirements</h3>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">{fields.requirements || '—'}</p>
-            </section>
-            {fields.core_skills.length > 0 && (
-              <section className="mt-8">
-                <h3 className="text-lg font-semibold text-[#171717]">Required Skills</h3>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {fields.core_skills.map((s) => (
-                    <span key={s} className="rounded-full border border-[#cfecef] bg-[#e8f8fa] px-3 py-1 text-xs font-semibold text-[#0c6c75]">{s}</span>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        ) : (
-          /* Form */
-          <div className="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+        <div className="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
 
             {/* Section: Basic Info */}
             <h2 className="text-base font-bold text-[#171717]">Basic Info</h2>
@@ -351,6 +294,21 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                   className={inputClass}
                 />
                 {fieldErrors.location && <p className={errorClass}>{fieldErrors.location}</p>}
+              </div>
+
+              <div>
+                <label className={labelClass}>Number of Openings</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={fields.openings_count}
+                  onChange={(e) => set('openings_count', e.target.value)}
+                  placeholder="e.g. 3"
+                  className={inputClass}
+                />
+                {fieldErrors.openings_count
+                  ? <p className={errorClass}>{fieldErrors.openings_count}</p>
+                  : <p className="mt-1 text-xs text-[#9a9088]">Leave blank if unspecified</p>}
               </div>
             </div>
 
@@ -471,37 +429,10 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                       value={skillInput}
                       onChange={(e) => setSkillInput(e.target.value)}
                       onKeyDown={handleSkillKeyDown}
-                      onFocus={() => setSkillFocused(true)}
-                      onBlur={() => setTimeout(() => setSkillFocused(false), 150)}
-                      placeholder={fields.core_skills.length === 0 ? 'Type or pick a skill…' : ''}
+                      placeholder={fields.core_skills.length === 0 ? 'Type a skill and press Enter…' : ''}
                       className="flex-1 min-w-[140px] outline-none bg-transparent text-sm text-[#201d1b] placeholder:text-[#b5aca6]"
                     />
                   </div>
-
-                  {skillFocused && (() => {
-                    const q = skillInput.trim().toLowerCase();
-                    const suggestions = choices.suggestedSkills.filter(
-                      (s) => !fields.core_skills.includes(s) && (!q || s.toLowerCase().includes(q))
-                    );
-                    return suggestions.length > 0 ? (
-                      <ul className="absolute z-20 mt-1 w-full rounded-xl border border-[#ddd5cf] bg-white shadow-lg max-h-48 overflow-y-auto">
-                        {suggestions.map((s) => (
-                          <li key={s}>
-                            <button
-                              type="button"
-                              onMouseDown={() => {
-                                set('core_skills', [...fields.core_skills, s]);
-                                setSkillInput('');
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-sm text-[#201d1b] hover:bg-[#f0fdff] hover:text-[#0c6c75] transition-colors"
-                            >
-                              {s}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null;
-                  })()}
                 </div>
                 {fieldErrors.core_skills
                   ? <p className={errorClass}>{fieldErrors.core_skills}</p>
@@ -554,7 +485,6 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
               </div>
             </div>
           </div>
-        )}
       </div>
     </main>
   );

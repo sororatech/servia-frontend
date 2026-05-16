@@ -227,8 +227,7 @@ export default function RegisterPage() {
 
     try {
       await register(registerData);
-      router.push('/candidate/dashboard');
-      router.refresh();
+      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
       if (!err.response) {
         setValidationErrors({ submit: 'Unable to connect. Please check your internet connection and try again.' });

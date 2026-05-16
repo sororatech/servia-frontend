@@ -238,16 +238,39 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
                     </span>
                   </div>
 
-                  <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
-                    <div>
-                      <p className="text-xs text-[#9a9088]">Candidates</p>
-                      <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
+                  {job.isActive ? (
+                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
+                      <div>
+                        <p className="text-xs text-[#9a9088]">Applied</p>
+                        <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#9a9088]">Shortlisted</p>
+                        <p className="mt-1 text-2xl font-bold text-[#171717]">{job.shortlistedCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#9a9088]">Openings</p>
+                        <p className="mt-1 text-2xl font-bold text-[#171717]">
+                          {job.openingsRemaining}
+                          <span className="text-sm font-normal text-[#9a9088]">/{job.openingsCount}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-[#9a9088]">Shortlisted</p>
-                      <p className="mt-1 text-2xl font-bold text-[#171717]">{job.shortlistedCount}</p>
+                  ) : (
+                    <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
+                      <div>
+                        <p className="text-xs text-[#9a9088]">Total Applied</p>
+                        <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#9a9088]">Hired</p>
+                        <p className="mt-1 text-2xl font-bold text-[#0f7b43]">
+                          {job.openingsCount - job.openingsRemaining}
+                          <span className="text-sm font-normal text-[#9a9088]">/{job.openingsCount}</span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="mt-5 flex items-center justify-between">
                     <p className="text-xs text-[#9a9088]">Posted {formatDate(job.postedAt)}</p>

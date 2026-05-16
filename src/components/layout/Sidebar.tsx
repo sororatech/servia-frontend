@@ -62,7 +62,7 @@ export function Sidebar() {
   }
 
   const menuItems = [
-    { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview },
+    { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview, exact: true },
     { name: 'Candidates', href: '/recruiter/dashboard/candidates', icon: Icons.Candidates },
     { name: 'Jobs', href: '/recruiter/dashboard/jobs', icon: Icons.Jobs },
     { name: 'Interviews', href: '/recruiter/dashboard/interviews', icon: Icons.Interviews },
@@ -103,7 +103,9 @@ export function Sidebar() {
 
       <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.href}

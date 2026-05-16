@@ -30,6 +30,8 @@ export type BackendJob = {
   updated_at: string;
   candidate_count: number;
   shortlisted_count: number;
+  openings_count: number;
+  openings_remaining: number;
   core_skills: string[];
 };
 
@@ -42,6 +44,8 @@ export type JobListItem = {
   isActive: boolean;
   candidateCount: number;
   shortlistedCount: number;
+  openingsCount: number;
+  openingsRemaining: number;
   postedAt: string;
 };
 
@@ -56,6 +60,7 @@ export type CreateJobPayload = {
   location: string;
   is_active: boolean;
   core_skills?: string[];
+  openings_count?: number;
 };
 
 export type CreateJobResult =
