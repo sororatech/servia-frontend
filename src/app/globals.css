@@ -15,8 +15,11 @@
   --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-size-base: 16px;
   --font-size-lg: 24px;
-}
 
+  --color-primary-light: #E8EEFB; 
+  --color-primary-dark: #1E9A9A;  
+  --color-progress-track: #E5E7EB; 
+  --color-progress-rejected: #EF4444;
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: #0a0a0a;
@@ -54,3 +57,26 @@ p {
   margin-bottom: var(--spacing-sm);
 }
 
+.stat-card-primary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.stat-card-secondary {
+  background-color: #F3F4F6; 
+  color: #374151; 
+}
+
+.progress-track {
+  background-color: var(--color-progress-track);
+}
+
+.progress-fill {
+  background-color: var(--color-primary);
+  transition: width 0.5s ease;
+}
+
+.progress-fill-rejected {
+  background-color: var(--color-progress-rejected);
+}
+}

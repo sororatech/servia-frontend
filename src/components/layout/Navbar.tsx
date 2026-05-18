@@ -1,28 +1,101 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { SearchInput } from '../ui/SearchInput';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AUTH_STORAGE } from '@/lib/auth';
+
+function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  return isClient;
+}
 
 export function Navbar() {
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [mounted] = useState(true);
+  const router = useRouter();
+  const isClient = useIsClient();
+  
+  const [user, setUser] = useState<{ name: string; role: string | null } | null>(null);
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleLogin = () => setIsLoggedIn(!isLoggedIn);
+  // Load user data from local storage on mount
+  useEffect(() => {
+    if (!isClient) return;
+    
+    const token = AUTH_STORAGE.getToken();
+    if (token) {
+      const firstName = AUTH_STORAGE.getFirstName() || '';
+      const lastName = AUTH_STORAGE.getLastName() || '';
+      const name = [firstName, lastName].filter(Boolean).join(' ').trim() || 'User';
+      const role = AUTH_STORAGE.getUserRole();
+      setUser({ name, role });
+    }
+  }, [isClient]);
 
-  const navLinks = useMemo(() => [
+  const handleLogout = () => {
+    AUTH_STORAGE.clear();
+    router.push('/login');
+    router.refresh();
+  };
+
+  const getInitials = (name: string) => {
+    if (!name || name === 'User') return 'U';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const profileHref = user?.role === 'candidate' 
+    ? '/candidate/dashboard/profile' 
+    : '/recruiter/dashboard/profile';
+
+  const navLinks = [
     { href: '/jobs', label: 'Browse Jobs' },
-    { href: '/candidate/dashboard', label: 'My Applications' },
-  ], []);
+    { href: '/candidate/applications', label: 'My Applications' },
+  ];
 
-  const isActive = (href: string) => 
-    pathname === href || pathname.startsWith(href + '/');
+  const isActive = (href: string) => {
+    // If checking 'Browse Jobs' (/jobs), also match these related paths
+    if (href === '/jobs') {
+      const jobRelatedPaths = [
+        '/',
+        '/jobs',
+        '/jobs/',
+        '/candidate/dashboard/cv',
+        '/candidate/application-success',
+      ];
+      // Check if current pathname starts with any of these (handles /jobs/[id])
+      if (jobRelatedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
+        return true;
+      }
+    }
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
+  if (!isClient) {
+    return (
+      <nav className="sticky top-0 z-50 w-full bg-[var(--color-background)] border-b border-gray-100 h-20">
+        <div className="w-full max-w-[1440px] mx-auto px-4 h-full flex items-center justify-between">
+          <div className="w-[125px] h-10 bg-gray-100 rounded animate-pulse" />
+          <div className="hidden lg:flex gap-8">
+            <div className="w-24 h-6 bg-gray-100 rounded animate-pulse" />
+            <div className="w-24 h-6 bg-gray-100 rounded animate-pulse" />
+          </div>
+          <div className="w-10 h-10 rounded-full bg-gray-100 animate-pulse" />
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <>
@@ -36,7 +109,7 @@ export function Navbar() {
                 <Image 
                   src="/logo.png" 
                   alt="ServiaAI" 
-                  width={125} 
+                  width={50} 
                   height={40} 
                   className="max-w-[125px]" 
                   priority 
@@ -44,7 +117,7 @@ export function Navbar() {
               </Link>
             </div>
 
-            {/* Desktop Navigation Links - Only visible on large screens (≥1024px) */}
+            {/* Desktop Navigation Links */}
             <div className="hidden lg:flex justify-center items-center gap-8 xl:gap-12 h-full">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
@@ -82,34 +155,32 @@ export function Navbar() {
               })}
             </div>
 
+            {/* Right Side: Search & Auth */}
             <div className="hidden lg:flex items-center justify-end gap-4">
               <div className="w-full max-w-[240px]">
                 <SearchInput placeholder="Search roles..." />
               </div>
 
               <div className="flex items-center gap-3 min-w-[100px] justify-end">
-                {!mounted ? (
-                  <div className="h-10 w-10 rounded-full bg-gray-50 animate-pulse" />
-                ) : isLoggedIn ? (
+                {user ? (
                   <>
-                    <button 
-                      className="!bg-transparent !p-0 hover:opacity-70 transition-opacity"
-                      aria-label="Notifications"
-                      style={{ color: 'var(--color-primary)' }}
+
+                    <Link 
+                      href={profileHref}
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20"
+                      title={`View ${user.name}'s Profile`}
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.5 18.75h17" />
-                      </svg>
-                    </button>
+                      <span className="text-[var(--color-secondary)] text-sm">
+                        {getInitials(user.name)}
+                      </span>
+                    </Link>
 
                     <button 
-                      onClick={toggleLogin}
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer"
-                      style={{ backgroundColor: '#FAD4C0' }}
-                      aria-label="Toggle login state (testing)"
+                      onClick={handleLogout}
+                      className="text-sm font-medium text-gray-600 hover:text-red-500 transition-colors"
+                      title="Logout"
                     >
-                      <span className="text-[#CC7D52] text-sm">JD</span>
+                      Logout
                     </button>
                   </>
                 ) : (
@@ -123,6 +194,7 @@ export function Navbar() {
               </div>
             </div>
 
+            {/* Mobile Menu Toggle */}
             <div className="flex lg:hidden justify-end">
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
@@ -153,9 +225,7 @@ export function Navbar() {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="fixed top-20 left-0 right-0 z-40 bg-[var(--color-background)] border-b border-gray-100 shadow-lg lg:hidden"
           >
-            {/* Internal scroll container prevents cutoff on small screens */}
             <div className="px-4 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-              {/* Nav Links */}
               <div className="flex flex-col space-y-2">
                 {navLinks.map((link) => {
                   const active = isActive(link.href);
@@ -176,28 +246,35 @@ export function Navbar() {
                 })}
               </div>
 
-              {/* Search */}
               <div className="w-full">
                 <SearchInput placeholder="Search roles..." />
               </div>
 
-              {/* Auth State */}
               <div className="pt-2 border-t border-gray-100">
-                {!mounted ? (
-                  <div className="h-10 w-10 rounded-full bg-gray-50 animate-pulse" />
-                ) : isLoggedIn ? (
+                {user ? (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#FAD4C0' }}>
-                        <span className="text-[#CC7D52] text-sm">JD</span>
+                    <Link 
+                      href={profileHref}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3"
+                    >
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)]"
+                      >
+                        <span className="text-[var(--color-secondary)] text-sm">
+                          {getInitials(user.name)}
+                        </span>
                       </div>
-                      <span className="font-semibold text-sm">Sarah Jenkins</span>
-                    </div>
-                    <button className="p-2 text-[var(--color-primary)]" aria-label="Notifications">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.5 18.75h17" />
-                      </svg>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-sm text-[var(--color-foreground)]">{user.name}</span>
+                        <span className="text-xs text-[var(--color-foreground)]/60 capitalize">{user.role}</span>
+                      </div>
+                    </Link>
+                    <button 
+                      onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                      className="text-sm text-red-500 font-medium hover:text-red-600"
+                    >
+                      Logout
                     </button>
                   </div>
                 ) : (

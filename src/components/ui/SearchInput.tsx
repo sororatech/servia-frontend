@@ -27,11 +27,16 @@ export function SearchInput({
     return () => clearTimeout(timer);
   }, [query, debounceMs, onSearch]);
 
-  const handleClearOne = () => {
-    const newQuery = query.slice(0, -1);
-    setQuery(newQuery);
-    onSearch?.(newQuery);
+  const handleClearAll = () => {
+    setQuery('');
+    onSearch?.('');
     inputRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearch?.(query);
+    }
   };
 
   return (
@@ -40,7 +45,6 @@ export function SearchInput({
         {ariaLabel}
       </label>
 
-      {/* Search Icon */}
       <div className="absolute left-3 flex items-center pointer-events-none">
         <svg
           className="h-5 w-5"
@@ -65,6 +69,7 @@ export function SearchInput({
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="
           w-full pl-10 pr-10 py-2 
@@ -84,16 +89,13 @@ export function SearchInput({
       {query && (
         <button
           type="button"
-          onClick={handleClearOne}  
-          className="absolute right-3 p-1 flex items-center justify-center focus:outline-none"
+          onClick={handleClearAll}  
+          className="absolute right-3 p-1 flex items-center justify-center focus:outline-none hover:opacity-70 transition-opacity"
           style={{ 
             backgroundColor: 'transparent', 
             color: 'var(--color-primary)',
-            padding: 0,
-            borderRadius: '50%',
-            border: 'none'
           }}
-          aria-label="Delete one character"
+          aria-label="Clear search"
         >
           <svg
             className="h-5 w-5"

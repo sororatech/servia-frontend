@@ -1,8 +1,11 @@
 'use client';
 
+import { Navbar } from "@/components/ui";
+
 export default function JobsPage() {
   return (
     <main className="p-4 md:p-8 max-w-7xl mx-auto">
+      <Navbar />
       <h1 className="text-2xl font-heading font-bold text-[var(--color-secondary)] mb-4">
         Browse Jobs
       </h1>
