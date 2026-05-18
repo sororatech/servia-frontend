@@ -1,10 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { AUTH_STORAGE } from '@/lib/auth';
+
+function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  return isClient;
+}
 
 const Icons = {
   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
@@ -17,34 +25,42 @@ const Icons = {
   ChevronRight: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>,
 };
 
-function useProfile() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const firstName = mounted ? AUTH_STORAGE.getFirstName() : null;
-  const lastName = mounted ? AUTH_STORAGE.getLastName() : null;
-  const role = mounted ? AUTH_STORAGE.getUserRole() : null;
-
-  const name = firstName || lastName
-    ? `${firstName ?? ''} ${lastName ?? ''}`.trim()
-    : 'User';
-
-  return {
-    name,
-    role: role === 'candidate' ? 'Candidate' : 'Recruiter',
-    isAdmin: false,
-    avatar: null,
-    isLoading: !mounted,
-  };
-}
-
 export function Sidebar() {
   const pathname = usePathname();
-  const { name, role, isAdmin, avatar, isLoading } = useProfile();
+  const isClient = useIsClient();
+  
+  const [profile, setProfile] = useState<{ name: string; role: string | null }>({
+    name: '',
+    role: null,
+  });
+
+  useEffect(() => {
+    if (isClient) {
+      const firstName = AUTH_STORAGE.getFirstName() || '';
+      const lastName = AUTH_STORAGE.getLastName() || '';
+      const role = AUTH_STORAGE.getUserRole();
+      
+      const fullName = `${firstName} ${lastName}`.trim();
+      const displayRole = role === 'candidate' ? 'Candidate' : role === 'recruiter' ? 'Recruiter' : null;
+
+      setProfile({ name: fullName, role: displayRole });
+    }
+  }, [isClient]);
+
+  const { name, role } = profile;
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Dynamic profile link based on role
+  const profileHref = role === 'candidate' 
+    ? '/candidate/dashboard/profile' 
+    : '/recruiter/dashboard/profile';
+
+  const isActive = (href: string) => {
+    if (href === '/recruiter/dashboard') {
+      return pathname === href || pathname === href + '/';
+    }
+    return pathname === href || pathname.startsWith(href + '/');
+  };
 
   const menuItems = [
     { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview },
@@ -52,8 +68,11 @@ export function Sidebar() {
     { name: 'Jobs', href: '/recruiter/dashboard/jobs', icon: Icons.Jobs },
     { name: 'Interviews', href: '/recruiter/dashboard/interviews', icon: Icons.Interviews },
     { name: 'Reports', href: '/recruiter/dashboard/reports', icon: Icons.Reports },
-    ...(isAdmin ? [{ name: 'Settings', href: '/recruiter/dashboard/settings', icon: Icons.Settings }] : []),
   ];
+
+  if (!isClient) {
+    return <aside className="w-64 bg-[var(--color-secondary)] h-screen sticky top-0" />;
+  }
 
   return (
     <aside 
@@ -88,14 +107,14 @@ export function Sidebar() {
 
       <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const active = isActive(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`
                 flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
-                ${isActive 
+                ${active 
                   ? 'bg-[var(--color-primary)] text-[var(--color-secondary)] font-semibold shadow-md' 
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }
@@ -112,23 +131,26 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-white/10">
+      <Link 
+        href={profileHref} 
+        className="block px-3 py-4 border-t border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+      >
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
+          {/* Avatar / Initials */}
           <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-            {isLoading ? (
-              <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
-            ) : avatar ? (
-              <Image src={avatar} alt={name || 'User'} width={36} height={36} className="rounded-full object-cover" />
-            ) : (
-              name?.charAt(0)?.toUpperCase() || 'U'
-            )}
+            {name ? name.charAt(0).toUpperCase() : '?'}
           </div>
+
           <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            <span className="text-white font-semibold text-sm truncate">{isLoading ? 'Loading...' : name}</span>
-            <span className="text-white/60 text-xs truncate">{role}</span>
+            <span className="text-white font-semibold text-sm truncate">
+              {name || 'No name set'}
+            </span>
+            <span className="text-white/60 text-xs truncate">
+              {role || 'Guest'}
+            </span>
           </div>
         </div>
-      </div>
+      </Link>
     </aside>
   );
 }
