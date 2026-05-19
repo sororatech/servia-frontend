@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,7 +11,12 @@ import { AUTH_STORAGE } from '@/lib/auth';
 function useIsClient() {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
-    setIsClient(true);
+    const timeout = window.setTimeout(() => {
+      setIsClient(true);
+    }, 0);
+    return () => {
+      window.clearTimeout(timeout);
+    };
   }, []);
   return isClient;
 }
@@ -20,22 +25,24 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const isClient = useIsClient();
-  
+
   const [user, setUser] = useState<{ name: string; role: string | null } | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Load user data from local storage on mount
   useEffect(() => {
     if (!isClient) return;
-    
+
     const token = AUTH_STORAGE.getToken();
     if (token) {
       const firstName = AUTH_STORAGE.getFirstName() || '';
       const lastName = AUTH_STORAGE.getLastName() || '';
       const name = [firstName, lastName].filter(Boolean).join(' ').trim() || 'User';
       const role = AUTH_STORAGE.getUserRole();
+      const storedAvatar = AUTH_STORAGE.getAvatarUrl();
       setUser({ name, role });
+      setAvatarUrl(storedAvatar);
     }
   }, [isClient]);
 
@@ -55,9 +62,7 @@ export function Navbar() {
       .slice(0, 2);
   };
 
-  const profileHref = user?.role === 'candidate' 
-    ? '/candidate/dashboard/profile' 
-    : '/recruiter/dashboard/profile';
+  const profileHref = '/profile';
 
   const navLinks = [
     { href: '/jobs', label: 'Browse Jobs' },
@@ -65,19 +70,8 @@ export function Navbar() {
   ];
 
   const isActive = (href: string) => {
-    // If checking 'Browse Jobs' (/jobs), also match these related paths
     if (href === '/jobs') {
-      const jobRelatedPaths = [
-        '/',
-        '/jobs',
-        '/jobs/',
-        '/candidate/dashboard/cv',
-        '/candidate/application-success',
-      ];
-      // Check if current pathname starts with any of these (handles /jobs/[id])
-      if (jobRelatedPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
-        return true;
-      }
+      return pathname === '/jobs' || pathname.startsWith('/jobs/');
     }
     return pathname === href || pathname.startsWith(href + '/');
   };
@@ -102,27 +96,25 @@ export function Navbar() {
       <nav className="sticky top-0 z-50 w-full bg-[var(--color-background)] border-b border-gray-100 h-20">
         <div className="w-full max-w-[1440px] mx-auto px-4 h-full">
           <div className="grid grid-cols-[auto_1fr_auto] lg:grid-cols-3 items-center w-full h-full gap-4">
-            
             {/* Logo */}
             <div className="flex justify-start">
               <Link href="/" className="flex-shrink-0">
-                <Image 
-                  src="/logo.png" 
-                  alt="ServiaAI" 
-                  width={50} 
-                  height={40} 
-                  className="max-w-[125px]" 
-                  priority 
+                <Image
+                  src="/logo.png"
+                  alt="ServiaAI"
+                  width={50}
+                  height={40}
+                  className="max-w-[125px]"
+                  priority
                 />
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
             <div className="hidden lg:flex justify-center items-center gap-8 xl:gap-12 h-full">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
                 const showUnderline = active || hoveredHref === link.href;
-                
+
                 return (
                   <Link
                     key={link.href}
@@ -131,8 +123,8 @@ export function Navbar() {
                     onMouseLeave={() => setHoveredHref(null)}
                     className={`
                       relative h-full flex items-center px-1 text-base font-heading font-semibold transition-all duration-300
-                      ${active 
-                        ? 'text-[var(--color-primary)]' 
+                      ${active
+                        ? 'text-[var(--color-primary)]'
                         : 'text-[var(--color-foreground)]/80 hover:text-[var(--color-primary)]'
                       }
                     `}
@@ -140,7 +132,7 @@ export function Navbar() {
                     {link.label}
                     <AnimatePresence>
                       {showUnderline && (
-                        <motion.div 
+                        <motion.div
                           layoutId="nav-underline"
                           className="absolute bottom-[-2px] left-0 right-0 h-[3px] bg-[var(--color-primary)] z-[70] rounded-full"
                           initial={{ opacity: 0, scaleX: 0 }}
@@ -155,7 +147,6 @@ export function Navbar() {
               })}
             </div>
 
-            {/* Right Side: Search & Auth */}
             <div className="hidden lg:flex items-center justify-end gap-4">
               <div className="w-full max-w-[240px]">
                 <SearchInput placeholder="Search roles..." />
@@ -164,18 +155,26 @@ export function Navbar() {
               <div className="flex items-center gap-3 min-w-[100px] justify-end">
                 {user ? (
                   <>
-
-                    <Link 
+                    <Link
                       href={profileHref}
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20"
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20 overflow-hidden"
                       title={`View ${user.name}'s Profile`}
                     >
-                      <span className="text-[var(--color-secondary)] text-sm">
-                        {getInitials(user.name)}
-                      </span>
+                      {avatarUrl ? (
+                          <Image 
+                            src={avatarUrl} 
+                            alt={user.name} 
+                            width={40} 
+                            height={40} 
+                            className="w-full h-full rounded-full object-cover"
+                          />                      ) : (
+                        <span className="text-[var(--color-secondary)] text-sm">
+                          {getInitials(user.name)}
+                        </span>
+                      )}
                     </Link>
 
-                    <button 
+                    <button
                       onClick={handleLogout}
                       className="text-sm font-medium text-gray-600 hover:text-red-500 transition-colors"
                       title="Logout"
@@ -184,7 +183,7 @@ export function Navbar() {
                     </button>
                   </>
                 ) : (
-                  <Link 
+                  <Link
                     href="/login"
                     className="px-6 py-2 rounded-full font-heading font-bold text-sm transition-all bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 active:scale-95 whitespace-nowrap"
                   >
@@ -194,11 +193,10 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Mobile Menu Toggle */}
             <div className="flex lg:hidden justify-end">
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-                className="p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)] transition-colors" 
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)] transition-colors"
                 aria-label="Toggle menu"
               >
                 {isMobileMenuOpen ? (
@@ -218,10 +216,10 @@ export function Navbar() {
 
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }} 
-            animate={{ height: 'auto', opacity: 1 }} 
-            exit={{ height: 0, opacity: 0 }} 
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="fixed top-20 left-0 right-0 z-40 bg-[var(--color-background)] border-b border-gray-100 shadow-lg lg:hidden"
           >
@@ -230,13 +228,13 @@ export function Navbar() {
                 {navLinks.map((link) => {
                   const active = isActive(link.href);
                   return (
-                    <Link 
-                      key={link.href} 
-                      href={link.href} 
+                    <Link
+                      key={link.href}
+                      href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block px-4 py-3 rounded-lg font-heading font-semibold transition-colors ${
-                        active 
-                          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' 
+                        active
+                          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
                           : 'text-[var(--color-foreground)]/80 hover:bg-gray-50'
                       }`}
                     >
@@ -253,24 +251,32 @@ export function Navbar() {
               <div className="pt-2 border-t border-gray-100">
                 {user ? (
                   <div className="flex items-center justify-between">
-                    <Link 
+                    <Link
                       href={profileHref}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-3"
                     >
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)]"
-                      >
-                        <span className="text-[var(--color-secondary)] text-sm">
-                          {getInitials(user.name)}
-                        </span>
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)] overflow-hidden">
+                        {avatarUrl ? (
+                          <Image 
+                            src={avatarUrl} 
+                            alt={user.name} 
+                            width={40} 
+                            height={40} 
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[var(--color-secondary)] text-sm">
+                            {getInitials(user.name)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm text-[var(--color-foreground)]">{user.name}</span>
                         <span className="text-xs text-[var(--color-foreground)]/60 capitalize">{user.role}</span>
                       </div>
                     </Link>
-                    <button 
+                    <button
                       onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
                       className="text-sm text-red-500 font-medium hover:text-red-600"
                     >
@@ -278,8 +284,8 @@ export function Navbar() {
                     </button>
                   </div>
                 ) : (
-                  <Link 
-                    href="/login" 
+                  <Link
+                    href="/login"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block w-full text-center px-6 py-3 rounded-full font-heading font-bold text-sm bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 active:scale-95"
                   >

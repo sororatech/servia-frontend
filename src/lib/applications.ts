@@ -15,9 +15,10 @@ export const STATUS_TO_STAGE_INDEX: Record<string, number> = {
   'rejected_cv': -1,
   'rejected_interview': -1,
   'not_selected': -1,
+  'withdrawn': -1,
 };
 
-export const REJECTED_STATUSES = ['rejected_cv', 'rejected_interview', 'not_selected'] as const;
+export const REJECTED_STATUSES = ['rejected_cv', 'rejected_interview', 'not_selected', 'withdrawn'] as const;
 export type RejectedStatus = typeof REJECTED_STATUSES[number];
 
 export const APPLICATION_FILTER_OPTIONS = [
@@ -37,6 +38,6 @@ export const TIME_FORMAT_THRESHOLDS = {
 } as const;
 
 export const UI_CONSTANTS = {
-  MAX_RECENT_APPS: 3,
-  SCROLL_CONTAINER_MAX_HEIGHT: '800px',
+  MAX_RECENT_APPS: 5,
+  SCROLL_CONTAINER_MAX_HEIGHT: '600px',
 } as const;

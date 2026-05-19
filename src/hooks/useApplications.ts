@@ -14,7 +14,7 @@ export const useApplications = () => {
         setError(null);
         
             const response = await api.get('/candidates/my-applications/', {
-        timeout: 30000, // 30 seconds
+        timeout: 90000, // 90 seconds
       });
         
         let data = response.data;
