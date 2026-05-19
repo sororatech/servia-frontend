@@ -1,7 +1,7 @@
-// src/app/candidate/applications/[id]/page.tsx
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -10,71 +10,12 @@ import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { ArrowLeft, FileText, Video, MapPin, Calendar, Eye, Pencil, AlertTriangle, X } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useApplicationDetail } from '@/hooks/useApplicationDetail';
+import { formatStatusDisplay, getStatusBadgeClass, canWithdraw } from '@/lib/applications';
 
-const formatDepartment = (deptCode: string): string => {
+const formatDepartmentFallback = (deptCode: string): string => {
   if (!deptCode) return 'Department';
-  const map: Record<string, string> = {
-    spa_wellness: 'Spa & Wellness',
-    front_office: 'Front Office',
-    housekeeping: 'Housekeeping',
-    food_beverage: 'Food & Beverage',
-    kitchen: 'Kitchen',
-    maintenance: 'Maintenance',
-    security: 'Security',
-    management: 'Management',
-    human_resources: 'Human Resources',
-    sales_marketing: 'Sales & Marketing',
-    fitness_center: 'Fitness Center',
-    other: 'Other',
-  };
-  return map[deptCode] || deptCode.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return deptCode.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
-
-const formatStatus = (status: string) => {
-  if (!status) return 'Unknown';
-  const s = status.toLowerCase();
-  const map: Record<string, string> = {
-    applied: 'Applied',
-    screened: 'Screened',
-    shortlisted: 'Shortlisted',
-    in_review: 'In Review',
-    review: 'In Review',
-    video_submitted: 'Video Submitted',
-    interview_scheduled: 'Interview Scheduled',
-    interviewed: 'Interviewed',
-    offered: 'Offered',
-    hired: 'Hired',
-    rejected_cv: 'Not Selected',
-    rejected_interview: 'Not Selected',
-    not_selected: 'Not Selected',
-    withdrawn: 'Withdrawn',
-    processing: 'Processing',
-    analyzed: 'Analyzed',
-    pending: 'Pending',
-  };
-  return map[s] || s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-};
-
-const getStatusBadgeClass = (status: string) => {
-  if (!status) return 'bg-gray-100 text-gray-600';
-  const s = status.toLowerCase();
-  if (['rejected_cv', 'rejected_interview', 'not_selected', 'withdrawn'].includes(s)) return 'bg-gray-100 text-gray-600';
-  if (['offered', 'hired'].includes(s)) return 'bg-green-100 text-green-700';
-  if (['interview_scheduled', 'interviewed', 'video_submitted'].includes(s)) return 'bg-purple-100 text-purple-700';
-  if (['shortlisted', 'in_review', 'review', 'screened'].includes(s)) return 'bg-blue-100 text-blue-700';
-  return 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]';
-};
-
-const canWithdraw = (status: string): boolean => {
-  const allowed = [
-    'applied', 'screened', 'shortlisted', 'video_submitted',
-    'interview_scheduled', 'interviewed', 'offered', 'hold'
-  ];
-  return allowed.includes(status?.toLowerCase());
-};
-
-const getPdfPreviewUrl = (pdfUrl: string): string =>
-  `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
 
 export default function ApplicationDetailPage() {
   const params = useParams();
@@ -94,10 +35,13 @@ export default function ApplicationDetailPage() {
     setShowCVPreview,
   } = useApplicationDetail(id);
 
+  const [iframeError, setIframeError] = useState(false);
+
   const jobTitle = jobDetails?.title || (typeof application?.job === 'object' ? application.job?.title : 'Position Applied For');
   const jobLocation = jobDetails?.location || (typeof application?.job === 'object' ? application.job?.location : 'Remote');
-  const rawDept = jobDetails?.department || (typeof application?.job === 'object' ? application.job?.department : '');
-  const jobDepartment = formatDepartment(rawDept);
+  const jobDepartment = jobDetails?.department_display || 
+    (typeof application?.job === 'object' ? application.job?.department_display : '') ||
+    formatDepartmentFallback(jobDetails?.department || (typeof application?.job === 'object' ? application.job?.department : ''));
   const jobId = jobDetails?.id || (typeof application?.job === 'string' ? application.job : application?.job?.id);
 
   if (loading) {
@@ -147,13 +91,14 @@ export default function ApplicationDetailPage() {
           <span className="font-medium">Back to My Applications</span>
         </button>
 
+        {/* Header Card */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-lg shadow-gray-200/50 overflow-hidden mb-8">
           <div className="p-8 border-b border-gray-100 bg-gray-50/50">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
                   <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wide rounded-full ${getStatusBadgeClass(application.status)}`}>
-                    {formatStatus(application.status)}
+                    {formatStatusDisplay(application.status)}
                   </span>
                   <span className="text-gray-400 text-sm flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" /> Applied {format(appliedDate, 'MMMM dd, yyyy')}
@@ -173,7 +118,9 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
 
+        {/* CV and Video Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          {/* CV Card */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -182,7 +129,14 @@ export default function ApplicationDetailPage() {
               </div>
               {application.cv_uploaded_at && (
                 <div className="flex gap-2">
-                  <button onClick={() => setShowCVPreview(true)} className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Preview CV">
+                  <button
+                    onClick={() => {
+                      setIframeError(false);
+                      setShowCVPreview(true);
+                    }}
+                    className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
+                    title="Preview CV"
+                  >
                     <Eye className="w-5 h-5" />
                   </button>
                   <button onClick={() => router.push(`/candidate/dashboard/cv?application=${id}`)} className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Edit/Replace CV">
@@ -205,7 +159,7 @@ export default function ApplicationDetailPage() {
                   application.cv_status === 'processing' ? 'bg-blue-100 text-blue-700' :
                   'bg-gray-100 text-gray-600'
                 }`}>
-                  Status: {formatStatus(application.cv_status || 'pending')}
+                  Status: {formatStatusDisplay(application.cv_status || 'pending')}
                 </div>
               </>
             ) : (
@@ -216,6 +170,7 @@ export default function ApplicationDetailPage() {
             )}
           </div>
 
+          {/* Video Card */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -250,6 +205,7 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
 
+        {/* Action Buttons */}
         <div className="flex justify-end gap-4 border-t border-gray-100 pt-8">
           <Button variant="ghost" onClick={() => jobId ? router.push(`/jobs/${jobId}`) : router.push('/jobs')}>
             View Job Description
@@ -267,7 +223,8 @@ export default function ApplicationDetailPage() {
         </div>
       </main>
 
-      {showCVPreview && application.cv_download_url && (
+      {/* CV Preview Modal */}
+      {showCVPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b">
@@ -276,11 +233,30 @@ export default function ApplicationDetailPage() {
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            <iframe src={getPdfPreviewUrl(application.cv_download_url)} className="w-full h-full" title="CV Preview" />
+            {!iframeError && application.cv_preview_url ? (
+              <iframe
+                src={application.cv_preview_url}
+                className="w-full h-full"
+                title="CV Preview"
+                onError={() => setIframeError(true)}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                <FileText className="w-16 h-16 text-gray-400 mb-4" />
+                <p className="text-gray-600 mb-4">Cannot preview the CV. You can download it instead.</p>
+                <Button
+                  variant="primary"
+                  onClick={() => window.open(application.cv_download_url, '_blank')}
+                >
+                  Download CV
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
+      {/* Withdraw Modal */}
       {showWithdrawModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6">

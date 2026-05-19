@@ -47,19 +47,16 @@ export function Navbar() {
       .slice(0, 2);
   };
 
-  // ✅ YOUR BRANCH: Role-based profile routing
   const profileHref = user?.role === 'candidate' 
     ? '/candidate/dashboard/profile' 
     : '/recruiter/dashboard/profile';
 
-  // ✅ YOUR BRANCH: useMemo for navLinks
   const navLinks = useMemo(() => [
     { href: '/jobs', label: 'Browse Jobs' },
     { href: '/candidate/applications', label: 'My Applications' },
   ], []);
 
   const isActive = (href: string) => {
-    // ✅ YOUR BRANCH: Complex job path matching
     if (href === '/jobs') {
       const jobRelatedPaths = [
         '/',
@@ -181,7 +178,6 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Mobile Menu Toggle */}
             <div className="flex lg:hidden justify-end">
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 

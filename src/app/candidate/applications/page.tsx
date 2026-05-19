@@ -25,7 +25,7 @@ export default function CandidateApplicationsPage() {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
           <LoadingSkeleton variant="list" />
         </main>
         <Footer />
@@ -37,7 +37,7 @@ export default function CandidateApplicationsPage() {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <main className="flex-1 max-w-7xl mx-auto px-6 py-10">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10">
           <div className="text-center text-red-600 bg-red-50 p-6 rounded-2xl">{error}</div>
         </main>
         <Footer />
@@ -70,27 +70,11 @@ export default function CandidateApplicationsPage() {
 
   const displayedApps = showAll ? filteredApps : filteredApps.slice(0, UI_CONSTANTS.MAX_RECENT_APPS);
 
-  const getCompanyDisplay = (app: any) => {
-    const dept = app.job?.department;
-    if (dept) {
-      const map: Record<string, string> = {
-        spa_wellness: 'Spa & Wellness',
-        front_office: 'Front Office',
-        housekeeping: 'Housekeeping',
-        food_beverage: 'Food & Beverage',
-        kitchen: 'Kitchen',
-        fitness_center: 'Fitness Center',
-      };
-      return map[dept] || dept.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-    }
-    return app.job?.location || 'Servia Hotels';
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-10">
           <StatCard title="APPLIED" value={stats.applied} icon={<Play className="w-6 h-6" />} variant="primary" />
           <StatCard title="SHORTLISTED" value={stats.shortlisted} icon={<Star className="w-6 h-6" />} variant="secondary" />
           <StatCard title="IN REVIEW" value={stats.inReview} icon={<MessageSquare className="w-6 h-6" />} variant="primary" />
@@ -100,9 +84,9 @@ export default function CandidateApplicationsPage() {
         </div>
 
         <div className="mt-8">
-          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <h2 className="text-xl font-bold text-gray-900">Recent Applications</h2>
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="w-full sm:w-64">
                 <SearchInput placeholder="Search applications..." onSearch={setSearchQuery} debounceMs={300} className="w-full" />
               </div>
@@ -111,14 +95,14 @@ export default function CandidateApplicationsPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                  className="pl-9 pr-8 py-2 bg-white border-2 border-[var(--color-primary)] rounded-xl text-sm font-medium text-gray-700 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent appearance-none cursor-pointer"
+                  className="pl-9 pr-8 py-2 bg-white border-2 border-[var(--color-primary)] rounded-xl text-sm font-medium text-gray-700 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent appearance-none cursor-pointer w-full sm:w-auto"
                 >
                   {APPLICATION_FILTER_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
-              <button className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+              <button className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors self-center">
                 <SlidersHorizontal className="w-5 h-5 text-gray-600" />
               </button>
             </div>
@@ -137,7 +121,7 @@ export default function CandidateApplicationsPage() {
                   key={app.id}
                   id={app.id}
                   jobTitle={app.job?.title || 'Position'}
-                  company={getCompanyDisplay(app)}
+                  company={app.job?.department_display || app.job?.location || 'Servia Hotels'}
                   appliedAt={app.applied_at}
                   status={app.status}
                 />

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { AUTH_STORAGE } from '@/lib/auth';
 import type { UserProfile, ProfileFormData } from '@/types/profile';
+import { CanceledError } from 'axios';
 
 export function useProfile() {
   const router = useRouter();
@@ -55,7 +56,6 @@ export function useProfile() {
     department: data.department,
     phone: data.phone,
     joined_date: data.date_joined,
-    // Default stats (will be overwritten by role-specific calls)
     applications_count: 0,
     pending_actions: 0,
     managed_jobs: 0,
@@ -64,19 +64,18 @@ export function useProfile() {
     isAdmin: data.is_admin === true,
   }), []);
 
-  const fetchProfile = useCallback(async () => {
+  const fetchProfile = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get('/users/me/');
+      const response = await api.get('/users/me/', { signal });
       const mappedProfile = mapApiResponse(response.data);
       
       let finalProfile = { ...mappedProfile };
 
-      // Fetch role-specific stats
       if (mappedProfile.role === 'candidate') {
         try {
-          const statsRes = await api.get('/candidates/my-applications-stats/');
+          const statsRes = await api.get('/candidates/my-applications-stats/', { signal });
           const stats = statsRes.data;
           finalProfile = {
             ...mappedProfile,
@@ -84,11 +83,12 @@ export function useProfile() {
             pending_actions: stats.pending_actions ?? 0,
           };
         } catch (e) {
+          if (e instanceof CanceledError) return;
           console.warn('Failed to fetch candidate stats', e);
         }
       } else if (mappedProfile.role === 'recruiter') {
         try {
-          const statsRes = await api.get('/users/recruiters/stats/');
+          const statsRes = await api.get('/users/recruiters/stats/', { signal });
           const recruiterStats = statsRes.data;
           finalProfile = {
             ...mappedProfile,
@@ -97,6 +97,7 @@ export function useProfile() {
             pending_review: recruiterStats.pending_review ?? 0,
           };
         } catch (e) {
+          if (e instanceof CanceledError) return;
           console.warn('Failed to fetch recruiter stats', e);
         }
       }
@@ -117,6 +118,7 @@ export function useProfile() {
         AUTH_STORAGE.setAvatarUrl(null);
       }
     } catch (err: any) {
+      if (err instanceof CanceledError) return;
       console.error('Failed to fetch profile:', err);
       let errorMsg = 'Unable to load profile from server. ';
       if (err.code === 'ERR_NETWORK') errorMsg += 'Check your internet connection.';
@@ -157,7 +159,9 @@ export function useProfile() {
   }, [mapApiResponse]);
 
   useEffect(() => {
-    fetchProfile();
+    const abortController = new AbortController();
+    fetchProfile(abortController.signal);
+    return () => abortController.abort();
   }, [fetchProfile]);
 
   const handleSave = useCallback(async () => {
@@ -180,7 +184,7 @@ export function useProfile() {
       if (Object.keys(payload).length > 0) {
         await api.patch('/users/me/', payload);
       }
-      await fetchProfile(); 
+      await fetchProfile();
       setIsEditing(false);
       setValidationErrors({});
     } catch (err: any) {
@@ -217,7 +221,7 @@ export function useProfile() {
         body: file,
       });
       await api.post('/users/avatar/confirm/', { file_key: urlData.file_key });
-      await fetchProfile(); // refresh to get new avatar URL
+      await fetchProfile();
     } catch (err) {
       console.error('Avatar upload failed:', err);
       setAvatarError('Failed to upload avatar. Please try again.');
