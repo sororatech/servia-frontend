@@ -71,7 +71,21 @@ export function Navbar() {
 
   const isActive = (href: string) => {
     if (href === '/jobs') {
-      return pathname === '/jobs' || pathname.startsWith('/jobs/');
+      // Extra paths that should also highlight "Browse Jobs"
+      const jobRelatedPaths = [
+        '/',
+        '/jobs',
+        '/candidate/dashboard/cv',
+        '/candidate/application-success',
+      ];
+      // Check if current pathname matches any of these exactly or starts with '/jobs/'
+      if (
+        jobRelatedPaths.some(path => pathname === path || pathname.startsWith(path + '/')) ||
+        pathname.startsWith('/jobs/')
+      ) {
+        return true;
+      }
+      return false;
     }
     return pathname === href || pathname.startsWith(href + '/');
   };
@@ -167,7 +181,8 @@ export function Navbar() {
                             width={40} 
                             height={40} 
                             className="w-full h-full rounded-full object-cover"
-                          />                      ) : (
+                          />                      
+                        ) : (
                         <span className="text-[var(--color-secondary)] text-sm">
                           {getInitials(user.name)}
                         </span>

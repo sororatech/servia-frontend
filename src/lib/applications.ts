@@ -41,3 +41,47 @@ export const UI_CONSTANTS = {
   MAX_RECENT_APPS: 5,
   SCROLL_CONTAINER_MAX_HEIGHT: '600px',
 } as const;
+
+export const formatStatusDisplay = (status: string): string => {
+  if (!status) return 'Unknown';
+  const s = status.toLowerCase();
+  const map: Record<string, string> = {
+    applied: 'Applied',
+    screened: 'Screened',
+    shortlisted: 'Shortlisted',
+    in_review: 'In Review',
+    review: 'In Review',
+    video_submitted: 'Video Submitted',
+    interview_scheduled: 'Interview Scheduled',
+    interviewed: 'Interviewed',
+    offered: 'Offered',
+    hired: 'Hired',
+    rejected_cv: 'Not Selected',
+    rejected_interview: 'Not Selected',
+    not_selected: 'Not Selected',
+    withdrawn: 'Withdrawn',
+    processing: 'Processing',
+    analyzed: 'Analyzed',
+    pending: 'Pending',
+  };
+  return map[s] || s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+};
+
+export const getStatusBadgeClass = (status: string): string => {
+  if (!status) return 'bg-gray-100 text-gray-600';
+  const s = status.toLowerCase();
+  if (['rejected_cv', 'rejected_interview', 'not_selected', 'withdrawn'].includes(s)) return 'bg-gray-100 text-gray-600';
+  if (['offered', 'hired'].includes(s)) return 'bg-green-100 text-green-700';
+  if (['interview_scheduled', 'interviewed', 'video_submitted'].includes(s)) return 'bg-purple-100 text-purple-700';
+  if (['shortlisted', 'in_review', 'review', 'screened'].includes(s)) return 'bg-blue-100 text-blue-700';
+  return 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]';
+};
+
+export const WITHDRAWABLE_STATUSES = [
+  'applied', 'screened', 'shortlisted', 'video_submitted',
+  'interview_scheduled', 'interviewed', 'offered', 'hold'
+];
+
+export const canWithdraw = (status: string): boolean => {
+  return WITHDRAWABLE_STATUSES.includes(status?.toLowerCase());
+};

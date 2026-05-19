@@ -1,10 +1,9 @@
-// src/types/application.ts
-
 export interface JobSummary {
   id: string;
   title: string;
   department: string;
   location: string;
+  department_display?: string;
   employment_type?: string;
   is_active?: boolean;
 }

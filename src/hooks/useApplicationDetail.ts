@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+import { CanceledError } from 'axios';
 
 interface UseApplicationDetailReturn {
   application: any;
@@ -24,48 +25,50 @@ export const useApplicationDetail = (id: string): UseApplicationDetailReturn => 
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showCVPreview, setShowCVPreview] = useState(false);
 
-  const fetchApplication = async () => {
+  const fetchApplication = useCallback(async (signal: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      // 30 seconds timeout for this slow endpoint
-      const response = await api.get(`/candidates/candidates/${id}/`, { timeout: 30000 });
+      const response = await api.get(`/candidates/candidates/${id}/`, { timeout: 30000, signal });
       const appData = response.data;
       setApplication(appData);
 
-      // Fetch job details if needed
       if (typeof appData.job === 'string' && appData.job) {
         try {
-          const jobRes = await api.get(`/jobs/jobs/${appData.job}/`, { timeout: 15000 });
+          const jobRes = await api.get(`/jobs/jobs/${appData.job}/`, { timeout: 15000, signal });
           setJobDetails(jobRes.data);
         } catch (jobErr) {
-          console.error('Failed to fetch job details:', jobErr);
+          if (!(jobErr instanceof CanceledError)) console.error('Failed to fetch job details:', jobErr);
         }
       } else if (appData.job && typeof appData.job === 'object') {
         setJobDetails(appData.job);
       }
     } catch (err: any) {
+      if (err instanceof CanceledError || err.name === 'CanceledError') return;
       console.error('Failed to fetch application:', err);
       let errorMsg = 'Unable to load application details. Please try again later.';
-      if (err.code === 'ECONNABORTED') {
-        errorMsg = 'Request timed out. The server may be busy. Please try again later.';
-      } else if (err.response?.status === 401) {
-        errorMsg = 'Session expired. Please log in again.';
-      } else if (err.response?.status === 404) {
-        errorMsg = 'Application not found.';
-      }
+      if (err.code === 'ECONNABORTED') errorMsg = 'Request timed out. The server may be busy. Please try again later.';
+      else if (err.response?.status === 401) errorMsg = 'Session expired. Please log in again.';
+      else if (err.response?.status === 404) errorMsg = 'Application not found.';
       setError(errorMsg);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchApplication(abortController.signal);
+    return () => abortController.abort();
+  }, [fetchApplication]);
 
   const withdraw = async () => {
     setWithdrawing(true);
     setError(null);
     try {
       await api.patch(`/candidates/candidates/${id}/`, { status: 'withdrawn' }, { timeout: 30000 });
-      await fetchApplication(); // refresh after withdrawal
+      const abortController = new AbortController();
+      await fetchApplication(abortController.signal);
       setShowWithdrawModal(false);
     } catch (err: any) {
       console.error('Failed to withdraw application:', err);
@@ -84,12 +87,9 @@ export const useApplicationDetail = (id: string): UseApplicationDetailReturn => 
   };
 
   const refresh = async () => {
-    await fetchApplication();
+    const abortController = new AbortController();
+    await fetchApplication(abortController.signal);
   };
-
-  useEffect(() => {
-    if (id) fetchApplication();
-  }, [id]);
 
   return {
     application,
