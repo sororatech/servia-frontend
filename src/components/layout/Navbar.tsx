@@ -13,6 +13,7 @@ export function Navbar() {
   const router = useRouter();
   
   const [user, setUser] = useState<{ name: string; role: string | null } | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -24,7 +25,9 @@ export function Navbar() {
       const lastName = AUTH_STORAGE.getLastName() || '';
       const name = [firstName, lastName].filter(Boolean).join(' ').trim() || 'User';
       const role = AUTH_STORAGE.getUserRole();
+      const storedAvatar = AUTH_STORAGE.getAvatarUrl();
       setUser({ name, role });
+      setAvatarUrl(storedAvatar);
     }
   }, []);
 
@@ -44,6 +47,7 @@ export function Navbar() {
       .slice(0, 2);
   };
 
+  // ✅ YOUR BRANCH: Role-based profile routing
   const profileHref = user?.role === 'candidate' 
     ? '/candidate/dashboard/profile' 
     : '/recruiter/dashboard/profile';
@@ -55,6 +59,7 @@ export function Navbar() {
   ], []);
 
   const isActive = (href: string) => {
+    // ✅ YOUR BRANCH: Complex job path matching
     if (href === '/jobs') {
       const jobRelatedPaths = [
         '/',
@@ -79,13 +84,13 @@ export function Navbar() {
             {/* Logo - YOUR BRANCH VALUES */}
             <div className="flex justify-start">
               <Link href="/" className="flex-shrink-0">
-                <Image 
-                  src="/logo.png" 
-                  alt="ServiaAI" 
-                  width={50} 
-                  height={40} 
-                  className="max-w-[125px]" 
-                  priority 
+                <Image
+                  src="/logo.png"
+                  alt="ServiaAI"
+                  width={50}
+                  height={40}
+                  className="max-w-[125px]"
+                  priority
                 />
               </Link>
             </div>
@@ -139,12 +144,22 @@ export function Navbar() {
                   <>
                     <Link 
                       href={profileHref}
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20"
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20 overflow-hidden"
                       title={`View ${user.name}'s Profile`}
                     >
-                      <span className="text-[var(--color-secondary)] text-sm">
-                        {getInitials(user.name)}
-                      </span>
+                      {avatarUrl ? (
+                        <Image 
+                          src={avatarUrl} 
+                          alt={user.name} 
+                          width={40} 
+                          height={40} 
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-[var(--color-secondary)] text-sm">
+                          {getInitials(user.name)}
+                        </span>
+                      )}
                     </Link>
 
                     <button 
@@ -230,12 +245,20 @@ export function Navbar() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-3"
                     >
-                      <div 
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)]"
-                      >
-                        <span className="text-[var(--color-secondary)] text-sm">
-                          {getInitials(user.name)}
-                        </span>
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)] overflow-hidden">
+                        {avatarUrl ? (
+                          <Image 
+                            src={avatarUrl} 
+                            alt={user.name} 
+                            width={40} 
+                            height={40} 
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[var(--color-secondary)] text-sm">
+                            {getInitials(user.name)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm text-[var(--color-foreground)]">{user.name}</span>
