@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { Briefcase, Building2 } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 interface OpenRole {
   id: string;
@@ -23,19 +23,11 @@ export default function OpenRolesProgress({ roles }: Props) {
     return colors[index % colors.length];
   };
 
-  const getDepartmentIcon = (department?: string) => {
-    switch (department) {
-      case 'housekeeping': return Building2;
-      case 'kitchen': return Briefcase;
-      default: return Building2;
-    }
-  };
-
   if (roles.length === 0) {
     return (
       <Card className="p-8 text-center border-0 bg-[#C2B5B5]">
         <p className="text-gray-800 mb-4">No open roles</p>
-        <Link 
+        <Link
           href="/recruiter/dashboard/jobs/create"
           className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-full border-2 border-[#26B9C8] text-[#26B9C8] hover:bg-[#26B9C8] hover:text-white transition-all"
         >
@@ -47,63 +39,67 @@ export default function OpenRolesProgress({ roles }: Props) {
 
   return (
     <Card className="p-5 border-0 bg-[#C2B5B5]">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-300/50">
+      <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-300/50">
         <div className="flex items-center gap-2">
-          <Briefcase className="w-6 h-6 text-[#26B9C8]" aria-hidden="true" />
-          <h2 className="text-2xl font-bold text-[#0F2A44]">Open Roles</h2>
+          <Briefcase className="w-8 h-8 pb-2 text-[#26B9C8]" aria-hidden="true" />
+          <h2 className="text-xl font-bold text-[#0F2A44]">Open Roles</h2>
         </div>
+        <Link
+          href="/recruiter/dashboard/jobs"
+          className="text-sm font-medium text-[#26B9C8] hover:text-[#26B9C8]/80"
+        >
+          View all &gt;
+        </Link>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {roles.map((role, index) => {
-          const progress = role.openings_count > 0 
-            ? (role.applications_count / role.openings_count) * 100 
+          const progress = role.openings_count > 0
+            ? Math.min((role.applications_count / role.openings_count) * 100, 100)
             : 0;
           const barColor = getProgressColor(index);
-          const Icon = getDepartmentIcon(role.department);
-          
+
           return (
-            <div key={role.id} className="pb-4 border-b border-gray-300/30 last:border-0 last:pb-0">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/50 flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-[#0F2A44]" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-[#0F2A44]">{role.title}</h3>
-                    <p className="text-sm text-gray-600 flex items-center gap-1">
-                      {role.department?.replace('_', ' ')} • {role.location}
-                    </p>
-                  </div>
+            <div key={role.id} className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <h5 className="font-semibold text-[15px] text-black truncate">
+                    {role.title}
+                  </h5>
                 </div>
-                <div className="text-right">
+
+                <div className="text-right ml-3 flex-shrink-0">
                   <p className="text-sm font-bold" style={{ color: barColor }}>
                     {role.applications_count}
                   </p>
-                  <p className="text-xs text-gray-600">applied</p>
+                  <p className="text-xs text-gray-500">applied</p>
                 </div>
               </div>
-              
-              <div className="w-full bg-gray-300/50 rounded-full h-2">
-                <div 
-                  className="h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: barColor }}
-                  role="progressbar"
-                  aria-valuenow={Math.round(progress)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-gray-300/50 rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${progress}%`, backgroundColor: barColor }}
+                    role="progressbar"
+                    aria-valuenow={Math.round(progress)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  />
+                </div>
+                <span className="text-xs text-gray-500 whitespace-nowrap">
+                  {Math.round(progress)}%
+                </span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* View All Roles Button at Bottom */}
-      <div className="mt-6 pt-4 border-t border-gray-300/50">
-        <Link 
-          href="/recruiter/dashboard/jobs" 
-          className="block w-full text-center py-2 px-4 rounded-lg bg-[#26B9C8]/10 text-[#26B9C8] font-semibold text-sm hover:bg-[#26B9C8] hover:text-white transition-colors"
+      <div className="mt-5 pt-3 border-t border-gray-300/50 flex justify-center">
+        <Link
+          href="/recruiter/dashboard/jobs"
+          className="w-64 text-center py-2.5 px-4 rounded-lg bg-[#26B9C8] text-white font-semibold text-sm hover:bg-[#26B9C8]/90 transition-colors shadow-sm"
         >
           View All Roles
         </Link>

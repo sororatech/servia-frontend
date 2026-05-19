@@ -1,53 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSkeleton } from '@/components/ui';
 import OverviewStats from './components/OverviewStats';
 import RecentApplications from './components/RecentApplications';
 import OpenRolesProgress from './components/OpenRolesProgress';
-import { dashboardAPI } from '@/lib/api';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function RecruiterOverviewPage() {
-  const [loading, setLoading] = useState(true);
-  const [recruiterName, setRecruiterName] = useState('');
-  const [stats, setStats] = useState({
-    totalCandidates: 0,
-    shortlisted: 0,
-    interviewsThisWeek: 0,
-    avgAiScore: null as number | null,
-  });
-  const [recentApplications, setRecentApplications] = useState<any[]>([]);
-  const [openRoles, setOpenRoles] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [recruiter, statsData, applications, roles] = await Promise.all([
-          dashboardAPI.getCurrentRecruiter(),
-          dashboardAPI.getStats(),
-          dashboardAPI.getRecentApplications(5),
-          dashboardAPI.getOpenRoles(5),
-        ]);
-
-        setRecruiterName(recruiter.first_name || 'Recruiter');
-        setStats(statsData);
-        setRecentApplications(applications);
-        setOpenRoles(roles);
-      } catch (err) {
-        console.error('Failed to load dashboard ', err);
-        setError('Failed to load dashboard data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, []);
+  const { data, loading, error } = useDashboardData();
 
   if (loading) {
     return (
@@ -77,7 +38,7 @@ export default function RecruiterOverviewPage() {
               <p className="text-red-600 mb-4">{error}</p>
               <button 
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                className="px-4 py-2 bg-[#26B9C8] text-white rounded-lg hover:bg-[#26B9C8]/90 transition-colors"
               >
                 Retry
               </button>
@@ -88,6 +49,8 @@ export default function RecruiterOverviewPage() {
     );
   }
 
+  if (!data) return null;
+
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -97,26 +60,18 @@ export default function RecruiterOverviewPage() {
 
   return (
     <DashboardLayout>
-      {/* Page Background is default white */}
-      <div className="px-6 lg:px-10 py-8 min-h-screen">
-        {/* Welcome Header - spellCheck false prevents red underline */}
+      <div className="px-6 lg:px-10 py-8 min-h-screen bg-white">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-[#0F2A44]" spellCheck={false}>
-            Welcome back, {recruiterName}!
+            {getTimeGreeting()}, {data.recruiterName}!
           </h1>
           <p className="text-gray-600 mt-2">
-            Here's what has happened with your recruitment pipeline today.
+            Here&apos;s what has happened with your recruitment pipeline today.
           </p>
         </div>
-
-        {/* Stats Cards */}
-        <OverviewStats {...stats} />
-
-        {/* Recent Applications */}
-        <RecentApplications applications={recentApplications} />
-
-        {/* Open Roles Progress */}
-        <OpenRolesProgress roles={openRoles} />
+        <OverviewStats {...data.stats} />
+        <RecentApplications applications={data.recentApplications} />
+        <OpenRolesProgress roles={data.openRoles} />
       </div>
     </DashboardLayout>
   );

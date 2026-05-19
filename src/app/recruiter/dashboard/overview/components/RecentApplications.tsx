@@ -19,6 +19,7 @@ interface RecentApplication {
   applied_at: string;
   status: string;
   ai_score?: number;
+  video_intro_url?: string;
 }
 
 interface Props {
@@ -39,6 +40,17 @@ export default function RecentApplications({ applications }: Props) {
       'bg-pink-500',
     ];
     return colors[index % colors.length];
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    const statusClasses: { [key: string]: string } = {
+      'applied': 'bg-blue-100 text-blue-700',
+      'shortlisted': 'bg-green-100 text-green-700',
+      'interviewing': 'bg-purple-100 text-purple-700',
+      'rejected': 'bg-red-100 text-red-700',
+      'hired': 'bg-teal-100 text-teal-700',
+    };
+    return statusClasses[status.toLowerCase()] || 'bg-gray-100 text-gray-700';
   };
 
   if (applications.length === 0) {
@@ -74,39 +86,58 @@ export default function RecentApplications({ applications }: Props) {
         {applications.map((app, index) => (
           <div 
             key={app.id}
-            // Default bg is transparent/white-ish, Hover bg is light blue
-            className="flex items-center justify-between p-4 rounded-xl transition-colors bg-white/40 hover:bg-blue-50 cursor-pointer"
+            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 items-center p-4 rounded-xl transition-colors bg-white/40 hover:bg-blue-50 cursor-pointer"
           >
-            <div className="flex items-center gap-4 flex-1 min-w-0">
-              <div className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
-                {getInitials(app.candidate.first_name, app.candidate.last_name)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <Link 
-                  href={`/recruiter/dashboard/candidates/${app.candidate.id}`}
-                  className="font-semibold text-gray-900 hover:text-[#26B9C8] block truncate"
-                >
-                  {app.candidate.first_name} {app.candidate.last_name}
-                </Link>
-                <p className="text-sm text-gray-600 truncate">
-                  {app.job?.title || 'Front Desk Manager'}
-                </p>
-              </div>
+            <div className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
+              {getInitials(app.candidate.first_name, app.candidate.last_name)}
+            </div>
+            
+            <div className="min-w-0">
+              <Link 
+                href={`/recruiter/dashboard/candidates/${app.candidate.id}`}
+                className="font-semibold text-gray-900 hover:text-[#26B9C8] block truncate"
+              >
+                {app.candidate.first_name} {app.candidate.last_name}
+              </Link>
+              <p className="text-sm text-gray-600 truncate">
+                {app.job?.title || 'Unknown Job'}
+              </p>
             </div>
 
-            <div className="flex items-center gap-3 flex-shrink-0">
-              {app.ai_score && (
+            {app.ai_score && (
+              <div className="w-16 flex justify-end">
                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#26B9C8]/20 text-[#26B9C8]">
                   {app.ai_score}%
                 </span>
-              )}
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                Shortlisted
+              </div>
+            )}
+            {!app.ai_score && <div className="w-16" />}
+
+            <div className="w-24 flex justify-center">
+              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(app.status)}`}>
+                {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
               </span>
-              <button className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#26B9C8]/20 text-[#26B9C8] hover:bg-[#26B9C8] hover:text-white transition-colors">
-                <Video className="w-3 h-3" />
-                Video
-              </button>
+            </div>
+
+            <div className="w-28 flex justify-end">
+              {app.video_intro_url ? (
+                <button 
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#26B9C8] text-white hover:bg-[#26B9C8]/90 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(app.video_intro_url, '_blank');
+                  }}
+                >
+                  <Video className="w-3 h-3" />
+                  Watch Video
+                </button>
+              ) : (
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
+                  <Video className="w-3 h-3" />
+                  No Video
+                </span>
+              )}
             </div>
           </div>
         ))}
