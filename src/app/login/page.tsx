@@ -6,8 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui';
-import { Footer } from '@/components/ui';
+import { Button, Footer } from '@/components/ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,8 +53,8 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password, rememberMe);
-    } catch (err:any) {
-      const errorCode=err.response?.data?.code;
+    } catch (err: any) {
+      const errorCode = err.response?.data?.code;
 
       if (errorCode === 'EMAIL_NOT_VERIFIED') {
         router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
@@ -71,22 +70,22 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
         <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
-          <Image 
-            src="/images/registerimg.png" 
-            alt="ServiaAI background" 
-            fill 
+          <Image
+            src="/images/registerimg.png"
+            alt="ServiaAI background"
+            fill
             className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 45vw" 
-            priority 
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            priority
           />
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
           
-          <div className="relative z-10 max-w-[460px] px-14 py-14 bg-white shadow-2xl rounded-[2px]">
+          <div className="relative z-10 w-[85%] xl:w-auto xl:max-w-[460px] px-8 xl:px-14 py-10 xl:py-14 bg-white shadow-2xl rounded-[2px]">
             <div className="mb-8">
               <div className="mb-6">
-                <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain" />
+                <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain w-12 h-12 xl:w-16 xl:h-16" />
               </div>
-              <h2 className="text-2xl mb-3 leading-tight" style={{ color: '#0F2A44' }}>
+              <h2 className="text-xl xl:text-2xl mb-3 leading-tight" style={{ color: '#0F2A44' }}>
                 The Ultimate Career Experience.
               </h2>
               <p className="text-gray-600 leading-relaxed text-sm">
@@ -94,7 +93,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="mt-44 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
+            <div className="mt-16 xl:mt-44 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E6F7FB' }}>
                   <ShieldCheck className="w-5 h-5" style={{ color: '#26B9C8' }} />
@@ -108,24 +107,24 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-8 bg-white">
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-white overflow-y-auto">
           <div className="w-full max-w-md">
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold" style={{ color: '#0F2A44' }}>Welcome back</h2>
+            <div className="mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: '#0F2A44' }}>Welcome back</h2>
               <p className="-mt-2 text-sm" style={{ color: '#26B9C8' }}>Please enter your details to sign in.</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-7">
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
               {(persistentError || error) && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{persistentError ||error}</div>
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{persistentError || error}</div>
               )}
 
-              <div className="space-y-2 mt-16">
+              <div className="space-y-2 mt-8 sm:mt-16">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                 <input
                   type="email" id="email" name="email" value={formData.email} onChange={handleChange}
                   placeholder="name@company.com"
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
                   style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
                 />
                 {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
@@ -140,20 +139,20 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? 'text' : 'password'} id="password" name="password" value={formData.password} onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
                     style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
                   />
                   <button 
                     type="button" 
                     onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3.5 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
                     style={{ color: '#26B9C8' }}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 </div>
@@ -161,12 +160,12 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center">
-                <input id="rememberMe" name="rememberMe" type="checkbox" checked={rememberMe} onChange={handleCheckboxChange} className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" />
+                <input id="rememberMe" name="rememberMe" type="checkbox" checked={rememberMe} onChange={handleCheckboxChange} className="w-4 h-4 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" />
                 <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">Remember me</label>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 variant="primary"
                 size="lg"
@@ -177,7 +176,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-gray-600">
+            <p className="mt-5 sm:mt-6 text-center text-sm text-gray-600">
               Don&#39;t have an account?{' '}
               <Link href="/register" className="font-medium" style={{ color: '#26B9C8' }}>Create Account</Link>
             </p>

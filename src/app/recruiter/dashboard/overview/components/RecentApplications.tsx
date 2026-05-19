@@ -31,7 +31,7 @@ export default function RecentApplications({ applications }: Props) {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  const getAvatarColor = (index: number) => {
+  const getAvatarColor = (candidateId: string) => {
     const colors = [
       'bg-blue-500',
       'bg-green-500',
@@ -39,7 +39,8 @@ export default function RecentApplications({ applications }: Props) {
       'bg-orange-500',
       'bg-pink-500',
     ];
-    return colors[index % colors.length];
+    const hash = candidateId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -83,22 +84,20 @@ export default function RecentApplications({ applications }: Props) {
       </div>
 
       <div className="space-y-3">
-        {applications.map((app, index) => (
-          <div 
+        {applications.map((app) => (
+          <Link 
             key={app.id}
-            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 items-center p-4 rounded-xl transition-colors bg-white/40 hover:bg-blue-50 cursor-pointer"
+            href={`/recruiter/dashboard/candidates/${app.candidate.id}`}
+            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 items-center p-4 rounded-xl transition-colors bg-white/40 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#26B9C8]"
           >
-            <div className={`w-10 h-10 rounded-full ${getAvatarColor(index)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
+            <div className={`w-10 h-10 rounded-full ${getAvatarColor(app.candidate.id)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
               {getInitials(app.candidate.first_name, app.candidate.last_name)}
             </div>
             
             <div className="min-w-0">
-              <Link 
-                href={`/recruiter/dashboard/candidates/${app.candidate.id}`}
-                className="font-semibold text-gray-900 hover:text-[#26B9C8] block truncate"
-              >
+              <span className="font-semibold text-gray-900 hover:text-[#26B9C8] block truncate">
                 {app.candidate.first_name} {app.candidate.last_name}
-              </Link>
+              </span>
               <p className="text-sm text-gray-600 truncate">
                 {app.job?.title || 'Unknown Job'}
               </p>
@@ -122,24 +121,26 @@ export default function RecentApplications({ applications }: Props) {
             <div className="w-28 flex justify-end">
               {app.video_intro_url ? (
                 <button 
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#26B9C8] text-white hover:bg-[#26B9C8]/90 transition-colors cursor-pointer"
+                  type="button"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#26B9C8] text-white hover:bg-[#26B9C8]/90 transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     window.open(app.video_intro_url, '_blank');
                   }}
+                  aria-label={`Watch video introduction for ${app.candidate.first_name} ${app.candidate.last_name}`}
                 >
-                  <Video className="w-3 h-3" />
+                  <Video className="w-3 h-3" aria-hidden="true" />
                   Watch Video
                 </button>
               ) : (
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
-                  <Video className="w-3 h-3" />
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-500">
+                  <Video className="w-3 h-3" aria-hidden="true" />
                   No Video
                 </span>
               )}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </Card>

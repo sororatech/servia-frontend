@@ -59,7 +59,6 @@ export default function RecruiterOverviewPage() {
   };
 
   return (
-    <DashboardLayout>
       <div className="px-6 lg:px-10 py-8 min-h-screen bg-white">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-[#0F2A44]" spellCheck={false}>
@@ -73,6 +72,5 @@ export default function RecruiterOverviewPage() {
         <RecentApplications applications={data.recentApplications} />
         <OpenRolesProgress roles={data.openRoles} />
       </div>
-    </DashboardLayout>
   );
 }

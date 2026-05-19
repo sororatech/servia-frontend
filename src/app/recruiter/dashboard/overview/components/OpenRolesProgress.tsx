@@ -18,9 +18,10 @@ interface Props {
 }
 
 export default function OpenRolesProgress({ roles }: Props) {
-  const getProgressColor = (index: number) => {
-    const colors = ['#26B9C8', '#0F2A44', '#D4A017'];
-    return colors[index % colors.length];
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return '#26B9C8'; 
+    if (progress >= 40) return '#0F2A44'; 
+    return '#D4A017'; 
   };
 
   if (roles.length === 0) {
@@ -57,7 +58,7 @@ export default function OpenRolesProgress({ roles }: Props) {
           const progress = role.openings_count > 0
             ? Math.min((role.applications_count / role.openings_count) * 100, 100)
             : 0;
-          const barColor = getProgressColor(index);
+          const barColor = getProgressColor(progress);
 
           return (
             <div key={role.id} className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
@@ -85,6 +86,7 @@ export default function OpenRolesProgress({ roles }: Props) {
                     aria-valuenow={Math.round(progress)}
                     aria-valuemin={0}
                     aria-valuemax={100}
+                    aria-label={`${role.title}: ${Math.round(progress)}% of openings filled`}
                   />
                 </div>
                 <span className="text-xs text-gray-500 whitespace-nowrap">

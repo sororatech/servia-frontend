@@ -20,7 +20,9 @@ export function middleware(request: NextRequest) {
   );
 
   if (!token && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('returnUrl', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (token && isPublicRoute && pathname !== '/' && pathname !== '/login') {
