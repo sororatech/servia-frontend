@@ -45,14 +45,14 @@ async function fetchAllResults<T>(url: string): Promise<T[]> {
         results = [...results, ...data];
         currentUrl = '';
       } else {
-        console.warn(`⚠️ Unexpected format for ${currentUrl}`);
+        console.warn(` Unexpected format for ${currentUrl}`);
         break;
       }
     } catch (error: any) {
       if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        console.error(`⏰ Timeout fetching ${currentUrl} (attempt ${attempt}/${MAX_ATTEMPTS})`);
+        console.error(` Timeout fetching ${currentUrl} (attempt ${attempt}/${MAX_ATTEMPTS})`);
       } else {
-        console.warn(`❌ Failed to fetch ${currentUrl}:`, error.message);
+        console.warn(` Failed to fetch ${currentUrl}:`, error.message);
       }
       break; 
     }
@@ -91,8 +91,8 @@ export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsDa
     const interviews = interviewsResult.status === 'fulfilled' ? interviewsResult.value : [];
     const aiReports = aiReportsResult.status === 'fulfilled' ? aiReportsResult.value : [];
 
-    if (jobsResult.status === 'rejected') console.warn('❌ Jobs endpoint failed');
-    if (interviewsResult.status === 'rejected') console.warn('❌ Interviews endpoint failed');
+    if (jobsResult.status === 'rejected') console.warn(' Jobs endpoint failed');
+    if (interviewsResult.status === 'rejected') console.warn('Interviews endpoint failed');
 
     const activeJobs = jobs.filter((job: any) => 
       job.is_active !== false && 
@@ -250,7 +250,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       if (!window.location.pathname.includes('/login')) {
-        console.warn('🔐 [Auth] 401 detected - clearing auth and redirecting');
+        console.warn(' [Auth] 401 detected - clearing auth and redirecting');
         
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
@@ -301,18 +301,18 @@ export interface VerificationData {
 
 export const authAPI = {
     async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    console.log('🔐 [DEBUG] ===== LOGIN START =====');
-    console.log('🔐 [DEBUG] Attempting login for:', credentials.email);
+    console.log(' [DEBUG] ===== LOGIN START =====');
+    console.log(' [DEBUG] Attempting login for:', credentials.email);
     
     try {
       const response = await api.post<LoginResponse>('/users/login/', credentials);
       
-      console.log('✅ [DEBUG] ===== LOGIN RESPONSE RECEIVED =====');
-      console.log('✅ [DEBUG] Full response object:', response);
-      console.log('✅ [DEBUG] Response data:', response.data);
-      console.log('✅ [DEBUG] Response data type:', typeof response.data);
-      console.log('✅ [DEBUG] Response data keys:', Object.keys(response.data));
-      console.log('✅ [DEBUG] JSON stringified:', JSON.stringify(response.data, null, 2));
+      console.log(' [DEBUG] ===== LOGIN RESPONSE RECEIVED =====');
+      console.log(' [DEBUG] Full response object:', response);
+      console.log(' [DEBUG] Response data:', response.data);
+      console.log(' [DEBUG] Response data type:', typeof response.data);
+      console.log(' [DEBUG] Response data keys:', Object.keys(response.data));
+      console.log(' [DEBUG] JSON stringified:', JSON.stringify(response.data, null, 2));
       
       const data = response.data as any;
       const possibleTokenFields = [
@@ -331,67 +331,65 @@ export const authAPI = {
         if (value) {
           foundToken = value;
           foundField = field;
-          console.log(`✅ [DEBUG] FOUND TOKEN in field '${field}':`, value.substring(0, 30) + '...');
+          console.log(` [DEBUG] FOUND TOKEN in field '${field}':`, value.substring(0, 30) + '...');
           break;
         }
       }
       
       if (!foundToken) {
-        console.error('❌ [DEBUG] NO TOKEN FOUND in any expected field!');
-        console.error('❌ [DEBUG] Available fields:', Object.keys(data));
-        console.error('❌ [DEBUG] Full data structure:', JSON.stringify(data, null, 2));
+        console.error(' [DEBUG] NO TOKEN FOUND in any expected field!');
+        console.error(' [DEBUG] Available fields:', Object.keys(data));
+        console.error(' [DEBUG] Full data structure:', JSON.stringify(data, null, 2));
       }
       
       const userId = String(data.user_id || data.id || '');
       const userType = (data.user_type || data.type || data.role || 'recruiter') as 'candidate' | 'recruiter';
       
-      console.log('📦 [DEBUG] ===== PREPARE TO SAVE =====');
-      console.log('📦 [DEBUG] Token:', foundToken ? '✅ Present' : '❌ Missing');
-      console.log('📦 [DEBUG] User ID:', userId);
-      console.log('📦 [DEBUG] User Type:', userType);
-      console.log('📦 [DEBUG] Window available:', typeof window !== 'undefined');
+      console.log(' [DEBUG] ===== PREPARE TO SAVE =====');
+      console.log(' [DEBUG] Token:', foundToken ? ' Present' : ' Missing');
+      console.log(' [DEBUG] User ID:', userId);
+      console.log(' [DEBUG] User Type:', userType);
+      console.log(' [DEBUG] Window available:', typeof window !== 'undefined');
       
-      // ✅ SAVE AUTH
       if (typeof window !== 'undefined' && foundToken) {
         try {
-          console.log('💾 [DEBUG] Calling AUTH_STORAGE.saveAuth...');
+          console.log(' [DEBUG] Calling AUTH_STORAGE.saveAuth...');
           AUTH_STORAGE.saveAuth(foundToken, userType, userId, true);
           
-          // ✅ VERIFY SAVE
-          console.log('🔍 [DEBUG] ===== VERIFY LOCALSTORAGE =====');
+          console.log(' [DEBUG] ===== VERIFY LOCALSTORAGE =====');
           const savedToken = localStorage.getItem('auth_token');
           const savedRole = localStorage.getItem('user_role');
           const savedUserId = localStorage.getItem('user_id');
           
-          console.log('🔍 [DEBUG] auth_token:', savedToken ? `✅ ${savedToken.substring(0, 20)}...` : '❌ null');
-          console.log('🔍 [DEBUG] user_role:', savedRole ? `✅ ${savedRole}` : '❌ null');
-          console.log('🔍 [DEBUG] user_id:', savedUserId ? `✅ ${savedUserId}` : '❌ null');
+          console.log(' [DEBUG] auth_token:', savedToken ? ` ${savedToken.substring(0, 20)}...` : ' null');
+          console.log(' [DEBUG] user_role:', savedRole ? ` ${savedRole}` : ' null');
+          console.log(' [DEBUG] user_id:', savedUserId ? ` ${savedUserId}` : ' null');
           
           if (!savedToken) {
-            console.error('❌ [DEBUG] SAVE FAILED! Token not in localStorage after AUTH_STORAGE.saveAuth');
-            console.error('❌ [DEBUG] Trying manual save...');
+            console.error(' [DEBUG] SAVE FAILED! Token not in localStorage after AUTH_STORAGE.saveAuth');
+            console.error(' [DEBUG] Trying manual save...');
             localStorage.setItem('auth_token', foundToken);
             localStorage.setItem('user_role', userType);
             localStorage.setItem('user_id', userId);
-            console.log('✅ [DEBUG] Manual save completed');
+            console.log(' [DEBUG] Manual save completed');
           }
           
         } catch (err) {
-          console.error('❌ [DEBUG] AUTH_STORAGE.saveAuth threw error:', err);
+          console.error(' [DEBUG] AUTH_STORAGE.saveAuth threw error:', err);
         }
       } else if (!foundToken) {
-        console.error('❌ [DEBUG] Cannot save - token is missing from response');
+        console.error(' [DEBUG] Cannot save - token is missing from response');
       } else {
-        console.error('❌ [DEBUG] Cannot save - window is undefined (SSR?)');
+        console.error(' [DEBUG] Cannot save - window is undefined (SSR?)');
       }
       
-      console.log('🏁 [DEBUG] ===== LOGIN END =====');
+      console.log(' [DEBUG] ===== LOGIN END =====');
       
       return response.data;
     } catch (error) {
-      console.error('❌ [DEBUG] ===== LOGIN ERROR =====');
-      console.error('❌ [DEBUG] Error:', error);
-      console.error('❌ [DEBUG] Error response:', (error as any)?.response?.data);
+      console.error(' [DEBUG] ===== LOGIN ERROR =====');
+      console.error(' [DEBUG] Error:', error);
+      console.error(' [DEBUG] Error response:', (error as any)?.response?.data);
       throw error;
     }
   },
