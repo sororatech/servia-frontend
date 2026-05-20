@@ -25,3 +25,38 @@ export async function updateCandidateStatus(candidateId: string, status: string)
 
   revalidatePath(`/recruiter/dashboard/candidates/${candidateId}`);
 }
+// utils/serverFetch.ts
+
+
+export async function getRecruiterHeaders(): Promise<HeadersInit | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  
+  if (!token) return null;
+  
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+export async function serverFetch<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const headers = await getRecruiterHeaders();
+  
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return response.json();
+}
