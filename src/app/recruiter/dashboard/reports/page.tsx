@@ -1,14 +1,13 @@
-'use client';
+import { fetchAnalyticsFromMultipleEndpoints } from '@/lib/api';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
 
-export default function ReportsPage() {
-  return (
-    <main className="p-4 md:p-8">
-      <h1 className="text-2xl font-heading font-bold text-[var(--color-secondary)] mb-4">
-        Page Under Development
-      </h1>
-      <p className="text-[var(--color-foreground)]/70">
-        This section is being built according to the ServiaAI SRD and will be available soon.
-      </p>
-    </main>
-  );
+export default async function ReportsPage() {
+  let initialData;
+  try {
+    initialData = await fetchAnalyticsFromMultipleEndpoints();
+  } catch (error) {
+    console.warn('Server-side analytics fetch failed, client will retry:', error);
+  }
+
+  return <AnalyticsDashboard initialData={initialData} />;
 }
