@@ -1,6 +1,5 @@
 'use client';
 
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSkeleton } from '@/components/ui';
 import OverviewStats from './components/OverviewStats';
 import RecentApplications from './components/RecentApplications';
@@ -12,7 +11,6 @@ export default function RecruiterOverviewPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
         <div className="px-6 lg:px-10 py-8">
           <div className="space-y-6">
             <LoadingSkeleton className="h-10 w-64" />
@@ -25,13 +23,11 @@ export default function RecruiterOverviewPage() {
             <LoadingSkeleton className="h-80" />
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout>
         <div className="px-6 lg:px-10 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -45,7 +41,6 @@ export default function RecruiterOverviewPage() {
             </div>
           </div>
         </div>
-      </DashboardLayout>
     );
   }
 

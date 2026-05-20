@@ -26,6 +26,8 @@ interface Props {
   applications: RecentApplication[];
 }
 
+const RECENT_APPLICATIONS_LIMIT = 5;
+
 export default function RecentApplications({ applications }: Props) {
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -54,6 +56,9 @@ export default function RecentApplications({ applications }: Props) {
     return statusClasses[status.toLowerCase()] || 'bg-gray-100 text-gray-700';
   };
 
+  const recentApplications = applications.slice(0, RECENT_APPLICATIONS_LIMIT);
+  const hasMoreApplications = applications.length > RECENT_APPLICATIONS_LIMIT;
+
   if (applications.length === 0) {
     return (
       <Card className="p-8 text-center border-0 bg-[#C2B5B5]">
@@ -75,16 +80,18 @@ export default function RecentApplications({ applications }: Props) {
           <h2 className="text-2xl font-bold text-[#0F2A44]">Recent Applications</h2>
           <p className="text-sm text-gray-800 mt-1">Candidates waiting for your review</p>
         </div>
-        <Link 
-          href="/recruiter/dashboard/candidates" 
-          className="text-sm font-medium text-[#26B9C8] hover:text-[#26B9C8]/80"
-        >
-          View all &gt;
-        </Link>
+        {hasMoreApplications && (
+          <Link 
+            href="/recruiter/dashboard/candidates" 
+            className="text-sm font-medium text-[#26B9C8] hover:text-[#26B9C8]/80"
+          >
+            View all ({applications.length}) &gt;
+          </Link>
+        )}
       </div>
 
       <div className="space-y-3">
-        {applications.map((app) => (
+        {recentApplications.map((app) => (
           <Link 
             key={app.id}
             href={`/recruiter/dashboard/candidates/${app.candidate.id}`}
