@@ -18,7 +18,7 @@ export function Navbar() {
 
   const navLinks = useMemo(() => [
     { href: '/jobs', label: 'Browse Jobs' },
-    { href: '/candidate/dashboard', label: 'My Applications' },
+    { href: '/candidate/applications', label: 'My Applications' },
   ], []);
 
   const isActive = (href: string) => 
@@ -36,9 +36,9 @@ export function Navbar() {
                 <Image 
                   src="/logo.png" 
                   alt="ServiaAI" 
-                  width={125} 
-                  height={40} 
-                  className="max-w-[125px]" 
+                  width={140} 
+                  height={45} 
+                  className="h-10 w-auto max-w-[140px]" 
                   priority 
                 />
               </Link>
