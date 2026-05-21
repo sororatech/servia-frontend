@@ -1,8 +1,6 @@
-// src/utils/videoUpload.ts
-
 export const VIDEO_CONFIG = {
   MAX_DURATION: 60,
-  MAX_SIZE: 50 * 1024 * 1024, // 50MB
+  MAX_SIZE: 50 * 1024 * 1024, 
   ALLOWED_TYPES: ['video/mp4', 'video/quicktime', 'video/webm'],
 };
 
