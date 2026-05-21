@@ -83,9 +83,9 @@ export default function VideoIntroPage() {
                 Let them see the person behind the CV.
               </h1>
               <p className="text-gray-600 leading-relaxed">
-                A short 60-second introduction helps recruiters understand your communication style and personality.
-                <br />
-                Focus on your biggest professional achievement and why you're passionate about this role.
+                A short 60-second introduction helps recruiters understand your communication <br /> style and personality.
+                
+                Focus on your biggest professional achievement <br /> and why you're passionate about this role.
               </p>
             </div>
 
