@@ -48,6 +48,7 @@ export function Sidebar() {
   const router = useRouter();
   const { name, role, isAdmin, avatar, isLoading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {
@@ -71,15 +72,38 @@ export function Sidebar() {
   ];
 
   return (
-    <aside 
+    <>
+      {/* Mobile hamburger trigger */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-secondary)] text-white shadow-lg"
+        aria-label="Open menu"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Mobile backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+    <aside
       className={`
-        flex flex-col bg-[var(--color-secondary)] h-screen sticky top-0
+        fixed md:sticky top-0 left-0 z-50 md:z-auto
+        flex flex-col bg-[var(--color-secondary)] h-screen
         transition-all duration-300 ease-in-out overflow-hidden
-        ${isCollapsed ? 'w-20' : 'w-64'}
+        w-72 md:w-auto
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${isCollapsed ? 'md:w-20' : 'md:w-64'}
       `}
     >
       <div className="relative flex items-center h-30 px-4 border-b border-white/10">
-        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'opacity-0 -translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
+        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'md:opacity-0 md:-translate-x-4 md:pointer-events-none' : 'opacity-100 translate-x-0'}`}>
           <Image
             src="/logo.png"
             alt="Servia AI"
@@ -91,10 +115,22 @@ export function Sidebar() {
             ServiaAI
           </h3>
         </div>
-        
+
+        {/* Mobile close button */}
+        <button
+          onClick={() => setIsMobileOpen(false)}
+          className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors md:hidden"
+          aria-label="Close menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Desktop collapse button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors z-10"
+          className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors hidden md:block"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
@@ -111,6 +147,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               prefetch={false}
+              onClick={() => setIsMobileOpen(false)}
               className={`
                 flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
                 ${isActive 
@@ -160,5 +197,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

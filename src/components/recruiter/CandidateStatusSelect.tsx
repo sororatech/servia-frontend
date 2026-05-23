@@ -42,7 +42,7 @@ export default function CandidateStatusSelect({ candidateId, currentStatus }: Pr
           value={status}
           onChange={handleChange}
           disabled={isPending}
-          className="appearance-none cursor-pointer rounded-full border-2 border-[var(--color-primary)] bg-[#e8f9fb] px-4 py-1.5 pr-8 text-sm font-semibold text-[var(--color-primary)] focus:outline-none disabled:opacity-60"
+          className="appearance-none cursor-pointer rounded-full border-2 border-[var(--color-primary)] bg-[var(--color-teal-light)] px-4 py-1.5 pr-8 text-sm font-semibold text-[var(--color-primary)] focus:outline-none disabled:opacity-60"
         >
           {CANDIDATE_STATUSES.map((s) => (
             <option key={s} value={s}>

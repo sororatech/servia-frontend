@@ -102,25 +102,25 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
   }
 
   const selectClass =
-    "rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]";
+    "rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]";
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-[1400px]">
 
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#171717] sm:text-5xl">
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--color-foreground)] sm:text-5xl">
               My Job Postings
             </h1>
-            <p className="mt-3 max-w-2xl text-lg text-[#635b55]">
+            <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-muted)]">
               Manage active job postings and track applications.
             </p>
           </div>
           <Link
             href="/recruiter/dashboard/jobs/create"
-            className="inline-flex items-center gap-2 rounded-full border border-[#cfecef] bg-white px-5 py-3 text-sm font-semibold text-[#0c6c75] transition hover:border-[#26b9c8] hover:bg-[#f0fdff]"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-teal-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
           >
             + Create Job
           </Link>
@@ -159,7 +159,7 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
           <div className="mb-4">
             <button
               onClick={clearFilters}
-              className="text-sm font-semibold text-[#0c6c75] underline-offset-2 hover:underline"
+              className="text-sm font-semibold text-[var(--color-teal-dark)] underline-offset-2 hover:underline"
             >
               Clear filters
             </button>
@@ -168,16 +168,16 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
 
         {/* API error */}
         {error && (
-          <div className="mb-6 rounded-2xl border border-[#efc7bf] bg-[#fff0ec] px-5 py-4 text-sm font-medium text-[#b13d2f]">
+          <div className="mb-6 rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm font-medium text-[var(--color-status-error-text)]">
             {error}
           </div>
         )}
 
         {/* Delete error */}
         {deleteError && (
-          <div className="mb-6 rounded-2xl border border-[#efc7bf] bg-[#fff0ec] px-5 py-4 text-sm font-medium text-[#b13d2f] flex items-center justify-between">
+          <div className="mb-6 rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm font-medium text-[var(--color-status-error-text)] flex items-center justify-between">
             {deleteError}
-            <button onClick={() => setDeleteError(null)} className="ml-4 text-[#b13d2f]/60 hover:text-[#b13d2f]">✕</button>
+            <button onClick={() => setDeleteError(null)} className="ml-4 text-[var(--color-status-error-text)]/60 hover:text-[var(--color-status-error-text)]">✕</button>
           </div>
         )}
 
@@ -185,27 +185,27 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
         {!error && filtered.length === 0 ? (
           hasFilters ? (
             <div className="rounded-[2rem] border border-black/10 bg-white/85 px-6 py-20 text-center shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-              <p className="text-base font-semibold text-[#3a3330]">No jobs match your filters</p>
-              <p className="mt-1 text-sm text-[#9a9088]">Try adjusting or clearing your filters</p>
+              <p className="text-base font-semibold text-[var(--color-text-dark)]">No jobs match your filters</p>
+              <p className="mt-1 text-sm text-[var(--color-text-faint)]">Try adjusting or clearing your filters</p>
               <button
                 onClick={clearFilters}
-                className="mt-5 rounded-full border border-[#cfecef] bg-white px-5 py-2.5 text-sm font-semibold text-[#0c6c75] hover:bg-[#f0fdff]"
+                className="mt-5 rounded-full border border-[var(--color-teal-border)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--color-teal-dark)] hover:bg-[var(--color-teal-hover)]"
               >
                 Clear filters
               </button>
             </div>
           ) : (
             <div className="rounded-[2rem] border border-black/10 bg-white/85 px-6 py-24 text-center shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#e8f8fa]">
-                <svg className="h-10 w-10 text-[#26b9c8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-teal-light)]">
+                <svg className="h-10 w-10 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <p className="text-lg font-semibold text-[#3a3330]">No job postings yet</p>
-              <p className="mt-1 text-sm text-[#9a9088]">Create your first job posting to start receiving applications</p>
+              <p className="text-lg font-semibold text-[var(--color-text-dark)]">No job postings yet</p>
+              <p className="mt-1 text-sm text-[var(--color-text-faint)]">Create your first job posting to start receiving applications</p>
               <Link
                 href="/recruiter/dashboard/jobs/create"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#26b9c8] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1fa8b6]"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)]"
               >
                 + Create your first job
               </Link>
@@ -219,19 +219,19 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
                   key={job.id}
                   className="flex flex-col rounded-[2rem] border border-black/10 bg-white/85 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm"
                 >
-                  <h2 className="text-xl font-bold text-[#171717]">{job.title}</h2>
-                  <p className="mt-1 text-sm text-[#635b55]">{job.department}</p>
-                  <p className="mt-0.5 text-sm text-[#635b55]">{job.location}</p>
+                  <h2 className="text-xl font-bold text-[var(--color-foreground)]">{job.title}</h2>
+                  <p className="mt-1 text-sm text-[var(--color-text-muted)]">{job.department}</p>
+                  <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{job.location}</p>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
+                    <span className="rounded-full border border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text-subtle)]">
                       {job.employmentType}
                     </span>
                     <span
                       className={`rounded-full border px-3 py-1 text-xs font-semibold ${
                         job.isActive
-                          ? "border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]"
-                          : "border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]"
+                          ? "border-[var(--color-status-active-border)] bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)]"
+                          : "border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] text-[var(--color-text-subtle)]"
                       }`}
                     >
                       {job.isActive ? "Active" : "Inactive"}
@@ -239,57 +239,57 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
                   </div>
 
                   {job.isActive ? (
-                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
+                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-2xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-4 py-3">
                       <div>
-                        <p className="text-xs text-[#9a9088]">Applied</p>
-                        <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
+                        <p className="text-xs text-[var(--color-text-faint)]">Applied</p>
+                        <p className="mt-1 text-2xl font-bold text-[var(--color-foreground)]">{job.candidateCount}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#9a9088]">Shortlisted</p>
-                        <p className="mt-1 text-2xl font-bold text-[#171717]">{job.shortlistedCount}</p>
+                        <p className="text-xs text-[var(--color-text-faint)]">Shortlisted</p>
+                        <p className="mt-1 text-2xl font-bold text-[var(--color-foreground)]">{job.shortlistedCount}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#9a9088]">Openings</p>
-                        <p className="mt-1 text-2xl font-bold text-[#171717]">
+                        <p className="text-xs text-[var(--color-text-faint)]">Openings</p>
+                        <p className="mt-1 text-2xl font-bold text-[var(--color-foreground)]">
                           {job.openingsRemaining}
-                          <span className="text-sm font-normal text-[#9a9088]">/{job.openingsCount}</span>
+                          <span className="text-sm font-normal text-[var(--color-text-faint)]">/{job.openingsCount}</span>
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3">
+                    <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-4 py-3">
                       <div>
-                        <p className="text-xs text-[#9a9088]">Total Applied</p>
-                        <p className="mt-1 text-2xl font-bold text-[#171717]">{job.candidateCount}</p>
+                        <p className="text-xs text-[var(--color-text-faint)]">Total Applied</p>
+                        <p className="mt-1 text-2xl font-bold text-[var(--color-foreground)]">{job.candidateCount}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#9a9088]">Hired</p>
-                        <p className="mt-1 text-2xl font-bold text-[#0f7b43]">
+                        <p className="text-xs text-[var(--color-text-faint)]">Hired</p>
+                        <p className="mt-1 text-2xl font-bold text-[var(--color-status-active-text)]">
                           {job.openingsCount - job.openingsRemaining}
-                          <span className="text-sm font-normal text-[#9a9088]">/{job.openingsCount}</span>
+                          <span className="text-sm font-normal text-[var(--color-text-faint)]">/{job.openingsCount}</span>
                         </p>
                       </div>
                     </div>
                   )}
 
                   <div className="mt-5 flex items-center justify-between">
-                    <p className="text-xs text-[#9a9088]">Posted {formatDate(job.postedAt)}</p>
+                    <p className="text-xs text-[var(--color-text-faint)]">Posted {formatDate(job.postedAt)}</p>
                     <div className="flex items-center gap-3">
                       <Link
                         href={`/recruiter/dashboard/jobs/${job.id}/edit`}
-                        className="text-sm font-semibold text-[#635b55] transition hover:text-[#0c6c75]"
+                        className="text-sm font-semibold text-[var(--color-text-muted)] transition hover:text-[var(--color-teal-dark)]"
                       >
                         Edit
                       </Link>
                       <Link
                         href={`/recruiter/dashboard/jobs/${job.id}`}
-                        className="text-sm font-semibold text-[#0c6c75] transition hover:underline"
+                        className="text-sm font-semibold text-[var(--color-teal-dark)] transition hover:underline"
                       >
                         View
                       </Link>
                       <button
                         onClick={() => setConfirmDeleteId(job.id)}
-                        className="text-sm font-semibold text-[#b13d2f]/60 transition hover:text-[#b13d2f]"
+                        className="text-sm font-semibold text-[var(--color-status-error-text)]/60 transition hover:text-[var(--color-status-error-text)]"
                       >
                         Delete
                       </button>
@@ -303,7 +303,7 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
               <div className="mt-10 flex justify-center">
                 <button
                   onClick={() => setPage((p) => p + 1)}
-                  className="rounded-full border border-[#ddd5cf] bg-white px-8 py-3 text-sm font-semibold text-[#3a3330] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+                  className="rounded-full border border-[var(--color-warm-border-faint)] bg-white px-8 py-3 text-sm font-semibold text-[var(--color-text-dark)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
                 >
                   Load More ({filtered.length - paginated.length} remaining)
                 </button>
@@ -317,22 +317,22 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="mx-4 w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
-            <h3 className="text-lg font-bold text-[#171717]">Delete this job?</h3>
-            <p className="mt-2 text-sm text-[#635b55]">
+            <h3 className="text-lg font-bold text-[var(--color-foreground)]">Delete this job?</h3>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
               This action cannot be undone. Existing applications linked to this job may also be affected.
             </p>
             <div className="mt-6 flex gap-3">
               <button
                 onClick={() => setConfirmDeleteId(null)}
                 disabled={isPending}
-                className="flex-1 rounded-full border border-[#ddd5cf] bg-white px-4 py-2.5 text-sm font-semibold text-[#635b55] transition hover:border-[#26b9c8]"
+                className="flex-1 rounded-full border border-[var(--color-warm-border-faint)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-text-muted)] transition hover:border-[var(--color-primary)]"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(confirmDeleteId)}
                 disabled={isPending}
-                className="flex-1 rounded-full bg-[#b13d2f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#9a3326] disabled:opacity-60"
+                className="flex-1 rounded-full bg-[var(--color-status-error-text)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-status-error-text)] disabled:opacity-60"
               >
                 {isPending ? "Deleting…" : "Yes, Delete"}
               </button>

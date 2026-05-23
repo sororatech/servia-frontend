@@ -63,7 +63,7 @@ export default async function CandidateDetailPage({ params }: Props) {
       </div>
 
       {/* Outer card */}
-      <div className="rounded-2xl bg-[#f5f0ed] p-6">
+      <div className="rounded-2xl bg-[var(--color-warm-bg-deep)] p-6">
         {/* Inner card */}
         <div className="rounded-xl bg-white p-6 shadow-sm">
           {/* Top row: candidate info + badges */}
@@ -130,12 +130,12 @@ function FileButton({
   filename: string;
 }) {
   const base =
-    'relative flex h-36 w-44 flex-col items-center justify-center rounded-xl transition-opacity';
+    'relative flex h-28 w-full sm:h-36 sm:w-44 flex-col items-center justify-center rounded-xl transition-opacity';
 
   if (!url) {
     return (
       <div
-        className={`${base} cursor-not-allowed bg-[#e8e8e8] opacity-50`}
+        className={`${base} cursor-not-allowed bg-[var(--color-neutral-disabled)] opacity-50`}
         title="Not uploaded"
       >
         {icon}
@@ -153,7 +153,7 @@ function FileButton({
       download={filename}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${base} bg-[#e8e8e8] hover:opacity-80`}
+      className={`${base} bg-[var(--color-neutral-disabled)] hover:opacity-80`}
       title={`Download ${label}`}
     >
       {icon}

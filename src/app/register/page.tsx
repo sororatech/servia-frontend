@@ -261,10 +261,10 @@ export default function RegisterPage() {
         <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-white overflow-y-auto">
           <div className="w-full max-w-lg">
             <div className="mb-8 sm:mb-10">
-              <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#26B9C8' }}>
+              <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-primary)' }}>
                 Create your account
               </h1>
-              <p className="mt-2" style={{ color: '#26B9C8' }}>
+              <p className="mt-2" style={{ color: 'var(--color-primary)' }}>
                 Start your journey
               </p>
             </div>
@@ -294,10 +294,7 @@ export default function RegisterPage() {
                   className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
                     validationErrors.fullName ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  style={{
-                    backgroundColor: touchedFields.fullName ? '#ffffff' : '#D9E4EA',
-                    color: '#1a202c',
-                  }}
+                  style={{ backgroundColor: touchedFields.fullName ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                 />
                 {validationErrors.fullName && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
@@ -321,10 +318,7 @@ export default function RegisterPage() {
                   className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
                     validationErrors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  style={{
-                    backgroundColor: touchedFields.email ? '#ffffff' : '#D9E4EA',
-                    color: '#1a202c',
-                  }}
+                  style={{ backgroundColor: touchedFields.email ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                 />
                 {validationErrors.email && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
@@ -361,10 +355,7 @@ export default function RegisterPage() {
                     className={`flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
                       validationErrors.phone ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    style={{
-                      backgroundColor: touchedFields.phone ? '#ffffff' : '#D9E4EA',
-                      color: '#1a202c',
-                    }}
+                    style={{ backgroundColor: touchedFields.phone ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                   />
                 </div>
                 {validationErrors.phone && (
@@ -390,10 +381,7 @@ export default function RegisterPage() {
                     className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${
                       validationErrors.password ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    style={{
-                      backgroundColor: touchedFields.password ? '#ffffff' : '#D9E4EA',
-                      color: '#1a202c',
-                    }}
+                    style={{ backgroundColor: touchedFields.password ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                   />
                   <svg
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
@@ -407,7 +395,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: '#26B9C8' }}
+                    style={{ color: 'var(--color-primary)' }}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -467,8 +455,8 @@ export default function RegisterPage() {
                       validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                     }`}
                     style={{
-                      backgroundColor: touchedFields.confirmPassword ? '#ffffff' : '#D9E4EA',
-                      color: '#1a202c',
+                      backgroundColor: touchedFields.confirmPassword ? '#ffffff' : 'var(--color-input-bg)',
+                      color: 'var(--color-text-darkest)',
                     }}
                   />
                   <svg
@@ -483,7 +471,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: '#26B9C8' }}
+                    style={{ color: 'var(--color-primary)' }}
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? (
@@ -514,16 +502,8 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     className="w-4 h-4 mt-0.5 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
                   />
-                  <label htmlFor="agreeToTerms" className="text-sm text-gray-600">
-                    I agree to the{' '}
-                    <Link href="/terms" className="text-teal-600 hover:text-teal-500 font-medium" target="_blank">
-                      Terms of Service
-                    </Link>{' '}
-                    and{' '}
-                    <Link href="/privacy" className="text-teal-600 hover:text-teal-500 font-medium" target="_blank">
-                      Privacy Policy
-                    </Link>
-                    .
+                  <label htmlFor="agreeToTerms" className="ml-2 text-sm text-gray-600">
+                    I agree to the <Link href="/terms-of-service" className="font-medium" style={{ color: 'var(--color-primary)' }} target="_blank">Terms of Service</Link> and <Link href="/privacy-policy" className="font-medium" style={{ color: 'var(--color-primary)' }} target="_blank">Privacy Policy</Link>.
                   </label>
                 </div>
                 {validationErrors.agreeToTerms && (
@@ -542,11 +522,8 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium" style={{ color: '#26B9C8' }}>
-                Login here
-              </Link>
+            <p className="mt-5 text-center text-sm text-gray-600">
+              Already have an account? <Link href="/login" className="font-medium" style={{ color: 'var(--color-primary)' }}>Login here</Link>
             </p>
           </div>
         </div>

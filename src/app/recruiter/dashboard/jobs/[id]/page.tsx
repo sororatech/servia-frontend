@@ -43,11 +43,11 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
+    <main className="bg-page-gradient min-h-screen px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-4xl">
         <Link
           href="/recruiter/dashboard/jobs"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#0c6c75] transition hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:underline"
         >
           ← Back to Jobs
         </Link>
@@ -57,22 +57,22 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
           {/* Title + tags */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-[#171717]">{job.title}</h1>
-              <p className="mt-1 text-base text-[#635b55]">{departmentLabel}</p>
-              <p className="mt-0.5 text-base text-[#635b55]">{job.location}</p>
+              <h1 className="text-3xl font-bold text-[var(--color-foreground)]">{job.title}</h1>
+              <p className="mt-1 text-base text-[var(--color-text-muted)]">{departmentLabel}</p>
+              <p className="mt-0.5 text-base text-[var(--color-text-muted)]">{job.location}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
+              <span className="rounded-full border border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text-subtle)]">
                 {employmentTypeLabel}
               </span>
-              <span className="rounded-full border border-[#ddd7d3] bg-[#f4efeb] px-3 py-1 text-xs font-semibold text-[#7d746d]">
+              <span className="rounded-full border border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text-subtle)]">
                 {shiftTypeLabel}
               </span>
               <span
                 className={`rounded-full border px-3 py-1 text-xs font-semibold ${
                   job.is_active
-                    ? 'border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]'
-                    : 'border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]'
+                    ? 'border-[var(--color-status-active-border)] bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)]'
+                    : 'border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] text-[var(--color-text-subtle)]'
                 }`}
               >
                 {job.is_active ? 'Active' : 'Inactive'}
@@ -81,7 +81,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
           </div>
 
           {/* Stats */}
-          <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-[#ece4de] bg-[#fbf7f4] px-5 py-4 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-5 py-4 sm:grid-cols-4">
             {[
               { label: 'Candidates', value: job.candidate_count },
               { label: 'Shortlisted', value: job.shortlisted_count },
@@ -89,8 +89,8 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
               { label: 'Days Since Posted', value: daysSince(job.created_at) },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="text-xs text-[#9a9088]">{label}</p>
-                <p className="mt-1 text-lg font-bold text-[#171717]">{value}</p>
+                <p className="text-xs text-[var(--color-text-faint)]">{label}</p>
+                <p className="mt-1 text-lg font-bold text-[var(--color-foreground)]">{value}</p>
               </div>
             ))}
           </div>
@@ -103,7 +103,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
           <div className="mt-8 flex flex-col gap-6">
             {/* Description */}
             <CollapsibleSection title="Description">
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-body)]">
                 {job.description}
               </p>
             </CollapsibleSection>
@@ -111,7 +111,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
             {/* Responsibilities */}
             {job.responsibilities && (
               <CollapsibleSection title="Responsibilities">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-body)]">
                   {job.responsibilities}
                 </p>
               </CollapsibleSection>
@@ -119,7 +119,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
 
             {/* Requirements */}
             <CollapsibleSection title="Requirements">
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#4a4440]">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-body)]">
                 {job.requirements}
               </p>
             </CollapsibleSection>
@@ -131,7 +131,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
                   {job.core_skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-full border border-[#cfecef] bg-[#e8f8fa] px-3 py-1 text-xs font-semibold text-[#0c6c75]"
+                      className="rounded-full border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] px-3 py-1 text-xs font-semibold text-[var(--color-teal-dark)]"
                     >
                       {skill}
                     </span>
@@ -144,24 +144,24 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
             <CollapsibleSection title="Role Details" defaultOpen={false}>
               <dl className="grid gap-3 sm:grid-cols-2 text-sm">
                 <div>
-                  <dt className="text-xs text-[#9a9088]">Department</dt>
-                  <dd className="mt-0.5 font-semibold text-[#3a3330]">{departmentLabel}</dd>
+                  <dt className="text-xs text-[var(--color-text-faint)]">Department</dt>
+                  <dd className="mt-0.5 font-semibold text-[var(--color-text-dark)]">{departmentLabel}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-[#9a9088]">Employment Type</dt>
-                  <dd className="mt-0.5 font-semibold text-[#3a3330]">{employmentTypeLabel}</dd>
+                  <dt className="text-xs text-[var(--color-text-faint)]">Employment Type</dt>
+                  <dd className="mt-0.5 font-semibold text-[var(--color-text-dark)]">{employmentTypeLabel}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-[#9a9088]">Shift Type</dt>
-                  <dd className="mt-0.5 font-semibold text-[#3a3330]">{shiftTypeLabel}</dd>
+                  <dt className="text-xs text-[var(--color-text-faint)]">Shift Type</dt>
+                  <dd className="mt-0.5 font-semibold text-[var(--color-text-dark)]">{shiftTypeLabel}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-[#9a9088]">Location</dt>
-                  <dd className="mt-0.5 font-semibold text-[#3a3330]">{job.location}</dd>
+                  <dt className="text-xs text-[var(--color-text-faint)]">Location</dt>
+                  <dd className="mt-0.5 font-semibold text-[var(--color-text-dark)]">{job.location}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-[#9a9088]">Last Updated</dt>
-                  <dd className="mt-0.5 font-semibold text-[#3a3330]">{updatedAt}</dd>
+                  <dt className="text-xs text-[var(--color-text-faint)]">Last Updated</dt>
+                  <dd className="mt-0.5 font-semibold text-[var(--color-text-dark)]">{updatedAt}</dd>
                 </div>
               </dl>
             </CollapsibleSection>
@@ -174,17 +174,17 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
                     <Link
                       key={c.id}
                       href={`/recruiter/dashboard/candidates/${c.id}`}
-                      className="flex items-center justify-between rounded-xl border border-[#ece4de] bg-[#fbf7f4] px-4 py-3 transition hover:border-[#26b9c8] hover:bg-[#f0fdff]"
+                      className="flex items-center justify-between rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-4 py-3 transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
                     >
                       <div>
-                        <p className="text-sm font-semibold text-[#3a3330]">{candidateName(c)}</p>
-                        <p className="text-xs text-[#9a9088]">
+                        <p className="text-sm font-semibold text-[var(--color-text-dark)]">{candidateName(c)}</p>
+                        <p className="text-xs text-[var(--color-text-faint)]">
                           Applied {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(c.applied_at))}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <AIScoreBadge score={c.ai_score} />
-                        <span className="rounded-full border border-[#ddd5cf] bg-white px-3 py-1 text-xs font-semibold text-[#635b55]">
+                        <span className="rounded-full border border-[var(--color-warm-border-faint)] bg-white px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
                           {humanizeStatus(c.status)}
                         </span>
                       </div>
@@ -194,7 +194,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
                 <div className="mt-4">
                   <Link
                     href={`/recruiter/dashboard/candidates?job=${job.id}`}
-                    className="text-sm font-semibold text-[#0c6c75] hover:underline"
+                    className="text-sm font-semibold text-[var(--color-teal-dark)] hover:underline"
                   >
                     View all {job.candidate_count} application{job.candidate_count !== 1 ? 's' : ''} →
                   </Link>
@@ -203,10 +203,10 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
             )}
 
             {recentCandidates.length === 0 && (
-              <div className="border-t border-[#ece4de] pt-6">
+              <div className="border-t border-[var(--color-warm-border)] pt-6">
                 <Link
                   href={`/recruiter/dashboard/candidates?job=${job.id}`}
-                  className="rounded-full border border-[#26b9c8] bg-white px-5 py-3 text-sm font-semibold text-[#0c6c75] transition hover:bg-[#f0fdff]"
+                  className="rounded-full border border-[var(--color-primary)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
                 >
                   View Candidates
                 </Link>

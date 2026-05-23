@@ -61,9 +61,9 @@ function formatDate(iso: string) {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-[#ddd5cf] bg-white px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8] focus:ring-2 focus:ring-[#26b9c8]/20';
-const errorClass = 'mt-1 text-xs text-[#b13d2f]';
-const labelClass = 'block text-sm font-semibold text-[#3a3330] mb-1.5';
+  'w-full rounded-xl border border-[var(--color-warm-border-faint)] bg-white px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20';
+const errorClass = 'mt-1 text-xs text-[var(--color-status-error-text)]';
+const labelClass = 'block text-sm font-semibold text-[var(--color-text-dark)] mb-1.5';
 
 type Props = {
   choices: JobFormChoices;
@@ -181,7 +181,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-[1400px]">
 
         {/* Header */}
@@ -189,13 +189,13 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
           <div className="flex items-center gap-3">
             <Link
               href="/recruiter/dashboard/jobs"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ddd5cf] bg-white text-[#0c6c75] transition hover:border-[#26b9c8] hover:bg-[#f0fdff]"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-warm-border-faint)] bg-white text-[var(--color-teal-dark)] transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </Link>
-            <h1 className="text-2xl font-bold text-[#171717] sm:text-3xl">
+            <h1 className="text-2xl font-bold text-[var(--color-foreground)] sm:text-3xl">
               {isEditing ? 'Edit Job' : 'Create New Job'}
             </h1>
           </div>
@@ -203,10 +203,10 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
 
         {/* Edit mode: last updated banner */}
         {isEditing && (
-          <div className="mb-5 rounded-2xl border border-[#ddd5cf] bg-white px-5 py-3 text-sm text-[#635b55]">
+          <div className="mb-5 rounded-2xl border border-[var(--color-warm-border-faint)] bg-white px-5 py-3 text-sm text-[var(--color-text-muted)]">
             Last updated: {formatDate(initialJob!.updated_at)}
             {initialJob!.candidate_count > 0 && (
-              <span className="ml-3 font-semibold text-[#c97a1a]">
+              <span className="ml-3 font-semibold text-[var(--color-status-warning-text)]">
                 ⚠ This job has {initialJob!.candidate_count} application{initialJob!.candidate_count !== 1 ? 's' : ''} — changes may affect existing candidates.
               </span>
             )}
@@ -215,14 +215,14 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
 
         {/* Toast */}
         {toast && (
-          <div className="mb-6 rounded-2xl border border-[#b8ead2] bg-[#ecfff4] px-5 py-4 text-sm font-semibold text-[#0f7b43]">
+          <div className="mb-6 rounded-2xl border border-[var(--color-status-active-border)] bg-[var(--color-status-active-bg)] px-5 py-4 text-sm font-semibold text-[var(--color-status-active-text)]">
             ✓ {toast} Redirecting…
           </div>
         )}
 
         {/* API error */}
         {apiError && (
-          <div className="mb-6 rounded-2xl border border-[#efc7bf] bg-[#fff0ec] px-5 py-4 text-sm font-medium text-[#b13d2f]">
+          <div className="mb-6 rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm font-medium text-[var(--color-status-error-text)]">
             {apiError}
           </div>
         )}
@@ -230,12 +230,12 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
         <div className="rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
 
             {/* Section: Basic Info */}
-            <h2 className="text-base font-bold text-[#171717]">Basic Info</h2>
-            <hr className="mt-2 mb-6 border-[#ece4de]" />
+            <h2 className="text-base font-bold text-[var(--color-foreground)]">Basic Info</h2>
+            <hr className="mt-2 mb-6 border-[var(--color-warm-border)]" />
 
             <div className="grid gap-5 sm:grid-cols-3">
               <div>
-                <label className={labelClass}>Job Title <span className="text-[#b13d2f]">*</span></label>
+                <label className={labelClass}>Job Title <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <input
                   type="text"
                   value={fields.title}
@@ -248,12 +248,12 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                   {fieldErrors.title
                     ? <p className={errorClass}>{fieldErrors.title}</p>
                     : <span />}
-                  <span className="text-xs text-[#9a9088]">{fields.title.length}/200</span>
+                  <span className="text-xs text-[var(--color-text-faint)]">{fields.title.length}/200</span>
                 </div>
               </div>
 
               <div>
-                <label className={labelClass}>Department <span className="text-[#b13d2f]">*</span></label>
+                <label className={labelClass}>Department <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <select
                   value={fields.department}
                   onChange={(e) => handleDepartmentChange(e.target.value)}
@@ -269,7 +269,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
 
               {fields.department && (
                 <div>
-                  <label className={labelClass}>Category <span className="text-[#b13d2f]">*</span></label>
+                  <label className={labelClass}>Category <span className="text-[var(--color-status-error-text)]">*</span></label>
                   <select
                     value={fields.category}
                     onChange={(e) => set('category', e.target.value)}
@@ -285,7 +285,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
               )}
 
               <div>
-                <label className={labelClass}>Location <span className="text-[#b13d2f]">*</span></label>
+                <label className={labelClass}>Location <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <input
                   type="text"
                   value={fields.location}
@@ -308,13 +308,13 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                 />
                 {fieldErrors.openings_count
                   ? <p className={errorClass}>{fieldErrors.openings_count}</p>
-                  : <p className="mt-1 text-xs text-[#9a9088]">Leave blank if unspecified</p>}
+                  : <p className="mt-1 text-xs text-[var(--color-text-faint)]">Leave blank if unspecified</p>}
               </div>
             </div>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-3">
               <div>
-                <label className={labelClass}>Employment Type <span className="text-[#b13d2f]">*</span></label>
+                <label className={labelClass}>Employment Type <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <select
                   value={fields.employment_type}
                   onChange={(e) => set('employment_type', e.target.value)}
@@ -329,7 +329,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
               </div>
 
               <div>
-                <label className={labelClass}>Shift Type <span className="text-[#b13d2f]">*</span></label>
+                <label className={labelClass}>Shift Type <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <select
                   value={fields.shift_type}
                   onChange={(e) => set('shift_type', e.target.value)}
@@ -345,13 +345,13 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
             </div>
 
             {/* Section: Job Description */}
-            <h2 className="mt-10 text-base font-bold text-[#171717]">Job Description</h2>
-            <hr className="mt-2 mb-6 border-[#ece4de]" />
+            <h2 className="mt-10 text-base font-bold text-[var(--color-foreground)]">Job Description</h2>
+            <hr className="mt-2 mb-6 border-[var(--color-warm-border)]" />
 
             <div>
               <label className={labelClass}>
-                Description <span className="text-[#b13d2f]">*</span>
-                <span className="ml-2 font-normal text-[#9a9088]">(min 50 characters)</span>
+                Description <span className="text-[var(--color-status-error-text)]">*</span>
+                <span className="ml-2 font-normal text-[var(--color-text-faint)]">(min 50 characters)</span>
               </label>
               <textarea
                 value={fields.description}
@@ -364,7 +364,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                 {fieldErrors.description
                   ? <p className={errorClass}>{fieldErrors.description}</p>
                   : <span />}
-                <span className={`text-xs ${fields.description.length < 50 ? 'text-[#9a9088]' : 'text-[#0f7b43]'}`}>
+                <span className={`text-xs ${fields.description.length < 50 ? 'text-[var(--color-text-faint)]' : 'text-[var(--color-status-active-text)]'}`}>
                   {fields.description.length} chars
                 </span>
               </div>
@@ -372,8 +372,8 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
 
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <div>
-                <h2 className="text-base font-bold text-[#171717]">Responsibilities</h2>
-                <hr className="mt-2 mb-4 border-[#ece4de]" />
+                <h2 className="text-base font-bold text-[var(--color-foreground)]">Responsibilities</h2>
+                <hr className="mt-2 mb-4 border-[var(--color-warm-border)]" />
                 <textarea
                   value={fields.responsibilities}
                   onChange={(e) => set('responsibilities', e.target.value)}
@@ -384,8 +384,8 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
               </div>
 
               <div>
-                <h2 className="text-base font-bold text-[#171717]">Requirements</h2>
-                <hr className="mt-2 mb-4 border-[#ece4de]" />
+                <h2 className="text-base font-bold text-[var(--color-foreground)]">Requirements</h2>
+                <hr className="mt-2 mb-4 border-[var(--color-warm-border)]" />
                 <textarea
                   value={fields.requirements}
                   onChange={(e) => set('requirements', e.target.value)}
@@ -398,26 +398,26 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
             </div>
 
             {/* Section: AI Configuration */}
-            <h2 className="mt-10 text-base font-bold text-[#171717]">AI Configuration</h2>
-            <hr className="mt-2 mb-6 border-[#ece4de]" />
+            <h2 className="mt-10 text-base font-bold text-[var(--color-foreground)]">AI Configuration</h2>
+            <hr className="mt-2 mb-6 border-[var(--color-warm-border)]" />
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>
-                  Required Skills <span className="text-[#b13d2f]">*</span>
+                  Required Skills <span className="text-[var(--color-status-error-text)]">*</span>
                 </label>
                 <div className="relative">
                   <div className={`${inputClass} flex min-h-[48px] h-auto flex-wrap gap-2 py-2`}>
                     {fields.core_skills.map((skill) => (
                       <span
                         key={skill}
-                        className="flex items-center gap-1 rounded-full bg-[#e8f8fa] border border-[#cfecef] px-3 py-0.5 text-xs font-semibold text-[#0c6c75]"
+                        className="flex items-center gap-1 rounded-full bg-[var(--color-teal-light)] border border-[var(--color-teal-border)] px-3 py-0.5 text-xs font-semibold text-[var(--color-teal-dark)]"
                       >
                         {skill}
                         <button
                           type="button"
                           onClick={() => removeSkill(skill)}
-                          className="ml-0.5 text-[#0c6c75]/60 hover:text-[#b13d2f] transition-colors"
+                          className="ml-0.5 text-[var(--color-teal-dark)]/60 hover:text-[var(--color-status-error-text)] transition-colors"
                           aria-label={`Remove ${skill}`}
                         >
                           ×
@@ -430,13 +430,13 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                       onChange={(e) => setSkillInput(e.target.value)}
                       onKeyDown={handleSkillKeyDown}
                       placeholder={fields.core_skills.length === 0 ? 'Type a skill and press Enter…' : ''}
-                      className="flex-1 min-w-[140px] outline-none bg-transparent text-sm text-[#201d1b] placeholder:text-[#b5aca6]"
+                      className="flex-1 min-w-[140px] outline-none bg-transparent text-sm text-[var(--color-text-darkest)] placeholder:text-[var(--color-text-lighter)]"
                     />
                   </div>
                 </div>
                 {fieldErrors.core_skills
                   ? <p className={errorClass}>{fieldErrors.core_skills}</p>
-                  : <p className="mt-1 text-xs text-[#9a9088]">Pick from suggestions or type and press Enter to add a custom skill</p>}
+                  : <p className="mt-1 text-xs text-[var(--color-text-faint)]">Pick from suggestions or type and press Enter to add a custom skill</p>}
               </div>
 
               <div>
@@ -458,7 +458,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
             <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
               <Link
                 href="/recruiter/dashboard/jobs"
-                className="rounded-full border border-[#ddd5cf] bg-white px-6 py-3 text-sm font-semibold text-[#635b55] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+                className="rounded-full border border-[var(--color-warm-border-faint)] bg-white px-6 py-3 text-sm font-semibold text-[var(--color-text-muted)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
               >
                 Cancel
               </Link>
@@ -468,7 +468,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                   type="button"
                   onClick={() => handleSubmit('draft')}
                   disabled={!!pendingMode || isPending}
-                  className="rounded-full border border-[#ddd5cf] bg-white px-6 py-3 text-sm font-semibold text-[#635b55] transition hover:border-[#26b9c8] hover:text-[#0c6c75] disabled:opacity-60"
+                  className="rounded-full border border-[var(--color-warm-border-faint)] bg-white px-6 py-3 text-sm font-semibold text-[var(--color-text-muted)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)] disabled:opacity-60"
                 >
                   {pendingMode === 'draft' ? 'Saving…' : 'Save as Draft'}
                 </button>
@@ -476,7 +476,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                   type="button"
                   onClick={() => handleSubmit('publish')}
                   disabled={!!pendingMode || isPending}
-                  className="rounded-full bg-[#26b9c8] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#1fa8b6] disabled:opacity-60"
+                  className="rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
                 >
                   {pendingMode === 'publish'
                     ? (isEditing ? 'Saving…' : 'Publishing…')

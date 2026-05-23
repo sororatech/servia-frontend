@@ -106,10 +106,10 @@ export function Navbar() {
                     <button 
                       onClick={toggleLogin}
                       className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer"
-                      style={{ backgroundColor: '#FAD4C0' }}
+                      style={{ backgroundColor: 'var(--color-status-warning-border)' }}
                       aria-label="Toggle login state (testing)"
                     >
-                      <span className="text-[#CC7D52] text-sm">JD</span>
+                      <span className="text-[var(--color-status-warning-text)] text-sm">JD</span>
                     </button>
                   </>
                 ) : (
@@ -188,8 +188,8 @@ export function Navbar() {
                 ) : isLoggedIn ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: '#FAD4C0' }}>
-                        <span className="text-[#CC7D52] text-sm">JD</span>
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: 'var(--color-status-warning-border)' }}>
+                        <span className="text-[var(--color-status-warning-text)] text-sm">JD</span>
                       </div>
                       <span className="font-semibold text-sm">Sarah Jenkins</span>
                     </div>

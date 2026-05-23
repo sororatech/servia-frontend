@@ -56,15 +56,15 @@ export default function LiveInterviewClient({
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.18),_transparent_28%),linear-gradient(180deg,#fcfcfb_0%,#f6f0ec_100%)] text-[#171717]">
+    <main className="min-h-screen bg-page-gradient text-[var(--color-foreground)]">
       <div className="border-b border-black/8 bg-white/75 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
 
           <div className="space-y-1 text-center">
-            <h1 className="text-xl font-semibold tracking-[-0.03em] text-[#171717] sm:text-3xl">
+            <h1 className="text-xl font-semibold tracking-[-0.03em] text-[var(--color-foreground)] sm:text-3xl">
               Live Interview with {interview.candidateName || initialCandidateName || "Candidate"}
             </h1>
-            <div className="space-y-1 text-sm text-[#5e5752]">
+            <div className="space-y-1 text-sm text-[var(--color-text-muted)]">
               <p>
                 {interview.candidateEmail || initialCandidateEmail || "Candidate email will appear once the session loads."}
               </p>
@@ -78,8 +78,8 @@ export default function LiveInterviewClient({
             <div
               className={`rounded-full px-4 py-2 text-sm font-semibold ${
                 streamStatus === "connected"
-                  ? "border border-[#bfeef3] bg-[#e9fbfd] text-[#0c6c75]"
-                  : "border border-[#eaded8] bg-white text-[#6c6764]"
+                  ? "border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] text-[var(--color-teal-dark)]"
+                  : "border border-[var(--color-warm-border)] bg-white text-[var(--color-text-subtle)]"
               }`}
             >
               {streamStatus === "connected" ? "Live stream connected" : "Waiting for stream"}
@@ -87,7 +87,7 @@ export default function LiveInterviewClient({
             <button
               type="button"
               onClick={() => void refresh()}
-              className="rounded-full border border-[#d7c3ba] bg-white px-4 py-2 text-sm font-semibold text-[#4b4743] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+              className="rounded-full border border-[var(--color-warm-border-deep)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
             >
               Refresh
             </button>
@@ -97,12 +97,12 @@ export default function LiveInterviewClient({
 
       <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
         {error ? (
-          <div className="mb-6 rounded-[1.5rem] border border-[#f1c8b9] bg-[#fff3ed] px-5 py-4 text-sm text-[#8a4b2a]">
+          <div className="mb-6 rounded-[1.5rem] border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm text-[var(--color-status-warning-text)]">
             {error}
           </div>
         ) : null}
         {controlMessage ? (
-          <div className="mb-6 rounded-[1.5rem] border border-[#bfeef3] bg-[#e9fbfd] px-5 py-4 text-sm text-[#0c6c75]">
+          <div className="mb-6 rounded-[1.5rem] border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] px-5 py-4 text-sm text-[var(--color-teal-dark)]">
             {controlMessage}
           </div>
         ) : null}
@@ -121,7 +121,7 @@ export default function LiveInterviewClient({
               <button
                 type="button"
                 onClick={handleEndCall}
-                className="min-w-[180px] rounded-[1.1rem] bg-[#d9d9d9] px-8 py-4 text-xl font-medium text-[#1d1d1d] transition hover:bg-[#cfcfcf]"
+                className="min-w-[180px] rounded-[1.1rem] bg-[var(--color-neutral-border)] px-8 py-4 text-xl font-medium text-[var(--color-foreground)] transition hover:bg-[var(--color-neutral-border)]"
               >
                 End Call
               </button>
@@ -167,8 +167,8 @@ export default function LiveInterviewClient({
                     onClick={control.onClick}
                     className={`h-16 w-16 rounded-full text-sm font-medium transition ${
                       control.active
-                        ? "bg-[#26b9c8] text-white"
-                        : "bg-[#d9d9d9] text-[#4b4743] hover:bg-[#cecece]"
+                        ? "bg-[var(--color-primary)] text-white"
+                        : "bg-[var(--color-neutral-border)] text-[var(--color-text-body)] hover:bg-[var(--color-neutral-border)]"
                     }`}
                   >
                     {control.text}
@@ -178,12 +178,12 @@ export default function LiveInterviewClient({
             </div>
           </section>
 
-          <aside className="rounded-[2rem] border border-black/12 bg-[#fdf6f4]/90 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.1)]">
+          <aside className="rounded-[2rem] border border-black/12 bg-[var(--color-warm-bg-deep)]/90 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.1)]">
             <div className="mb-8">
-              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[#171717]">
+              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--color-foreground)]">
                 AI Follow-Up Suggestions
               </h2>
-              <p className="mt-2 text-lg text-[#5e5752]">
+              <p className="mt-2 text-lg text-[var(--color-text-muted)]">
                 AI recommended follow-up questions for the recruiter
               </p>
             </div>
@@ -193,17 +193,17 @@ export default function LiveInterviewClient({
                 interview.followUpSuggestions.map((question, index) => (
                   <button
                     key={question.id}
-                    className={`w-full rounded-[1.25rem] border px-4 py-4 text-left text-lg leading-7 text-[#4b4743] transition hover:border-[#26b9c8] hover:bg-white ${
+                    className={`w-full rounded-[1.25rem] border px-4 py-4 text-left text-lg leading-7 text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:bg-white ${
                       index === 0
-                        ? "border-[#d4c1b6] bg-[#fffaf8] shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
-                        : "border-[#eaded8] bg-white/70"
+                        ? "border-[var(--color-warm-border-deep)] bg-[var(--color-warm-bg-page)] shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
+                        : "border-[var(--color-warm-border)] bg-white/70"
                     }`}
                   >
                     {question.text}
                   </button>
                 ))
               ) : (
-                <div className="rounded-[1.25rem] border border-dashed border-[#d9cbc3] bg-white/60 px-4 py-6 text-center text-base leading-7 text-[#6b625d]">
+                <div className="rounded-[1.25rem] border border-dashed border-[var(--color-warm-border-deep)] bg-white/60 px-4 py-6 text-center text-base leading-7 text-[var(--color-text-subtle)]">
                   {followUpEmptyStateMessage}
                 </div>
               )}
@@ -211,12 +211,12 @@ export default function LiveInterviewClient({
 
             <div
               id="interview-notes"
-              className="mt-10 rounded-[1.5rem] border border-dashed border-[#d9cbc3] bg-white/60 p-5"
+              className="mt-10 rounded-[1.5rem] border border-dashed border-[var(--color-warm-border-deep)] bg-white/60 p-5"
             >
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#8a817b]">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--color-text-faint)]">
                 Suggested next angle
               </p>
-              <p className="mt-3 text-base leading-7 text-[#4b4743]">
+              <p className="mt-3 text-base leading-7 text-[var(--color-text-body)]">
                 Additional recruiter guidance will show up here when live coaching data is available.
               </p>
             </div>
@@ -224,7 +224,7 @@ export default function LiveInterviewClient({
             <button
               type="button"
               onClick={() => void refresh()}
-              className="mt-10 w-full rounded-[1.2rem] border border-[#d7c3ba] bg-white px-6 py-4 text-2xl font-medium text-[#4b4743] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+              className="mt-10 w-full rounded-[1.2rem] border border-[var(--color-warm-border-deep)] bg-white px-6 py-4 text-2xl font-medium text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
             >
               {isLoading ? "Loading..." : "Refresh Suggestions"}
             </button>

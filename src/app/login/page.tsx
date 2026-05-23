@@ -85,7 +85,7 @@ export default function LoginPage() {
               <div className="mb-6">
                 <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain w-12 h-12 xl:w-16 xl:h-16" />
               </div>
-              <h2 className="text-xl xl:text-2xl mb-3 leading-tight" style={{ color: '#0F2A44' }}>
+              <h2 className="text-xl xl:text-2xl mb-3 leading-tight" style={{ color: 'var(--color-secondary)' }}>
                 The Ultimate Career Experience.
               </h2>
               <p className="text-gray-600 leading-relaxed text-sm">
@@ -95,12 +95,12 @@ export default function LoginPage() {
 
             <div className="mt-16 xl:mt-44 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E6F7FB' }}>
-                  <ShieldCheck className="w-5 h-5" style={{ color: '#26B9C8' }} />
+                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-teal-light)' }}>
+                  <ShieldCheck className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
                 </div>
                 <div>
-                  <h6 className="text-sm leading-none" style={{ color: '#0F2A44' }}>Verified Identity</h6>
-                  <p className="text-xs text-gray-500 leading-tight -mt-2" style={{ color: '#26B9C8' }}>Your professional data is encrypted</p>
+                  <h6 className="text-sm leading-none" style={{ color: 'var(--color-secondary)' }}>Verified Identity</h6>
+                  <p className="text-xs text-gray-500 leading-tight -mt-2" style={{ color: 'var(--color-primary)' }}>Your professional data is encrypted</p>
                 </div>
               </div>
             </div>
@@ -110,8 +110,8 @@ export default function LoginPage() {
         <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-white overflow-y-auto">
           <div className="w-full max-w-md">
             <div className="mb-8 sm:mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: '#0F2A44' }}>Welcome back</h2>
-              <p className="-mt-2 text-sm" style={{ color: '#26B9C8' }}>Please enter your details to sign in.</p>
+              <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-secondary)' }}>Welcome back</h2>
+              <p className="-mt-2 text-sm" style={{ color: 'var(--color-primary)' }}>Please enter your details to sign in.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
@@ -125,7 +125,7 @@ export default function LoginPage() {
                   type="email" id="email" name="email" value={formData.email} onChange={handleChange}
                   placeholder="name@company.com"
                   className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
-                  style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                  style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                 />
                 {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
               </div>
@@ -133,20 +133,20 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                  <Link href="/forgot-password" className="text-sm font-medium" style={{ color: '#26B9C8' }}>Forgot Password?</Link>
+                  <Link href="/forgot-password" className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>Forgot Password?</Link>
                 </div>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'} id="password" name="password" value={formData.password} onChange={handleChange}
                     placeholder="••••••••"
                     className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
-                    style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                    style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: '#26B9C8' }}
+                    style={{ color: 'var(--color-primary)' }}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -178,7 +178,7 @@ export default function LoginPage() {
 
             <p className="mt-5 sm:mt-6 text-center text-sm text-gray-600">
               Don&#39;t have an account?{' '}
-              <Link href="/register" className="font-medium" style={{ color: '#26B9C8' }}>Create Account</Link>
+              <Link href="/register" className="font-medium" style={{ color: 'var(--color-primary)' }}>Create Account</Link>
             </p>
           </div>
         </div>
@@ -187,14 +187,14 @@ export default function LoginPage() {
 
       <style jsx>{`
         .custom-button {
-          background-color: #26B9C8 !important;
+          background-color: var(--color-primary) !important;
           height: 48px !important;
           min-height: 48px !important;
           padding: 0 1.5rem !important;
           border-radius: 9999px !important;
         }
         .custom-button:hover {
-          background-color: #20a8b6 !important;
+          background-color: var(--color-primary-hover) !important;
           opacity: 0.95 !important;
         }
         .custom-button:disabled {
