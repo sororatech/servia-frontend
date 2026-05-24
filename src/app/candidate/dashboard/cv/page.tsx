@@ -7,6 +7,7 @@ import { MAX_CV_SIZE_MB } from '@/utils/cvUpload';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
+import { Footer } from '@/components/layout/Footer';
 
 export default function CVUploadPage() {
   const router = useRouter();
@@ -35,10 +36,10 @@ export default function CVUploadPage() {
   const onSubmit = (e: React.FormEvent) => handleSubmit(e, applicationId);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-8 py-4">
+      <div className="flex-1 max-w-7xl mx-auto px-8 py-4 w-full">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-gray-900 rounded-full flex items-center justify-center">
@@ -59,10 +60,8 @@ export default function CVUploadPage() {
             <span className="text-gray-400 text-sm font-medium hover:text-gray-600 transition-colors">Video Intro</span>
           </Button>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-8 py-3">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 py-3">
           <div className="space-y-6">
             <div>
               <h1 className="text-4xl font-bold mb-2 leading-tight">
@@ -265,6 +264,7 @@ export default function CVUploadPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

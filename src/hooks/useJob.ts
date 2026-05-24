@@ -25,18 +25,18 @@ export const useJobDetail = (jobId: string | undefined) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const isMountedRef = useRef(true);
-  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    isMountedRef.current = true;
+    isMountedRef.current = true;  
     return () => {
-      isMountedRef.current = false;
+      isMountedRef.current = false;  
       if (redirectTimerRef.current) {
         clearTimeout(redirectTimerRef.current);
         redirectTimerRef.current = null;
       }
     };
-  }, []);
+  }, []); 
 
   const safeRedirect = useCallback((url: string, delayMs = 0) => {
     if (redirectTimerRef.current) {
@@ -55,31 +55,46 @@ export const useJobDetail = (jobId: string | undefined) => {
   }, [router]);
 
   useEffect(() => {
-    if (jobId) loadJob();
-  }, [jobId]);
-
-  const loadJob = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await fetchJob(jobId as string);
-      if (isMountedRef.current) {
-        setJob(data);
-        setErrorMessage(null);
-      }
-    } catch (error) {
-      console.error('Failed to load job:', error);
-      if (isMountedRef.current) {
-        setErrorMessage('Failed to load job details. Please try again.');
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-      }
+    if (!jobId) {
+      setLoading(false);
+      setErrorMessage('Invalid job ID');
+      return;
     }
-  }, [jobId]);
+    
+    let isCancelled = false;
+
+    const loadJob = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchJob(jobId);
+        if (!isCancelled) {
+          setJob(data);
+          setErrorMessage(null);
+        }
+      } catch (error) {
+        console.error('Failed to load job:', error);
+        if (!isCancelled) {
+          setErrorMessage('Failed to load job details. Please try again.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadJob();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [jobId]); 
 
   const handleApply = useCallback(async () => {
-    if (!jobId) return;
+    if (!jobId) {
+      setErrorMessage('Invalid job ID');
+      return;
+    }
     
     if (isMountedRef.current) {
       setErrorMessage(null);
@@ -89,17 +104,34 @@ export const useJobDetail = (jobId: string | undefined) => {
     try {
       const result: ApplicationResponse = await createApplication(jobId);
       
-      if (result.exists) {
-        if (isMountedRef.current) {
-          setErrorMessage('You have already applied to this job. Redirecting...');
-        }
-        safeRedirect(`/candidate/dashboard/cv?application=${result.id}`, 1500);
-      } else {
-        safeRedirect(`/candidate/dashboard/cv?application=${result.id}`, 0);
+      if (!isMountedRef.current) return;
+      
+      const applicationId = result.id || result.application_id;
+      
+      if (!applicationId) {
+        console.error('Missing application ID in response:', result);
+        setErrorMessage('Application created but missing ID. Please try again.');
+        setApplying(false);
+        return;
       }
+      
+      if (!result.exists) {
+        if (redirectTimerRef.current) {
+          clearTimeout(redirectTimerRef.current);
+          redirectTimerRef.current = null;
+        }
+        safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 1500);
+      } else {
+        safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 0);
+      }
+      
+      setErrorMessage('You have already applied to this job. Redirecting...');
+      safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 1500);
       
     } catch (error: any) {
       if (!isMountedRef.current) return;
+      
+      console.error('Apply error:', error);
       
       if (error.message === 'UNAUTHORIZED' || error.message === 'FORBIDDEN') {
         setErrorMessage('Please login to continue.');
@@ -111,6 +143,10 @@ export const useJobDetail = (jobId: string | undefined) => {
         const validationMsg = error.message.split(':')[1];
         try {
           const parsed = JSON.parse(validationMsg);
+          if (parsed.exists && parsed.id) {
+            router.push(`/candidate/dashboard/cv?application=${parsed.id}`);
+            return;
+          }
           const firstError = Object.values(parsed)[0] as string;
           setErrorMessage(firstError || 'Validation failed. Please check your input.');
         } catch {
@@ -125,7 +161,7 @@ export const useJobDetail = (jobId: string | undefined) => {
         setApplying(false);
       }
     }
-  }, [jobId, safeRedirect]);
+  }, [jobId, safeRedirect, router]);
 
   const clearError = useCallback(() => {
     if (isMountedRef.current) {
