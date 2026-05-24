@@ -1,136 +1,58 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
-export interface Job {
-  id: string;
-  title: string;
-  department: string;
-  location: string;
-  employment_type: string;
-  description: string;
-  requirements?: string;
-  posted_date?: string;
-  is_active?: boolean;
-  salary?: string;
-  salary_range?: string;
-  salary_min?: number | string;
-  salary_max?: number | string;
-  salary_currency?: string;
-  salary_period?: string;
-  core_skills?: string[];
-  openings_remaining?: number;
-  application_deadline?: string | null;
-  created_at?: string;
-}
-
-export interface ApplicationResponse {
-  id: string;
-  exists?: boolean;
-  [key: string]: any;
-}
+import { 
+  fetchJobs, 
+  fetchJob, 
+  createApplication, 
+  Job, 
+  ApplicationResponse,
+  normalizeJobType,
+  formatPostedDate,
+  formatDeadlineText,
+  formatSalary,
+  cleanRequirement,
+} from '@/utils/jobApi';
 
 export type DepartmentGroup = Record<string, { value: string; label: string }[]>;
-
-const fetchJobs = async (): Promise<Job[]> => {
-  try {
-    const response = await api.get('/jobs/jobs/');
-    const data = response.data;
-    if (Array.isArray(data)) return data;
-    if (data.results && Array.isArray(data.results)) return data.results;
-    return [];
-  } catch (error: any) {
-    console.error('Failed to fetch jobs:', error);
-    throw error;
-  }
-};
-
-const fetchJob = async (jobId: string): Promise<Job> => {
-  try {
-    const response = await api.get(`/jobs/jobs/${jobId}/`);
-    return response.data;
-  } catch (error: any) {
-    console.error(`Failed to fetch job ${jobId}:`, error);
-    throw error;
-  }
-};
-
-const createApplication = async (jobId: string): Promise<ApplicationResponse> => {
-  try {
-    const response = await api.post('/candidates/candidates/', { job: jobId });
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 401) {
-      throw new Error('UNAUTHORIZED');
-    } else if (error.response?.status === 403) {
-      throw new Error('FORBIDDEN');
-    } else if (error.response?.status === 400) {
-      const errorData = error.response?.data || {};
-      throw new Error(`VALIDATION_ERROR:${JSON.stringify(errorData)}`);
-    }
-    throw new Error(`FAILED:${error.response?.status || error.message}`);
-  }
-};
-
-const normalizeJobType = (type: string): string => {
-  return type?.toLowerCase().replace('_', '-') || 'full-time';
-};
-
-const formatPostedDate = (dateStr?: string): string => {
-  if (!dateStr) return 'Recently Posted';
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffDays = Math.floor(Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-  });
-};
-
-const formatDeadlineText = (deadline?: string | null): { text: string; className: string } | null => {
-  if (!deadline) return null;
-  const deadlineDate = new Date(deadline);
-  const now = new Date();
-  const diffDays = Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return { text: 'Closed', className: 'text-gray-400' };
-  if (diffDays === 0) return { text: '• Closes today', className: 'text-red-500 font-medium' };
-  if (diffDays === 1) return { text: '• 1 day left', className: 'text-orange-500 font-medium' };
-  if (diffDays <= 3) return { text: `• ${diffDays} days left`, className: 'text-orange-500' };
-  if (diffDays <= 7) return { text: `• ${diffDays} days left`, className: 'text-yellow-600' };
-  return { text: `• ${diffDays} days remaining`, className: 'text-green-400' };
-};
-
-const formatSalary = (job: {
-  salary?: string;
-  salary_range?: string;
-  salary_min?: number | string;
-  salary_max?: number | string;
-  salary_currency?: string;
-  salary_period?: string;
-}): { amount: string; detail: string } => {
-  const amount = job.salary_range || job.salary || 
-    (job.salary_min && job.salary_max ? `${job.salary_min} - ${job.salary_max}` : 'Not specified');
-  const currency = job.salary_currency || '';
-  const period = job.salary_period || '';
-  const detail = currency || period ? `${currency}/${period}` : '';
-  return { amount, detail };
-};
-
-const cleanRequirement = (req: string): string => {
-  return req.replace(/^[\s•\-\*]+/, '').trim();
-};
 
 export const useJobDetail = (jobId: string | undefined) => {
   const router = useRouter();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  const isMountedRef = useRef(true);
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+        redirectTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  const safeRedirect = useCallback((url: string, delayMs = 0) => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+    }
+    
+    if (delayMs === 0) {
+      router.push(url);
+    } else {
+      redirectTimerRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          router.push(url);
+        }
+      }, delayMs);
+    }
+  }, [router]);
 
   useEffect(() => {
     if (jobId) loadJob();
@@ -140,43 +62,48 @@ export const useJobDetail = (jobId: string | undefined) => {
     try {
       setLoading(true);
       const data = await fetchJob(jobId as string);
-      setJob(data);
-      setErrorMessage(null); 
+      if (isMountedRef.current) {
+        setJob(data);
+        setErrorMessage(null);
+      }
     } catch (error) {
       console.error('Failed to load job:', error);
-      setErrorMessage('Failed to load job details. Please try again.');
+      if (isMountedRef.current) {
+        setErrorMessage('Failed to load job details. Please try again.');
+      }
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [jobId]);
 
   const handleApply = useCallback(async () => {
     if (!jobId) return;
     
-    setErrorMessage(null); 
-    setApplying(true);
+    if (isMountedRef.current) {
+      setErrorMessage(null);
+      setApplying(true);
+    }
     
     try {
       const result: ApplicationResponse = await createApplication(jobId);
       
       if (result.exists) {
-        setErrorMessage('You have already applied to this job. Redirecting...');
-        setTimeout(() => {
-          router.push(`/candidate/dashboard/cv?application=${result.id}`);
-        }, 1500);
+        if (isMountedRef.current) {
+          setErrorMessage('You have already applied to this job. Redirecting...');
+        }
+        safeRedirect(`/candidate/dashboard/cv?application=${result.id}`, 1500);
       } else {
-        setErrorMessage('Application started! Redirecting to upload your CV...');
-        setTimeout(() => {
-          router.push(`/candidate/dashboard/cv?application=${result.id}`);
-        }, 1500);
+        safeRedirect(`/candidate/dashboard/cv?application=${result.id}`, 0);
       }
       
     } catch (error: any) {
+      if (!isMountedRef.current) return;
+      
       if (error.message === 'UNAUTHORIZED' || error.message === 'FORBIDDEN') {
         setErrorMessage('Please login to continue.');
-        setTimeout(() => {
-          router.push('/login');
-        }, 1500);
+        safeRedirect('/login', 1500);
         return;
       }
       
@@ -194,11 +121,17 @@ export const useJobDetail = (jobId: string | undefined) => {
       
       setErrorMessage('Failed to start application. Please try again.');
     } finally {
-      setApplying(false);
+      if (isMountedRef.current) {
+        setApplying(false);
+      }
     }
-  }, [jobId, router]);
+  }, [jobId, safeRedirect]);
 
-  const clearError = useCallback(() => setErrorMessage(null), []);
+  const clearError = useCallback(() => {
+    if (isMountedRef.current) {
+      setErrorMessage(null);
+    }
+  }, []);
 
   const salaryInfo = useMemo(() => job ? formatSalary(job) : { amount: '', detail: '' }, [job]);
   
@@ -224,16 +157,13 @@ export const useJobDetail = (jobId: string | undefined) => {
     job,
     loading,
     applying,
-    errorMessage, 
-    
+    errorMessage,
+    clearError,
     handleApply,
-    clearError,   
-    
     salaryInfo,
     formattedDeadline,
     requirements,
     skills,
-    
     goToJobs: () => router.push('/jobs'),
     goToDashboard: () => router.push('/candidate/dashboard'),
     goToProfile: () => router.push('/candidate/profile'),

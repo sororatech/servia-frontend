@@ -22,6 +22,7 @@ export interface UseCVUploadReturn {
   handleDrop: (e: React.DragEvent) => void;
   handleSubmit: (e: React.FormEvent, applicationId: string | null) => Promise<void>;
   clearError: () => void;
+  removeFile: () => void;  
   
   formatFileSize: (bytes: number) => string;
   isFileTooLarge: (file: File | null) => boolean;
@@ -38,19 +39,24 @@ export const useCVUpload = (): UseCVUploadReturn => {
 
   const clearError = useCallback(() => setErrorMessage(null), []);
 
+  const removeFile = useCallback(() => {
+    setCvFile(null);
+    setErrorMessage(null);
+  }, []);
+
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (file) {
       const validation = validateFile(file);
       if (!validation.valid) {
         setErrorMessage(validation.error || 'Invalid file');
-        setCvFile(null);
+        setCvFile(null);  
         return;
       }
       setCvFile(file);
-      clearError();
+      setErrorMessage(null);  
     }
-  }, [clearError]);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -74,16 +80,16 @@ export const useCVUpload = (): UseCVUploadReturn => {
         return;
       }
       setCvFile(file);
-      clearError();
+      setErrorMessage(null);
     }
-  }, [clearError]);
+  }, []);
 
   const handleSubmit = useCallback(async (
     e: React.FormEvent, 
     applicationId: string | null
   ) => {
     e.preventDefault();
-    clearError();
+    setErrorMessage(null);
     
     if (!applicationId) {
       setErrorMessage('Application ID not found. Please restart the process.');
@@ -97,7 +103,7 @@ export const useCVUpload = (): UseCVUploadReturn => {
 
     const validation = validateFile(cvFile);
     if (!validation.valid) {
-      setErrorMessage(validation.error || 'Invalid file'); 
+      setErrorMessage(validation.error || 'Invalid file');
       setCvFile(null);
       return;
     }
@@ -133,7 +139,7 @@ export const useCVUpload = (): UseCVUploadReturn => {
       await api.post(
         `/candidates/candidates/${applicationId}/confirm-cv/`,
         { file_key: urlData.file_key, filename: cvFile.name },
-        { timeout: 60000 } 
+        { timeout: 60000 }
       );
 
       setUploadProgress(100);
@@ -156,7 +162,7 @@ export const useCVUpload = (): UseCVUploadReturn => {
     } finally {
       setUploading(false);
     }
-  }, [cvFile, clearError, router]);
+  }, [cvFile, router]);
 
   const isFileTooLarge = useCallback((file: File | null): boolean => {
     return file ? file.size > MAX_CV_SIZE_BYTES : false;
@@ -175,6 +181,7 @@ export const useCVUpload = (): UseCVUploadReturn => {
     handleDrop,
     handleSubmit,
     clearError,
+    removeFile,  
     
     formatFileSize,
     isFileTooLarge,

@@ -1,10 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from '@/hooks/useProfile'; 
 
 const Icons = {
   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
@@ -19,17 +19,19 @@ const Icons = {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { profile, loading } = useProfile(); // use loading, not isLoading
+  const { profile, loading } = useProfile(); 
+
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const name = profile?.first_name && profile?.last_name 
     ? `${profile.first_name} ${profile.last_name}`.trim() 
     : 'User';
-  const role = profile?.isAdmin ? 'Admin' : (profile?.role === 'candidate' ? 'Candidate' : 'Recruiter');  const isAdmin = profile?.isAdmin || false;
+  const role = profile?.isAdmin ? 'Admin' : (profile?.role === 'candidate' ? 'Candidate' : 'Recruiter');
+  const isAdmin = profile?.isAdmin || false;
   const avatarUrl = profile?.avatar || null;
 
   const menuItems = [
-    { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview },
+    { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview, exact: true },
     { name: 'Candidates', href: '/recruiter/dashboard/candidates', icon: Icons.Candidates },
     { name: 'Jobs', href: '/recruiter/dashboard/jobs', icon: Icons.Jobs },
     { name: 'Interviews', href: '/recruiter/dashboard/interviews', icon: Icons.Interviews },
@@ -37,16 +39,16 @@ export function Sidebar() {
     ...(isAdmin ? [{ name: 'Settings', href: '/recruiter/dashboard/settings', icon: Icons.Settings }] : []),
   ];
 
-  if (loading) {
-    return <aside className="w-64 bg-[var(--color-secondary)] h-screen sticky top-0 animate-pulse" />;
-  }
-
-  const isMenuItemActive = (href: string) => {
-    if (href === '/recruiter/dashboard') {
-      return pathname === href || pathname === href + '/';
+  const isMenuItemActive = (href: string, exact?: boolean) => {
+    if (exact) {
+      return pathname === href;
     }
     return pathname === href || pathname.startsWith(href + '/');
   };
+
+  if (loading) {
+    return <aside className="w-64 bg-[var(--color-secondary)] h-screen sticky top-0 animate-pulse" />;
+  }
 
   return (
     <aside 
@@ -81,7 +83,7 @@ export function Sidebar() {
 
       <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
         {menuItems.map((item) => {
-          const active = isMenuItemActive(item.href);
+          const active = isMenuItemActive(item.href, item.exact);
           return (
             <Link
               key={item.href}
@@ -125,12 +127,8 @@ export function Sidebar() {
           </div>
 
           <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            <span className="text-white font-semibold text-sm truncate">
-              {name}
-            </span>
-            <span className="text-white/60 text-xs truncate">
-              {role}
-            </span>
+            <span className="text-white font-semibold text-sm truncate">{name}</span>
+            <span className="text-white/60 text-xs truncate">{role}</span>
           </div>
         </div>
       </Link>

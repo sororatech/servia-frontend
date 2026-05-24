@@ -12,10 +12,6 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { useApplicationDetail } from '@/hooks/useApplicationDetail';
 import { formatStatusDisplay, getStatusBadgeClass, canWithdraw } from '@/lib/applications';
 
-const formatDepartmentFallback = (deptCode: string): string => {
-  if (!deptCode) return 'Department';
-  return deptCode.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-};
 
 export default function ApplicationDetailPage() {
   const params = useParams();
@@ -41,7 +37,7 @@ export default function ApplicationDetailPage() {
   const jobLocation = jobDetails?.location || (typeof application?.job === 'object' ? application.job?.location : 'Remote');
   const jobDepartment = jobDetails?.department_display || 
     (typeof application?.job === 'object' ? application.job?.department_display : '') ||
-    formatDepartmentFallback(jobDetails?.department || (typeof application?.job === 'object' ? application.job?.department : ''));
+    jobDetails?.department || (typeof application?.job === 'object' ? application.job?.department : '');
   const jobId = jobDetails?.id || (typeof application?.job === 'string' ? application.job : application?.job?.id);
 
   if (loading) {

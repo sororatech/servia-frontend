@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -70,15 +71,14 @@ export function Navbar() {
   ];
 
   const isActive = (href: string) => {
+    // For "Browse Jobs", also highlight related candidate pages
     if (href === '/jobs') {
-      // Extra paths that should also highlight "Browse Jobs"
       const jobRelatedPaths = [
         '/',
         '/jobs',
         '/candidate/dashboard/cv',
         '/candidate/application-success',
       ];
-      // Check if current pathname matches any of these exactly or starts with '/jobs/'
       if (
         jobRelatedPaths.some(path => pathname === path || pathname.startsWith(path + '/')) ||
         pathname.startsWith('/jobs/')
@@ -124,6 +124,7 @@ export function Navbar() {
               </Link>
             </div>
 
+            {/* Desktop Navigation Links */}
             <div className="hidden lg:flex justify-center items-center gap-8 xl:gap-12 h-full">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
@@ -175,14 +176,14 @@ export function Navbar() {
                       title={`View ${user.name}'s Profile`}
                     >
                       {avatarUrl ? (
-                          <Image 
-                            src={avatarUrl} 
-                            alt={user.name} 
-                            width={40} 
-                            height={40} 
-                            className="w-full h-full rounded-full object-cover"
-                          />                      
-                        ) : (
+                        <Image
+                          src={avatarUrl}
+                          alt={user.name}
+                          width={40}
+                          height={40}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
                         <span className="text-[var(--color-secondary)] text-sm">
                           {getInitials(user.name)}
                         </span>
@@ -208,6 +209,7 @@ export function Navbar() {
               </div>
             </div>
 
+            {/* Mobile menu toggle */}
             <div className="flex lg:hidden justify-end">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -273,11 +275,11 @@ export function Navbar() {
                     >
                       <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)] overflow-hidden">
                         {avatarUrl ? (
-                          <Image 
-                            src={avatarUrl} 
-                            alt={user.name} 
-                            width={40} 
-                            height={40} 
+                          <Image
+                            src={avatarUrl}
+                            alt={user.name}
+                            width={40}
+                            height={40}
                             className="w-full h-full rounded-full object-cover"
                           />
                         ) : (
@@ -285,7 +287,7 @@ export function Navbar() {
                             {getInitials(user.name)}
                           </span>
                         )}
-                      </div>
+      </div>
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm text-[var(--color-foreground)]">{user.name}</span>
                         <span className="text-xs text-[var(--color-foreground)]/60 capitalize">{user.role}</span>
