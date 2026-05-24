@@ -71,7 +71,6 @@ export function Navbar() {
   ];
 
   const isActive = (href: string) => {
-    // For "Browse Jobs", also highlight related candidate pages
     if (href === '/jobs') {
       const jobRelatedPaths = [
         '/',
@@ -124,7 +123,6 @@ export function Navbar() {
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
             <div className="hidden lg:flex justify-center items-center gap-8 xl:gap-12 h-full">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
@@ -209,7 +207,6 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Mobile menu toggle */}
             <div className="flex lg:hidden justify-end">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -287,7 +284,7 @@ export function Navbar() {
                             {getInitials(user.name)}
                           </span>
                         )}
-      </div>
+                      </div>
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm text-[var(--color-foreground)]">{user.name}</span>
                         <span className="text-xs text-[var(--color-foreground)]/60 capitalize">{user.role}</span>
