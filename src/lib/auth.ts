@@ -28,7 +28,7 @@ export const AUTH_STORAGE = {
   clear(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_role');
+      localStorage.removeItem('user_role'); 
       localStorage.removeItem('user_id');
       localStorage.removeItem('first_name');
       localStorage.removeItem('last_name');
