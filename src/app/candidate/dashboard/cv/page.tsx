@@ -1,118 +1,34 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { api } from '@/lib/api';
+import { useCVUpload } from '@/hooks/useCVUpload';
+import { MAX_CV_SIZE_MB } from '@/utils/cvUpload';
 
 export default function CVUploadPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const applicationId = searchParams.get('application');
   
-  const [uploading, setUploading] = useState(false);
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setCvFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setCvFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    cvFile,
+    isDragging,
+    uploadProgress,
+    uploading,
+    errorMessage,
     
-    if (!applicationId) {
-      alert('Application ID not found');
-      return;
-    }
-
-    if (!cvFile) {
-      alert('Please select a CV file');
-      return;
-    }
+    handleFileChange,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleSubmit,
+    clearError,
     
-    setUploading(true);
-    setUploadProgress(10);
+    formatFileSize,
+    isFileTooLarge,
+  } = useCVUpload();
 
-    try {
-      const fileExtension = cvFile.name.split('.').pop()?.toLowerCase() || 'pdf';
-      
-      setUploadProgress(20);
-      
-      const urlResponse = await api.post(
-        `/candidates/candidates/${applicationId}/upload-cv/`,
-        { file_extension: fileExtension }
-      );
-      const urlData = urlResponse.data;
-
-      setUploadProgress(40);
-
-      const uploadResponse = await fetch(urlData.upload_url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': urlData.content_type,
-        },
-        body: cvFile,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload to R2: ${uploadResponse.status}`);
-      }
-
-      setUploadProgress(70);
-
-      const confirmResponse = await api.post(
-  `/candidates/candidates/${applicationId}/confirm-cv/`,
-  { file_key: urlData.file_key, filename: cvFile.name },
-  { timeout: 60000 }  // ← Add this option: 60 second timeout
-);
-
-      setUploadProgress(100);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      router.push(`/candidate/application-success?applicationId=${applicationId}`);
-
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      
-      if (error.response?.status === 401) {
-        alert('Session expired. Please login again.');
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user_role');
-          window.location.href = '/login';
-        }
-        return;
-      }
-      
-      alert(`Upload failed: ${error.message || 'Unknown error'}`);
-      setUploadProgress(0);
-    } finally {
-      setUploading(false);
-    }
-  };
+  const onSubmit = (e: React.FormEvent) => handleSubmit(e, applicationId);
 
   return (
     <div className="min-h-screen bg-white">
@@ -125,6 +41,7 @@ export default function CVUploadPage() {
                   src="/servia-logo.png"
                   alt="Servia Logo"
                   fill
+                  sizes="(max-width: 768px) 100vw, 36px"
                   className="object-contain"
                   priority
                 />
@@ -167,9 +84,7 @@ export default function CVUploadPage() {
             </div>
             <span className="text-gray-900 text-sm font-medium">Personal Details</span>
           </div>
-
           <div className="w-12 h-px bg-gray-200"></div>
-
           <button 
             onClick={() => router.push('/candidate/dashboard/video')}
             className="flex items-center gap-2 hover:opacity-70 transition-opacity"
@@ -208,10 +123,7 @@ export default function CVUploadPage() {
                 <svg className="w-7 h-7 text-teal-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                
-                <h3 className="text-base font-semibold text-gray-900 mb-1.5">
-                  Privacy First
-                </h3>
+                <h3 className="text-base font-semibold text-gray-900 mb-1.5">Privacy First</h3>
                 <p className="text-xs text-gray-600 leading-relaxed text-left">
                   Your data is encrypted and only shared with verified premium
                   <br />
@@ -223,12 +135,29 @@ export default function CVUploadPage() {
 
           <div>
             <div className="bg-white rounded-3xl p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15),0_8px_20px_-4px_rgba(0,0,0,0.1)] border border-gray-100 hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.2),0_10px_25px_-4px_rgba(0,0,0,0.15)] transition-all duration-300">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={onSubmit} className="space-y-6">
+                
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                    <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm text-red-700">{errorMessage}</p>
+                    <button
+                      type="button"
+                      onClick={clearError}
+                      className="ml-auto text-red-400 hover:text-red-600"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2">
-                      Full Name
-                    </label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">Full Name</label>
                     <input
                       type="text"
                       name="full_name"
@@ -238,11 +167,8 @@ export default function CVUploadPage() {
                       placeholder="Alex Rivera"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2">
-                      Work Email
-                    </label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">Work Email</label>
                     <input
                       type="email"
                       name="work_email"
@@ -255,9 +181,7 @@ export default function CVUploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Current Location
-                  </label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Current Location</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -275,17 +199,13 @@ export default function CVUploadPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">
-                    Curriculum Vitae
-                  </label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Curriculum Vitae</label>
                   <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors ${
-                      isDragging
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-300 hover:border-teal-400 bg-gray-50'
+                      isDragging ? 'border-teal-500 bg-teal-50' : 'border-gray-300 hover:border-teal-400 bg-gray-50'
                     } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
@@ -293,17 +213,19 @@ export default function CVUploadPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
+                    
                     {cvFile ? (
                       <div>
                         <p className="text-sm font-semibold text-gray-900 mb-1">{cvFile.name}</p>
-                        <p className="text-xs text-gray-500">{(cvFile.size / 1024).toFixed(2)} KB</p>
+                        <p className={`text-xs ${isFileTooLarge(cvFile) ? 'text-red-500' : 'text-gray-500'}`}>
+                          {formatFileSize(cvFile.size)} MB
+                          {isFileTooLarge(cvFile) && ` • Too large (max ${MAX_CV_SIZE_MB}MB)`}
+                        </p>
                       </div>
                     ) : (
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">
-                          Drag and drop your CV
-                        </p>
-                        <p className="text-xs text-gray-500 mb-4">PDF, DOCX up to 10MB</p>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Drag and drop your CV</p>
+                        <p className="text-xs text-gray-500 mb-4">PDF, DOCX up to {MAX_CV_SIZE_MB}MB</p>
                         <label className="inline-block">
                           <input
                             type="file"
@@ -324,10 +246,7 @@ export default function CVUploadPage() {
 
                 {uploading && (
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className="bg-teal-500 h-2.5 rounded-full transition-all duration-300" 
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
+                    <div className="bg-teal-500 h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                   </div>
                 )}
 
@@ -346,13 +265,8 @@ export default function CVUploadPage() {
                     className="px-10 py-3.5 bg-teal-500 text-white text-sm font-semibold rounded-full hover:bg-teal-600 transition-colors shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {uploading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Uploading...
-                      </>
-                    ) : (
-                      'Submit'
-                    )}
+                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Uploading...</>
+                    ) : 'Submit'}
                   </button>
                 </div>
               </form>

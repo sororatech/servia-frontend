@@ -1,201 +1,31 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { api } from '@/lib/api';
-
-interface JobInfo {
-  title: string;
-  department: string;
-  location: string;
-  company?: string;
-  recruiter?: {
-    name: string;
-    title: string;
-    quote: string;
-  } | null;
-}
-
-interface ApplicationData {
-  id: string;
-  status: string;
-  created_at: string;
-  job: string | JobInfo | null;
-}
+import { useApplicationSuccess } from '@/hooks/useApplicationSuccess';
 
 export default function ApplicationSuccess() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [applicationData, setApplicationData] = useState<ApplicationData | null>(null);
-  const [jobDetails, setJobDetails] = useState<JobInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  const {
+    loading,
+    error,
+    
+    handleViewDashboard,
+    handleReturnToJobs,
+    
+    getStatusColor,
+    getProgressWidth,
+    formatStatus,
+    getDisplayJobTitle,
+    getDisplayCompany,
+    getDisplayRecruiter,
+  } = useApplicationSuccess();
 
-  useEffect(() => {
-    fetchApplicationData();
-  }, [searchParams]);
-
-  const fetchApplicationData = async () => {
-    try {
-      const applicationId = searchParams.get('applicationId');
-      
-      if (applicationId) {
-        await fetchSpecificApplication(applicationId);
-      } else {
-        await fetchMostRecentApplication();
-      }
-    } catch (error) {
-      console.error('Error fetching application data', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSpecificApplication = async (appId: string) => {
-    try {
-      const response = await api.get(`/candidates/candidates/${appId}/`);
-      const appData = response.data;
-      
-      setApplicationData(appData);
-      
-      if (typeof appData.job === 'string') {
-        await fetchJobDetails(appData.job);
-      } else if (appData.job && typeof appData.job === 'object') {
-        setJobDetails(appData.job as JobInfo);
-      }
-    } catch (error) {
-      console.error('Error fetching specific application:', error);
-      await fetchMostRecentApplication();
-    }
-  };
-
-  const fetchMostRecentApplication = async () => {
-    try {
-      const response = await api.get('/candidates/candidates/');
-      const data = response.data;
-      const applications = data.results || data;
-      
-      if (applications && applications.length > 0) {
-        const latestApp = applications[0];
-        setApplicationData(latestApp);
-        
-        if (typeof latestApp.job === 'string') {
-          await fetchJobDetails(latestApp.job);
-        } else if (latestApp.job && typeof latestApp.job === 'object') {
-          setJobDetails(latestApp.job as JobInfo);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching most recent application:', error);
-    }
-  };
-
-  const fetchJobDetails = async (jobId: string) => {
-    try {
-      const response = await api.get(`/jobs/jobs/${jobId}/`);
-      const jobData = response.data;
-      
-      if (!jobData) return;
-      
-      const realTitle = jobData.title || jobData.position_title || jobData.role || 'Position Applied';
-      const department = jobData.department || jobData.company || jobData.organization || 'Servia Hotels';
-      const location = jobData.location || jobData.work_location || '';
-      
-      setJobDetails({
-        title: realTitle,
-        department: department,
-        location: location,
-        company: jobData.company,
-        recruiter: jobData.recruiter || jobData.hiring_manager || jobData.contact_person || null,
-      });
-      
-      if (!jobData.recruiter && !jobData.hiring_manager) {
-        await fetchRecruiterInfo(department);
-      }
-      
-    } catch (error) {
-      console.error('Error fetching job details:', error);
-    }
-  };
-
-  const fetchRecruiterInfo = async (department: string) => {
-    try {
-      const response = await api.get('/recruiters/', {
-        params: { department: department }
-      });
-      
-      const data = response.data;
-      let recruiter = null;
-      
-      if (Array.isArray(data) && data.length > 0) {
-        recruiter = data[0];
-      } else if (data.results && Array.isArray(data.results) && data.results.length > 0) {
-        recruiter = data.results[0];
-      } else if (data.name || data.full_name) {
-        recruiter = data;
-      }
-      
-      if (recruiter) {
-        setJobDetails(prev => prev ? {
-          ...prev,
-          recruiter: {
-            name: recruiter.name || recruiter.full_name || 'Talent Team',
-            title: recruiter.title || recruiter.role || 'Servia Hotels',
-            quote: recruiter.quote || recruiter.bio || recruiter.description || "We've received your application!",
-          }
-        } : prev);
-      }
-    } catch (error: any) {
-      if (error.response?.status !== 404) {
-        console.error('Error fetching recruiter info:', error);
-      }
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'applied':
-      case 'submitted':
-        return 'text-teal-600';
-      case 'under_review':
-      case 'review':
-        return 'text-blue-600';
-      case 'interview':
-        return 'text-purple-600';
-      case 'accepted':
-      case 'hired':
-        return 'text-green-600';
-      case 'rejected':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getProgressWidth = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'applied':
-      case 'submitted':
-        return 'w-1/3';
-      case 'under_review':
-      case 'review':
-        return 'w-2/3';
-      case 'interview':
-      case 'accepted':
-      case 'hired':
-        return 'w-full';
-      default:
-        return 'w-1/3';
-    }
-  };
-
-  const handleViewDashboard = () => {
-    router.push('/candidate/dashboard');
-  };
-
-  const handleReturnToJobs = () => {
-    router.push('/jobs');
-  };
+  const status = 'Applied'; 
+  const displayJobTitle = getDisplayJobTitle();
+  const displayCompany = getDisplayCompany();
+  const displayRecruiter = getDisplayRecruiter();
 
   if (loading) {
     return (
@@ -208,15 +38,21 @@ export default function ApplicationSuccess() {
     );
   }
 
-  const displayJobTitle = jobDetails?.title || 'Position Applied';
-  const displayCompany = jobDetails?.department || jobDetails?.company || jobDetails?.location || 'Servia Hotels';
-  const status = applicationData?.status || 'Applied';
-  
-  const displayRecruiter = jobDetails?.recruiter || {
-    name: 'Talent Team',
-    title: 'Servia Hotels',
-    quote: "We've received your application! Our team is currently reviewing candidates who align with our vision of high-stakes professional introduction.",
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4 text-sm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-teal-600 hover:text-teal-700 font-medium text-xs"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -229,6 +65,7 @@ export default function ApplicationSuccess() {
                   src="/servia-logo.png"
                   alt="Servia Logo"
                   fill
+                  sizes="(max-width: 768px) 100vw, 36px"
                   className="object-contain"
                   priority
                 />
@@ -266,7 +103,7 @@ export default function ApplicationSuccess() {
       <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="grid grid-cols-2 gap-12">
           <div className="space-y-8">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-teal-600 text-xs font-semibold">
               SUBMISSION SUCCESSFUL
             </div>
 
@@ -286,7 +123,7 @@ export default function ApplicationSuccess() {
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 text-xs font-bold">01</span>
+                    <span className="text-teal-400 text-xs font-bold">01</span>
                   </div>
                   <div>
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -297,7 +134,7 @@ export default function ApplicationSuccess() {
 
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 text-xs font-bold">02</span>
+                    <span className="text-teal-400 text-xs font-bold">02</span>
                   </div>
                   <div>
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -308,7 +145,7 @@ export default function ApplicationSuccess() {
 
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 text-xs font-bold">03</span>
+                    <span className="text-teal-400 text-xs font-bold">03</span>
                   </div>
                   <div>
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -344,7 +181,7 @@ export default function ApplicationSuccess() {
                   </svg>
                 </div>
                 <span className={`px-3 py-1 bg-blue-50 text-xs font-semibold rounded-full capitalize ${getStatusColor(status)}`}>
-                  {status.replace('_', ' ')}
+                  {formatStatus(status)}
                 </span>
               </div>
 
@@ -380,7 +217,7 @@ export default function ApplicationSuccess() {
                 </div>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed italic">
-                {displayRecruiter.quote}
+                &quot;{displayRecruiter.quote}&quot;
               </p>
             </div>
           </div>
