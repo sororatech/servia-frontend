@@ -15,9 +15,8 @@ export function Footer() {
               <Image
                 src="/logo.png"
                 alt="ServiaAI"
-                width={90}
-                height={26}
-                className="h-6 w-auto"
+                width={83}
+                height={24}
                 priority
               />
               <span className="text-lg font-bold tracking-tight">

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { api } from '@/lib/api'; 
+import { AUTH_STORAGE } from '@/lib/auth';
 
 const Icons = {
   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
@@ -18,38 +18,27 @@ const Icons = {
 };
 
 function useProfile() {
-  const [profile, setProfile] = useState({
-    name: 'User',
-    role: 'Candidate',
-    isAdmin: false,
-    avatar: null,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await api.get('/users/profile/');
-        const data = response.data;
-        
-        setProfile({
-          name: `${data.first_name} ${data.last_name}`,
-          role: data.user_type === 'candidate' ? 'Candidate' : 'Recruiter',
-          isAdmin: false,
-          avatar: data.profile_photo,
-        });
-      } catch (error: any) {
-        console.error('Failed to fetch profile:', error);
-  
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
+    setMounted(true);
   }, []);
 
-  return { ...profile, isLoading };
+  const firstName = mounted ? AUTH_STORAGE.getFirstName() : null;
+  const lastName = mounted ? AUTH_STORAGE.getLastName() : null;
+  const role = mounted ? AUTH_STORAGE.getUserRole() : null;
+
+  const name = firstName || lastName
+    ? `${firstName ?? ''} ${lastName ?? ''}`.trim()
+    : 'User';
+
+  return {
+    name,
+    role: role === 'candidate' ? 'Candidate' : 'Recruiter',
+    isAdmin: false,
+    avatar: null,
+    isLoading: !mounted,
+  };
 }
 
 export function Sidebar() {
@@ -76,7 +65,13 @@ export function Sidebar() {
     >
       <div className="relative flex items-center h-30 px-4 border-b border-white/10">
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'opacity-0 -translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
-          <Image src="/logo.png" alt="Servia AI" width={40} height={40} className="shrink-0 object-contain" />
+          <Image
+            src="/logo.png"
+            alt="Servia AI"
+            width={40}
+            height={40}
+            className="h-auto w-10 shrink-0 object-contain"
+          />
           <h3 className="text-lg mt-5 font-bold text-[var(--color-primary)] whitespace-nowrap">
             ServiaAI
           </h3>
