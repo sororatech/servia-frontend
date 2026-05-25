@@ -1,4 +1,3 @@
-// ✅ This file MUST have at least one export to be a "module"
 export interface AnalyticsData {
   total_applications: number;
   total_applicants: number;
@@ -10,5 +9,4 @@ export interface AnalyticsData {
   applications_by_job: { job_title: string; applications: number }[];
 }
 
-// ✅ Add a dummy export to guarantee TypeScript sees this as a module
 export const __analyticsModuleMarker = true;
