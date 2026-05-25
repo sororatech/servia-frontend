@@ -41,6 +41,7 @@ export const useJobDetail = (jobId: string | undefined) => {
   const safeRedirect = useCallback((url: string, delayMs = 0) => {
     if (redirectTimerRef.current) {
       clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
     }
     
     if (delayMs === 0) {
@@ -116,15 +117,11 @@ export const useJobDetail = (jobId: string | undefined) => {
       }
       
       if (!result.exists) {
-        if (redirectTimerRef.current) {
-          clearTimeout(redirectTimerRef.current);
-          redirectTimerRef.current = null;
-        }
-        safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 1500);
-      } else {
-        safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 0);
+        router.push(`/candidate/dashboard/cv?application=${applicationId}`);
+        return;
       }
       
+      // User already applied - show message and redirect with delay
       setErrorMessage('You have already applied to this job. Redirecting...');
       safeRedirect(`/candidate/dashboard/cv?application=${applicationId}`, 1500);
       
@@ -135,7 +132,8 @@ export const useJobDetail = (jobId: string | undefined) => {
       
       if (error.message === 'UNAUTHORIZED' || error.message === 'FORBIDDEN') {
         setErrorMessage('Please login to continue.');
-        safeRedirect('/login', 1500);
+        const returnTo = encodeURIComponent(`/jobs/${jobId}`);
+        safeRedirect(`/login?returnTo=${returnTo}`, 1500);
         return;
       }
       
@@ -156,12 +154,13 @@ export const useJobDetail = (jobId: string | undefined) => {
       }
       
       setErrorMessage('Failed to start application. Please try again.');
+      
     } finally {
       if (isMountedRef.current) {
         setApplying(false);
       }
     }
-  }, [jobId, safeRedirect, router]);
+  }, [jobId, router, safeRedirect]);
 
   const clearError = useCallback(() => {
     if (isMountedRef.current) {
@@ -268,34 +267,35 @@ export const useBrowseJobs = () => {
     setSearchQuery('');
   }, []);
 
- const filteredJobs = useMemo(() => {
-  const now = Date.now(); 
-  
-  return jobs.filter(job => {
-    if (job.application_deadline) {
-      const deadlineTime = new Date(job.application_deadline).getTime();
-      if (deadlineTime < now) {
-        return false; 
-      }
-    }
-
-    const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
-      job.title.toLowerCase().includes(searchLower) ||
-      job.description.toLowerCase().includes(searchLower) ||
-      job.location.toLowerCase().includes(searchLower) ||
-      job.department.toLowerCase().includes(searchLower);
-
-    const matchesJobType = filters.jobType.length === 0 || 
-      filters.jobType.includes(normalizeJobType(job.employment_type));
+  const filteredJobs = useMemo(() => {
+    const now = Date.now(); 
     
-    const deptNormalized = job.department.toLowerCase().replace(/_/g, ' ');
-    const matchesDepartment = filters.department.length === 0 || 
-      filters.department.includes(deptNormalized);
+    return jobs.filter(job => {
+      // Filter out expired jobs
+      if (job.application_deadline) {
+        const deadlineTime = new Date(job.application_deadline).getTime();
+        if (deadlineTime < now) {
+          return false; 
+        }
+      }
 
-    return matchesSearch && matchesJobType && matchesDepartment;
-  });
-}, [jobs, searchQuery, filters]);
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery || 
+        job.title.toLowerCase().includes(searchLower) ||
+        job.description.toLowerCase().includes(searchLower) ||
+        job.location.toLowerCase().includes(searchLower) ||
+        job.department.toLowerCase().includes(searchLower);
+
+      const matchesJobType = filters.jobType.length === 0 || 
+        filters.jobType.includes(normalizeJobType(job.employment_type));
+      
+      const deptNormalized = job.department.toLowerCase().replace(/_/g, ' ');
+      const matchesDepartment = filters.department.length === 0 || 
+        filters.department.includes(deptNormalized);
+
+      return matchesSearch && matchesJobType && matchesDepartment;
+    });
+  }, [jobs, searchQuery, filters]);
 
   return {
     jobs: filteredJobs,

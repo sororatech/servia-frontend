@@ -15,10 +15,8 @@ export default function ApplicationSuccess() {
     applicationData,
     loading,
     error,
-    
     handleViewDashboard,
     handleReturnToJobs,
-    
     getStatusColor,
     getProgressWidth,
     formatStatus,

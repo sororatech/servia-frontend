@@ -40,7 +40,12 @@ export function Navbar() {
       const lastName = AUTH_STORAGE.getLastName() || '';
       const name = [firstName, lastName].filter(Boolean).join(' ').trim() || 'User';
       const role = AUTH_STORAGE.getUserRole();
-      const storedAvatar = AUTH_STORAGE.getAvatarUrl();
+      
+      // Safe fallback in case getAvatarUrl isn't defined in AUTH_STORAGE yet
+      const storedAvatar = typeof AUTH_STORAGE.getAvatarUrl === 'function' 
+        ? AUTH_STORAGE.getAvatarUrl() 
+        : null;
+        
       setUser({ name, role });
       setAvatarUrl(storedAvatar);
     }
@@ -122,6 +127,7 @@ export function Navbar() {
               </Link>
             </div>
 
+            {/* Desktop Navigation */}
             <div className="hidden lg:flex justify-center items-center gap-8 xl:gap-12 h-full">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
@@ -159,6 +165,7 @@ export function Navbar() {
               })}
             </div>
 
+            {/* Desktop Actions */}
             <div className="hidden lg:flex items-center justify-end gap-4">
               <div className="w-full max-w-[240px]">
                 <SearchInput placeholder="Search roles..." />
@@ -206,6 +213,7 @@ export function Navbar() {
               </div>
             </div>
 
+            {/* Mobile Menu Toggle */}
             <div className="flex lg:hidden justify-end">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -227,6 +235,7 @@ export function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
