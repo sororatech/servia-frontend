@@ -19,7 +19,7 @@ export function useAnalytics({
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<Error | null>(null);
 
-    const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -41,13 +41,15 @@ export function useAnalytics({
   }, []);
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!data) {
+      fetchData();
+    }
     
-    fetchData(); 
-    const interval = setInterval(fetchData, refreshInterval);
-    
-    return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, fetchData]);
+    if (autoRefresh && data) {
+      const interval = setInterval(fetchData, refreshInterval);
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh, refreshInterval, fetchData, data]);
 
   const refresh = useCallback(() => {
     fetchData();
