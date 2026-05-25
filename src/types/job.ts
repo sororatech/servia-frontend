@@ -5,6 +5,7 @@ export type JobFormChoices = {
   departments: Choice[];
   employmentTypes: Choice[];
   shiftTypes: Choice[];
+  educationLevels: Choice[];
   suggestedSkills: string[];
 };
 
@@ -33,6 +34,7 @@ export type BackendJob = {
   openings_count: number;
   openings_remaining: number;
   core_skills: string[];
+  education_level?: string;
 };
 
 export type JobListItem = {
@@ -61,6 +63,7 @@ export type CreateJobPayload = {
   is_active: boolean;
   core_skills?: string[];
   openings_count?: number;
+  education_level?: string;
 };
 
 export type CreateJobResult =

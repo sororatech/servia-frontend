@@ -97,6 +97,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
     requirements: initialJob?.requirements ?? '',
     core_skills: initialJob?.core_skills ?? ([] as string[]),
     experience_level: '',
+    education_level: initialJob?.education_level ?? '',
     openings_count: initialJob?.openings_count != null ? String(initialJob.openings_count) : '',
     is_active: initialJob?.is_active ?? true,
   });
@@ -160,6 +161,7 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
       is_active: mode === 'publish',
       core_skills: fields.core_skills.length > 0 ? fields.core_skills : undefined,
       openings_count: fields.openings_count !== '' ? Number(fields.openings_count) : undefined,
+      education_level: fields.education_level || undefined,
     };
 
     startTransition(async () => {
@@ -448,6 +450,20 @@ export default function CreateJobForm({ choices, initialJob }: Props) {
                 >
                   <option value="">Select experience level</option>
                   {EXPERIENCE_LEVELS.map((l) => (
+                    <option key={l.value} value={l.value}>{l.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClass}>Education Level</label>
+                <select
+                  value={fields.education_level}
+                  onChange={(e) => set('education_level', e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Select education level</option>
+                  {choices.educationLevels.map((l) => (
                     <option key={l.value} value={l.value}>{l.label}</option>
                   ))}
                 </select>

@@ -8,6 +8,7 @@ type DRFOptionsBody = {
     POST?: {
       employment_type?: DRFChoiceField;
       shift_type?: DRFChoiceField;
+      education_level?: DRFChoiceField;
     };
   };
 };
@@ -36,6 +37,7 @@ export async function fetchJobFormChoices(headers: HeadersInit): Promise<JobForm
     departments,
     employmentTypes: mapChoices(post.employment_type),
     shiftTypes: mapChoices(post.shift_type),
+    educationLevels: mapChoices(post.education_level),
     suggestedSkills: [],
   };
 }
