@@ -1,9 +1,11 @@
 // src/types/settings.ts
 export interface Recruiter {
   id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
+  user:{
+    first_name: string;
+    last_name: string;
+    email: string;
+  }
   department?: string;
   role: 'Admin' | 'Recruiter' | string;
   is_active: boolean;
@@ -13,9 +15,11 @@ export interface Recruiter {
 
 export interface Candidate {
   id: string;
+  user: {
   first_name: string;
   last_name: string;
   email: string;
+  }
   status?: string;
   applied_date?: string;
   date_joined: string;

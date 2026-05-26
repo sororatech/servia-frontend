@@ -1,4 +1,3 @@
-// src/utils/serverFetch.ts — FINAL DEBUG VERSION
 import { cookies } from 'next/headers';
 import type { ApiResponse } from '@/types/api';
 import { getApiBaseUrl } from '@/lib/config';
@@ -11,86 +10,70 @@ export function getApiUrl(path: string) {
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-// ✅ DEBUG: Export a function to see what cookies Next.js can actually read
 export async function debugCookies() {
   const cookieStore = await cookies();
-  const all = cookieStore.getAll();
-  console.log('🍪 Next.js can read these cookies:', all.map(c => ({
-    name: c.name,
-    value: c.value?.slice(0, 10) + '...',
-    httpOnly: 'httpOnly' in c ? c.httpOnly : 'N/A'
-  })));
-  return all;
+  return cookieStore.getAll();
 }
 
-export async function getRecruiterHeaders() {
+export async function getRecruiterHeaders(): Promise<HeadersInit | null> {
   const cookieStore = await cookies();
   
-  // 🔍 Log cookie NAMES only (safer)
-  const cookieNames = cookieStore.getAll().map(c => c.name);
-  console.log('🍪 Cookie names available to Next.js:', cookieNames);
-  
-  // ✅ Try Django session auth FIRST
   const sessionId = cookieStore.get('sessionid')?.value;
   
-  // ✅ Then try token auth
   const token = 
     cookieStore.get('auth_token')?.value ||
     cookieStore.get('token')?.value ||
     cookieStore.get('access_token')?.value;
   
-  // ✅ Optional: manual override for dev (set in .env.local)
   const manualToken = process.env.DEV_API_TOKEN;
-  
-  console.log('🔐 Auth detection:', {
-    hasSessionId: !!sessionId,
-    hasToken: !!token,
-    hasManualToken: !!manualToken,
-  });
 
-  // 🎯 PRIORITY 1: Manual dev token (bypasses all cookie issues)
   if (manualToken) {
-    console.log('✅ Using DEV_API_TOKEN from .env.local');
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Authorization': `Token ${manualToken}`,
-    };
+    } as HeadersInit;
   }
   
-  // 🎯 PRIORITY 2: Django session (if cookie is accessible)
   if (sessionId) {
-    console.log('✅ Using Django sessionid cookie');
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      // No Authorization header - cookies sent via credentials: 'include'
-    };
+    } as HeadersInit;
   }
   
-  // 🎯 PRIORITY 3: Token auth
   if (token) {
-    console.log('✅ Using token auth');
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Authorization': `Token ${token}`,
-    };
+    } as HeadersInit;
   }
 
-  console.error('❌ NO AUTH FOUND - returning null');
   return null;
 }
 
 export async function fetchJson<T>(
   path: string, 
-  headers: HeadersInit,
-  options?: { softFail?: boolean; method?: string; body?: string }
+  arg2?: HeadersInit | (RequestInit & { softFail?: boolean }),
+  options?: { softFail?: boolean; method?: string; body?: any }
 ): Promise<T> {
   const url = getApiUrl(path);
-  const { softFail = false, method = 'GET', body } = options || {};
   
-  console.log(`📡 ${method} ${url}`);
+  let headers: HeadersInit = {};
+  let fetchOptions: RequestInit & { softFail?: boolean } = {};
+  
+  if (arg2 && typeof arg2 === 'object') {
+    if (Array.isArray(arg2) || 'constructor' in arg2) {
+      headers = arg2 as HeadersInit;
+      fetchOptions = options || {};
+    } else {
+      fetchOptions = arg2 as RequestInit & { softFail?: boolean };
+      headers = fetchOptions.headers || {};
+    }
+  }
+  
+  const { softFail = false, method = 'GET', body, ...rest } = fetchOptions;
   
   const response = await fetch(url, { 
     method,
@@ -100,18 +83,20 @@ export async function fetchJson<T>(
       ...headers,
     }, 
     cache: 'no-store',
-    credentials: 'include', // ✅ Sends cookies to Django
+    credentials: 'include',
+    body: body 
+      ? typeof body === 'string' 
+        ? body 
+        : JSON.stringify(body)
+      : undefined,
+    ...rest,
   });
 
-  console.log(`📡 Response: ${response.status}`);
-  
-  // ✅ 401: Not authenticated
   if (response.status === 401) {
     if (softFail) return {} as T;
     throw new Error('Authentication required. Please log in via Django admin.');
   }
 
-  // ✅ 403: Permission denied
   if (response.status === 403) {
     const text = await response.text().catch(() => '');
     let detail = 'You do not have permission';
@@ -120,10 +105,7 @@ export async function fetchJson<T>(
       detail = json.detail || json.message || detail;
     } catch {}
     
-    console.error('🚫 403:', detail);
-    
     if (softFail) {
-      console.warn('⚠️ Soft-fail: returning empty');
       return {} as T;
     }
     throw new Error(`Access Denied: ${detail}`);

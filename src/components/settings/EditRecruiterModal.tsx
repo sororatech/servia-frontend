@@ -1,4 +1,3 @@
-// src/components/settings/EditRecruiterModal.tsx
 'use client';
 
 import { useState } from 'react';
@@ -45,7 +44,7 @@ export default function EditRecruiterModal({ recruiter, onClose, onUpdated }: { 
           </select>
         </div>
         <div className="flex gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
+          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
           <Button type="submit" disabled={isLoading} className="flex-1">{isLoading ? 'Saving...' : 'Save'}</Button>
         </div>
       </form>

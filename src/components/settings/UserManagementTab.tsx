@@ -1,4 +1,3 @@
-// src/components/settings/UserManagementTab.tsx
 'use client';
 
 import { useState } from 'react';
@@ -18,7 +17,7 @@ export default function UserManagementTab({
     total_candidates: 0,
     users_this_week: 0,
   },
-  isEmpty = false, // ✅ New prop for empty state
+  isEmpty = false, 
 }: {
   initialRecruiters?: Recruiter[];
   initialCandidates?: Candidate[];
@@ -41,7 +40,6 @@ export default function UserManagementTab({
     setRecruiters(recruiters.filter(r => r.id !== id));
   };
 
-  // ✅ Show helpful message when data is empty due to permissions
   if (isEmpty) {
     return (
       <div className="rounded-2xl border border-black/10 bg-white/85 p-12 text-center">
