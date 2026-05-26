@@ -1,4 +1,3 @@
-// src/components/settings/UserStatsCards.tsx
 import { UserStats } from '@/types/settings';
 
 export default function UserStatsCards({ stats }: { stats: UserStats }) {

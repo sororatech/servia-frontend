@@ -25,8 +25,6 @@ export async function updateCandidateStatus(candidateId: string, status: string)
 
   revalidatePath(`/recruiter/dashboard/candidates/${candidateId}`);
 }
-// utils/serverFetch.ts
-
 
 export async function getRecruiterHeaders(): Promise<HeadersInit | null> {
   const cookieStore = await cookies();
