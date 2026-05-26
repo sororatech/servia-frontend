@@ -52,7 +52,7 @@ export default function SystemHealthTab() {
       setLoading(true);
       setError(null);
 
-      const response = await api.get<HealthData>(`/system-health/?t=${Date.now()}`);
+      const response = await api.get<HealthData>(`/system-health/`);
       setData(response.data);
     } catch (err: any) {
       console.error('Failed to fetch health data:', err);

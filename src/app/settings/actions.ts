@@ -31,7 +31,7 @@ export async function createRecruiter(formData: {
       headers,
       {
         method: 'POST',
-        body: formData as any,
+        body: formData,
       }
     );
     
@@ -61,7 +61,7 @@ export async function updateRecruiter(id: string, updates: Partial<Recruiter>) {
       headers,
       {
         method: 'PATCH',
-        body: updates as any,
+        body: updates,
       }
     );
     
@@ -114,7 +114,7 @@ export async function toggleRecruiterStatus(id: string, is_active: boolean) {
       headers,
       {
         method: 'PATCH',
-        body: { is_active } as any,
+        body: { is_active },
       }
     );
     

@@ -38,7 +38,7 @@ export default function EditRecruiterModal({ recruiter, onClose, onUpdated }: { 
         </div>
         <div>
           <Label>Role</Label>
-          <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as any})} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-[#26b9c8]">
+          <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-[#26b9c8]">
             <option value="Recruiter">Recruiter</option>
             <option value="Admin">Admin</option>
           </select>

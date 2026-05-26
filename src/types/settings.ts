@@ -1,4 +1,3 @@
-// src/types/settings.ts
 export interface Recruiter {
   id: string;
   user:{
