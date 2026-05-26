@@ -1,8 +1,7 @@
 'use client';
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AnalyticsData } from '@/types/analytics';
+import { CHART_COLORS } from '@/lib/theme';
 
 interface Props {
   data: AnalyticsData;
@@ -10,7 +9,7 @@ interface Props {
 
 const exportToCSV = (data: any[], filename: string): void => {
   if (!data || data.length === 0) {
-    console.warn('No data to export');
+    alert('No data available to export');
     return;
   }
 
@@ -52,43 +51,23 @@ const exportToCSV = (data: any[], filename: string): void => {
 };
 
 export default function ExportButtons({ data }: Props) {
-  const handleExportPDF = (): void => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Analytics & Reports', 14, 20);
-    doc.setFontSize(11);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 28);
-
-    autoTable(doc, {
-      startY: 35,
-      head: [['Metric', 'Value']],
-      body: [
-        ['Total Applications', data.total_applications],
-        ['Total Applicants', data.total_applicants],
-        ['Avg AI Fit Score', `${data.avg_ai_fit_score}%`],
-        ['Acceptance Rate', `${data.acceptance_rate}%`],
-      ],
-      theme: 'grid',
-      headStyles: { fillColor: [20, 184, 166] },
-    });
-
-    doc.save('recruitment-analytics.pdf');
-  };
-
   const handleExportCSV = (e?: React.MouseEvent<HTMLButtonElement>): void => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    const csvData = (data.applications_by_job || []).map(
-      (j: { job_title: string; applications: number }) => ({
-        'Job Title': j.job_title,
-        Applications: j.applications,
-      })
-    );
+    const csvData = (data.applications_by_job || []).map((job) => ({
+      'Job Title': job.job_title,
+      Applications: job.applications,
+    }));
 
     exportToCSV(csvData, 'recruitment-analytics');
+  };
+
+
+  const handleExportPDF = (): void => {
+    alert('PDF export with charts is coming soon! For now, use CSV export for data.');
   };
 
   return (
@@ -103,7 +82,7 @@ export default function ExportButtons({ data }: Props) {
       <button
         type="button"
         onClick={handleExportCSV}
-        className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition text-sm font-medium"
+        className="px-4 py-2 bg-[var(--color-primary,#26B9C8)] text-white rounded-lg hover:bg-[var(--color-primary-dark,#14b8a6)] transition text-sm font-medium"
       >
         Export CSV
       </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { AnalyticsData } from '@/types/analytics';
 import StatsCard from './StatsCard';
 import AIFitScoreChart from './AIFitScoreChart';
 import PipelineBreakdown from './PipelineBreakdown';
@@ -14,21 +15,32 @@ const ExportButtons = dynamic(() => import('./ExportButtons'), {
 });
 
 interface Props {
-  initialData?: any;
+  initialData?: AnalyticsData;
 }
 
 export default function AnalyticsDashboard({ initialData }: Props) {
   const { data, loading, error, refresh } = useAnalytics({
     autoRefresh: true,
-    refreshInterval: 30000,
+    refreshInterval: 60000,
     initialData,
   });
 
-  if (error) {
+  if (loading && !data) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-8">
         <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-red-200 p-8 text-center">
-          <div className="text-red-500 text-4xl mb-4"></div>
+          <div className="text-red-500 text-4xl mb-4">⚠️</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to load analytics</h2>
           <p className="text-gray-600 mb-6">{error.message}</p>
           <button
@@ -42,22 +54,11 @@ export default function AnalyticsDashboard({ initialData }: Props) {
     );
   }
 
-  if (loading && !data) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading analytics...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!data) return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Analytics & Reports</h1>
@@ -75,7 +76,6 @@ export default function AnalyticsDashboard({ initialData }: Props) {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard title="Total Applications" value={data.total_applications} />
           <StatsCard title="Total Applicants" value={data.total_applicants} />
@@ -84,13 +84,21 @@ export default function AnalyticsDashboard({ initialData }: Props) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <AIFitScoreChart data={data.ai_fit_score_distribution} />
-          <PipelineBreakdown data={data.pipeline_breakdown} />
+          <div className="h-96">
+            <AIFitScoreChart data={data.ai_fit_score_distribution} />
+          </div>
+          <div className="h-96">
+            <PipelineBreakdown data={data.pipeline_breakdown} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ApplicationsChart data={data.applications_over_time} />
-          <ApplicationsTable data={data.applications_by_job} />
+          <div className="h-96">
+            <ApplicationsChart data={data.applications_over_time} />
+          </div>
+          <div className="h-96">
+            <ApplicationsTable data={data.applications_by_job} />
+          </div>
         </div>
       </main>
     </div>

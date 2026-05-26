@@ -12,7 +12,7 @@ interface UseAnalyticsOptions {
 
 export function useAnalytics({ 
   autoRefresh = false, 
-  refreshInterval = 30000, 
+  refreshInterval = 60000, 
   initialData 
 }: UseAnalyticsOptions = {}) {
   const [data, setData] = useState<AnalyticsData | null>(initialData || null);
@@ -24,7 +24,12 @@ export function useAnalytics({
       setLoading(true);
       setError(null);
       const result = await fetchAnalyticsFromMultipleEndpoints();
-      setData(result);
+      
+      if (result && 'error' in result && result.error) {
+        throw new Error(result.message);
+      }
+      
+      setData(result as AnalyticsData);
     } catch (err: any) {
       if (err?.response?.status === 401 || err?.message?.includes('401')) {
         console.warn('Auth required. Redirecting to login...');
