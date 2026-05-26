@@ -15,6 +15,20 @@ export function useVideoUpload() {
   const uploadVideo = async (file: File, candidateId: string): Promise<boolean> => {
     setUploading(true);
     setError(null);
+
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const allowedExtensions = ['mp4', 'webm', 'ogg', 'mov'];
+
+    const isValidType = allowedTypes.includes(file.type) || file.type.startsWith('video/');
+    const isValidExt = allowedExtensions.includes(fileExtension || '');
+
+    if (!isValidType && !isValidExt) {
+      setError('Invalid file type. Please upload a valid video file (MP4, WebM, MOV).');
+      setUploading(false);
+      return false;
+    }
+
     setProgress({ loaded: 0, total: file.size, percentage: 0 });
 
     try {

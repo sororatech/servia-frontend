@@ -36,6 +36,8 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
     const recorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const objectUrlsRef = useRef<Set<string>>(new Set());
 
     const { uploading, progress, uploadVideo } = useVideoUpload();
 
@@ -61,7 +63,9 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
 
     useEffect(() => {
       return () => {
-        if (videoUrl) URL.revokeObjectURL(videoUrl);
+        objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+        objectUrlsRef.current.clear();
+        
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(t => t.stop());
           streamRef.current = null;
@@ -71,13 +75,20 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           recorderRef.current.stop();
         }
       };
-    }, [videoUrl]);
+    }, []);
 
     useEffect(() => {
       if (state === 'recording' && videoRef.current && streamRef.current) {
         videoRef.current.play().catch(() => {});
       }
     }, [state]);
+
+    const revokeTrackedUrl = (url: string | null) => {
+      if (url && objectUrlsRef.current.has(url)) {
+        URL.revokeObjectURL(url);
+        objectUrlsRef.current.delete(url);
+      }
+    };
 
     const clearUpload = useCallback(() => {
       if (uploadedFile) {
@@ -89,10 +100,8 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
     }, [uploadedFile, onUploadedFileChange, onHasVideoChange]);
 
     const clearRecording = useCallback(() => {
-      if (videoUrl) {
-        URL.revokeObjectURL(videoUrl);
-        setVideoUrl(null);
-      }
+      revokeTrackedUrl(videoUrl);
+      setVideoUrl(null);
       chunksRef.current = [];
       setDuration(0);
       setError(null);
@@ -181,6 +190,7 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
+        objectUrlsRef.current.add(url); 
         setVideoUrl(url);
         setState('review');
         setDuration(0);
@@ -200,7 +210,7 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
     }, [stopCamera, stopRecording, onHasVideoChange]);
 
     const handleRetake = useCallback(() => {
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      revokeTrackedUrl(videoUrl);
       setVideoUrl(null);
       setDuration(0);
       setError(null);
@@ -228,6 +238,7 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
       
       setUploadedFile(file);
       const previewUrl = URL.createObjectURL(file);
+      objectUrlsRef.current.add(previewUrl); 
       onUploadedFileChange(file, previewUrl);
     }, [hasRecordedVideo, onUploadedFileChange]);
 
