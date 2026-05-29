@@ -1,28 +1,23 @@
-// src/lib/theme.ts - Centralized design tokens for charts and UI
 
 export const CHART_COLORS = {
-  // Primary brand colors (match globals.css)
-  primary: '#26B9C8',      // Teal - main accent
-  primaryDark: '#14b8a6',  // Darker teal for hover/states
-  secondary: '#3b82f6',    // Blue - secondary accent
+  primary: '#26B9C8',      
+  primaryDark: '#14b8a6',  
+  secondary: '#3b82f6',    
   
-  // Status colors (pipeline)
-  shortlisted: '#26B9C8',  // Teal
-  interviewed: '#1e3a8a',  // Dark blue
-  hired: '#d97706',        // Amber/orange
-  rejected: '#dc2626',     // Red
-  applied: '#6b7280',      // Gray
+  shortlisted: '#26B9C8',  
+  interviewed: '#1e3a8a',  
+  hired: '#d97706',        
+  rejected: '#dc2626',     
+  applied: '#6b7280',      
   
-  // Chart utilities
-  gridLine: '#e5e7eb',     // Light gray grid
-  axisText: '#374151',     // Dark gray text
-  axisLine: '#1a1a1a',     // Black axes
-  tooltipBg: '#ffffff',    // White tooltip
-  tooltipBorder: '#d1d5db',// Gray tooltip border
+  gridLine: '#e5e7eb',     
+  axisText: '#374151',     
+  axisLine: '#1a1a1a',     
+  tooltipBg: '#ffffff',    
+  tooltipBorder: '#d1d5db',
   
-  // Backgrounds
-  chartBg: '#faf8f5',      // Cream chart background
-  cardBg: '#ffffff',       // White card background
+  chartBg: '#faf8f5',      
+  cardBg: '#ffffff',       
 };
 
 export const CHART_STYLES = {
@@ -38,12 +33,11 @@ export const CHART_STYLES = {
     bar: 0,
   },
   borderRadius: {
-    card: '0.75rem', // rounded-xl
+    card: '0.75rem', 
     tooltip: '0.25rem',
   },
 };
 
-// Helper to get status color dynamically
 export const getStatusColor = (status: string): string => {
   const lower = status.toLowerCase();
   if (lower.includes('short')) return CHART_COLORS.shortlisted;
@@ -56,9 +50,9 @@ export const getStatusColor = (status: string): string => {
   if (lower.includes('hire') || lower.includes('offer') || lower.includes('accepted')) return CHART_COLORS.hired;
   if (lower.includes('reject') || lower.includes('declined')) return CHART_COLORS.rejected;
   if (lower.includes('applied') || lower.includes('new')) return CHART_COLORS.applied;
-  if (lower.includes('complet') || lower.includes('done') || lower.includes('finished')) return '#10b981'; // Green
-  if (lower.includes('schedul') || lower.includes('pending') || lower.includes('upcoming')) return '#f59e0b'; // Amber
-  if (lower.includes('process') || lower.includes('review')) return '#8b5cf6'; // Purple
-  if (lower.includes('wait') || lower.includes('hold')) return '#6b7280'; // Gray
+  if (lower.includes('complet') || lower.includes('done') || lower.includes('finished')) return '#10b981'; 
+  if (lower.includes('schedul') || lower.includes('pending') || lower.includes('upcoming')) return '#f59e0b';
+  if (lower.includes('process') || lower.includes('review')) return '#8b5cf6'; 
+  if (lower.includes('wait') || lower.includes('hold')) return '#6b7280'; 
   return CHART_COLORS.primary;
 };
