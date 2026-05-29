@@ -10,7 +10,7 @@ interface Props {
 export default function AIFitScoreChart({ data }: Props) {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-[var(--color-chart-bg,#faf8f5)] rounded-lg shadow-md border border-gray-200 p-6 h-full flex items-center justify-center">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 h-full flex items-center justify-center">
         <p className="text-gray-400 text-sm">No AI score data available</p>
       </div>
     );
@@ -19,7 +19,7 @@ export default function AIFitScoreChart({ data }: Props) {
   return (
     <div 
       data-chart="ai-fit-score" 
-      className="bg-[var(--color-chart-bg,#faf8f5)] rounded-lg shadow-md border border-gray-200 p-6 h-full"
+      className="bg-white rounded-lg shadow-md border border-gray-200 p-6 h-full"
     >
       <h3 className="text-lg font-semibold text-gray-900 mb-1">AI Fit Score Distribution</h3>
       <p className="text-sm text-gray-500 mb-4">Average AI score per job</p>

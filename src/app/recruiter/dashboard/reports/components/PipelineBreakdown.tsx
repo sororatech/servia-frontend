@@ -10,7 +10,7 @@ interface Props {
 export default function PipelineBreakdown({ data }: Props) {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-[var(--color-chart-bg,#faf8f5)] rounded-lg shadow-md border border-gray-200 p-6 h-full flex items-center justify-center">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 h-full flex items-center justify-center">
         <p className="text-gray-400 text-sm">No pipeline data available</p>
       </div>
     );
@@ -32,7 +32,7 @@ export default function PipelineBreakdown({ data }: Props) {
   return (
     <div 
       data-chart="pipeline" 
-      className="bg-[var(--color-chart-bg,#faf8f5)] rounded-lg shadow-md border border-gray-200 p-6 h-full"
+      className="bg-white rounded-lg shadow-md border border-gray-200 p-6 h-full"
     >
       <h3 className="text-lg font-semibold text-gray-900 mb-1">Pipeline Breakdown</h3>
       <p className="text-sm text-gray-500 mb-4">Current status of all processed candidates</p>
@@ -47,8 +47,8 @@ export default function PipelineBreakdown({ data }: Props) {
             outerRadius={85}
             paddingAngle={2}
             dataKey="value"
-            stroke="none"  
-            strokeWidth={0} 
+            stroke="none"
+            strokeWidth={0}
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
