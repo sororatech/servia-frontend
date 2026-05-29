@@ -78,7 +78,6 @@ export function Navbar() {
         <div className="w-full max-w-[1440px] mx-auto px-4 h-full">
           <div className="grid grid-cols-[auto_1fr_auto] lg:grid-cols-3 items-center w-full h-full gap-4">
             
-            {/* Logo - YOUR BRANCH VALUES */}
             <div className="flex justify-start">
               <Link href="/" className="flex-shrink-0">
                 <Image
