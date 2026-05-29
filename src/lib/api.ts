@@ -192,7 +192,10 @@ export interface RecruiterProfile {
 export const dashboardAPI = {
   async getCurrentRecruiter(): Promise<RecruiterProfile> {
     const response = await api.get<RecruiterProfile>('/users/profile/');
-    console.log('📋 Profile response:', response.data);
+        if (process.env.NODE_ENV === 'development') {
+      console.log('Profile response:', response.data);
+    }
+    
     return response.data;
   },
 

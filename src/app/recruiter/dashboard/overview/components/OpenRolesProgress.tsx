@@ -17,10 +17,13 @@ interface Props {
   roles: OpenRole[];
 }
 
+const HIGH_FILL_THRESHOLD = 80;
+const MEDIUM_FILL_THRESHOLD = 40;
+
 export default function OpenRolesProgress({ roles }: Props) {
   const getProgressColor = (progress: number) => {
-    if (progress >= 80) return '#26B9C8'; 
-    if (progress >= 40) return '#0F2A44'; 
+    if (progress >= HIGH_FILL_THRESHOLD) return '#26B9C8'; 
+    if (progress >= MEDIUM_FILL_THRESHOLD) return '#0F2A44'; 
     return '#D4A017'; 
   };
 
@@ -54,7 +57,7 @@ export default function OpenRolesProgress({ roles }: Props) {
       </div>
 
       <div className="space-y-4">
-        {roles.map((role, index) => {
+        {roles.map((role) => {
           const progress = role.openings_count > 0
             ? Math.min((role.applications_count / role.openings_count) * 100, 100)
             : 0;

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { dashboardAPI } from '@/lib/api';
+import { AxiosError } from 'axios';
+
+export const DASHBOARD_RECENT_LIMIT = 5;
 
 export interface DashboardData {
   recruiterName: string;
@@ -50,25 +53,41 @@ export function useDashboardData() {
         setLoading(true);
         setError(null);
 
-        const [recruiter, statsData, applications, roles] = await Promise.all([
+        const results = await Promise.allSettled([
           dashboardAPI.getCurrentRecruiter(),
           dashboardAPI.getStats(),
-          dashboardAPI.getRecentApplications(5),
-          dashboardAPI.getOpenRoles(5),
+          dashboardAPI.getRecentApplications(DASHBOARD_RECENT_LIMIT),
+          dashboardAPI.getOpenRoles(DASHBOARD_RECENT_LIMIT),
         ]);
 
+        const [recruiterResult, statsResult, appsResult, rolesResult] = results;
+
+        const safeRecruiter = recruiterResult.status === 'fulfilled' ? recruiterResult.value : null;
+        const safeStats = statsResult.status === 'fulfilled' ? statsResult.value : { totalCandidates: 0, shortlisted: 0, interviewsThisWeek: 0, avgAiScore: null };
+        const safeApps = appsResult.status === 'fulfilled' ? appsResult.value : [];
+        const safeRoles = rolesResult.status === 'fulfilled' ? rolesResult.value : [];
+
         setData({
-          recruiterName: recruiter?.first_name || 'Recruiter',
-          stats: statsData,
-          recentApplications: applications,
-          openRoles: roles,
+          recruiterName: safeRecruiter?.first_name || 'Recruiter',
+          stats: safeStats,
+          recentApplications: safeApps,
+          openRoles: safeRoles,
         });
-      } catch (err: any) {
+
+        if (recruiterResult.status === 'rejected') {
+          const err = recruiterResult.reason as unknown;
+          if (err instanceof AxiosError && err.response?.status === 401) {
+            router.push('/login');
+            return;
+          }
+          setError('Failed to load dashboard data. Please try again.');
+        }
+      } catch (err: unknown) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to load dashboard ', err);
+          console.error('Failed to load dashboard', err);
         }
         
-        if (err.response?.status === 401) {
+        if (err instanceof AxiosError && err.response?.status === 401) {
           router.push('/login');
           return;
         }

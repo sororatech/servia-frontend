@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Video } from 'lucide-react';
+import { DASHBOARD_RECENT_LIMIT } from '@/hooks/useDashboardData';
 
 interface RecentApplication {
   id: string;
@@ -26,9 +28,8 @@ interface Props {
   applications: RecentApplication[];
 }
 
-const RECENT_APPLICATIONS_LIMIT = 5;
-
 export default function RecentApplications({ applications }: Props) {
+  const router = useRouter();
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
@@ -56,8 +57,8 @@ export default function RecentApplications({ applications }: Props) {
     return statusClasses[status.toLowerCase()] || 'bg-gray-100 text-gray-700';
   };
 
-  const recentApplications = applications.slice(0, RECENT_APPLICATIONS_LIMIT);
-  const hasMoreApplications = applications.length > RECENT_APPLICATIONS_LIMIT;
+  const recentApplications = applications.slice(0, DASHBOARD_RECENT_LIMIT);
+  const hasMoreApplications = applications.length > DASHBOARD_RECENT_LIMIT;
 
   if (applications.length === 0) {
     return (
@@ -92,10 +93,18 @@ export default function RecentApplications({ applications }: Props) {
 
       <div className="space-y-3">
         {recentApplications.map((app) => (
-          <Link 
+          <div 
             key={app.id}
-            href={`/recruiter/dashboard/candidates/${app.candidate.id}`}
-            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 items-center p-4 rounded-xl transition-colors bg-white/40 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#26B9C8]"
+            onClick={() => router.push(`/recruiter/dashboard/candidates/${app.candidate.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push(`/recruiter/dashboard/candidates/${app.candidate.id}`);
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 items-center p-4 rounded-xl transition-colors bg-white/40 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#26B9C8] cursor-pointer"
           >
             <div className={`w-10 h-10 rounded-full ${getAvatarColor(app.candidate.id)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}>
               {getInitials(app.candidate.first_name, app.candidate.last_name)}
@@ -129,12 +138,11 @@ export default function RecentApplications({ applications }: Props) {
               {app.video_intro_url ? (
                 <button 
                   type="button"
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#26B9C8] text-white hover:bg-[#26B9C8]/90 transition-colors"
                   onClick={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     window.open(app.video_intro_url, '_blank');
                   }}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#26B9C8] text-white hover:bg-[#26B9C8]/90 transition-colors"
                   aria-label={`Watch video introduction for ${app.candidate.first_name} ${app.candidate.last_name}`}
                 >
                   <Video className="w-3 h-3" aria-hidden="true" />
@@ -147,7 +155,7 @@ export default function RecentApplications({ applications }: Props) {
                 </span>
               )}
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </Card>
