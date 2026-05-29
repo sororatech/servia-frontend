@@ -14,17 +14,22 @@ const exportToCSV = (data: any[], filename: string): void => {
   }
 
   const headers = Object.keys(data[0]);
+  
   const csvContent = [
     headers.join(','),
     ...data.map((row) =>
       headers
         .map((field) => {
           const value = row[field];
+          
           if (value == null) return '""';
+          
           const str = String(value);
+          
           if (str.includes(',') || str.includes('"') || str.includes('\n')) {
             return `"${str.replace(/"/g, '""')}"`;
           }
+          
           return str;
         })
         .join(',')
@@ -34,6 +39,7 @@ const exportToCSV = (data: any[], filename: string): void => {
   const blob = new Blob(['\ufeff' + csvContent], {
     type: 'text/csv;charset=utf-8;',
   });
+  
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement('a');
@@ -65,8 +71,8 @@ export default function ExportButtons({ data }: Props) {
     exportToCSV(csvData, 'recruitment-analytics');
   };
 
-
   const handleExportPDF = (): void => {
+ 
     alert('PDF export with charts is coming soon! For now, use CSV export for data.');
   };
 
@@ -75,14 +81,16 @@ export default function ExportButtons({ data }: Props) {
       <button
         type="button"
         onClick={handleExportPDF}
-        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium"
+        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium disabled:opacity-50"
+        title="PDF export with charts coming soon"
       >
         Export PDF
       </button>
+      
       <button
         type="button"
         onClick={handleExportCSV}
-        className="px-4 py-2 bg-[var(--color-primary,#26B9C8)] text-white rounded-lg hover:bg-[var(--color-primary-dark,#14b8a6)] transition text-sm font-medium"
+        className="px-4 py-2 bg-[var(--color-primary,#26B9C8)] text-white rounded-lg hover:bg-[var(--color-primary-dark,#14b8a6)] transition text-sm font-medium shadow-sm hover:shadow"
       >
         Export CSV
       </button>

@@ -40,7 +40,7 @@ export default function AnalyticsDashboard({ initialData }: Props) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-8">
         <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-red-200 p-8 text-center">
-          <div className="text-red-500 text-4xl mb-4">⚠️</div>
+          <div className="text-red-500 text-4xl mb-4"></div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to load analytics</h2>
           <p className="text-gray-600 mb-6">{error.message}</p>
           <button
