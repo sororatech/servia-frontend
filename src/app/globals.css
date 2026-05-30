@@ -3,8 +3,80 @@
 :root {
   --color-background: #ffffff;
   --color-foreground: #171717;
-  --color-primary: #26B9C8;   
-  --color-secondary: #0F2A44; 
+  --color-primary: #26B9C8;
+  --color-secondary: #0F2A44;
+
+  /* Teal scale */
+  --color-teal-dark: #0c6c75;
+  --color-teal-light: #e8f8fa;
+  --color-teal-border: #cfecef;
+  --color-teal-hover: #f0fdff;
+
+  /* Warm text scale */
+  --color-text-dark: #3a3330;
+  --color-text-body: #4a4440;
+  --color-text-muted: #635b55;
+  --color-text-subtle: #7d746d;
+  --color-text-faint: #9a9088;
+
+  /* Warm surface scale */
+  --color-warm-bg: #fbf7f4;
+  --color-warm-bg-page: #fbfaf8;
+  --color-warm-gradient-end: #f3ece7;
+  --color-warm-surface: #f4efeb;
+
+  /* Warm border scale */
+  --color-warm-border: #ece4de;
+  --color-warm-border-light: #ddd7d3;
+  --color-warm-border-faint: #ddd5cf;
+
+  /* Primary hover */
+  --color-primary-hover: #1598a6;
+
+  /* Teal dim (muted teal used in metadata/secondary labels) */
+  --color-teal-dim: #4f6466;
+
+  /* Extended warm text scale */
+  --color-text-darkest: #1f1c19;
+  --color-text-lighter: #a29891;
+
+  /* Extended warm surface scale */
+  --color-warm-bg-deep: #f8f5f2;
+  --color-warm-surface-dim: #e8e2de;
+
+  /* Extended warm border scale */
+  --color-warm-border-deep: #d8cec8;
+
+  /* Form inputs */
+  --color-input-bg: #D9E4EA;
+  --color-input-bg-light: #fcfbfa;
+  --color-input-bg-alt: #F9FAFB;
+
+  /* Neutral grays (disabled states, generic borders) */
+  --color-neutral-disabled: #e8e8e8;
+  --color-neutral-border: #d9d9d9;
+  --color-neutral-mid: #b0b0b0;
+  --color-neutral-light: #e0e0e0;
+
+  /* Status: active/green */
+  --color-status-active-text: #0f7b43;
+  --color-status-active-bg: #ecfff4;
+  --color-status-active-border: #b8ead2;
+
+  /* Status: error/red */
+  --color-status-error-text: #b13d2f;
+  --color-status-error-border: #efc7bf;
+  --color-status-error-bg: #fff0ec;
+
+  /* Status: warning/amber */
+  --color-status-warning-text: #8b6a00;
+  --color-status-warning-border: #f0e0a4;
+  --color-status-warning-bg: #fff9df;
+
+  /* Status: info/blue */
+  --color-status-info-text: #1565c0;
+  --color-status-info-border: #90caf9;
+  --color-status-info-bg: #e3f2fd;
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -15,12 +87,95 @@
   --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-size-base: 16px;
   --font-size-lg: 24px;
+
+  --color-primary-light: #E8EEFB; 
+  --color-primary-dark: #1E9A9A;  
+  --color-progress-track: #E5E7EB; 
+  --color-progress-rejected: #EF4444;
+}
+
+.bg-page-gradient {
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 22%),
+    linear-gradient(180deg, var(--color-warm-bg-page) 0%, var(--color-warm-gradient-end) 100%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: #0a0a0a;
-    --color-foreground: #ededed;
+    --color-background: #141211;
+    --color-foreground: #e8e2dc;
+
+    /* Primary stays the same; hover slightly brighter */
+    --color-primary-hover: #1fa8b6;
+
+    /* Teal scale — light variants become dark teal surfaces */
+    --color-teal-dark: #4ecad6;
+    --color-teal-dim: #4f8a90;
+    --color-teal-light: #0d2e32;
+    --color-teal-border: #1a4a50;
+    --color-teal-hover: #0a2629;
+
+    /* Text scale — inverted: darkest becomes lightest */
+    --color-text-darkest: #ece6e0;
+    --color-text-dark: #d4cec8;
+    --color-text-body: #b8b0a8;
+    --color-text-muted: #9a9088;
+    --color-text-subtle: #7a726c;
+    --color-text-faint: #5a5350;
+    --color-text-lighter: #3e3a37;
+
+    /* Warm surface scale — all inverted to dark warm tones */
+    --color-warm-bg: #1c1a18;
+    --color-warm-bg-page: #1e1c1a;
+    --color-warm-bg-deep: #191715;
+    --color-warm-gradient-end: #221f1d;
+    --color-warm-surface: #272321;
+    --color-warm-surface-dim: #2e2a28;
+
+    /* Warm border scale */
+    --color-warm-border: #3a3330;
+    --color-warm-border-light: #2e2b28;
+    --color-warm-border-faint: #252220;
+    --color-warm-border-deep: #403c39;
+
+    /* Form inputs */
+    --color-input-bg: #1e2a30;
+    --color-input-bg-light: #201e1c;
+    --color-input-bg-alt: #1c1a18;
+
+    /* Neutral grays */
+    --color-neutral-disabled: #2a2826;
+    --color-neutral-border: #3a3836;
+    --color-neutral-mid: #555350;
+    --color-neutral-light: #302e2c;
+
+    /* Status: active/green */
+    --color-status-active-text: #34c76a;
+    --color-status-active-border: #1a5c35;
+    --color-status-active-bg: #0d2d1a;
+
+    /* Status: error/red */
+    --color-status-error-text: #e57068;
+    --color-status-error-border: #5c2020;
+    --color-status-error-bg: #2d1515;
+
+    /* Status: warning/amber */
+    --color-status-warning-text: #d4a520;
+    --color-status-warning-border: #5c4800;
+    --color-status-warning-bg: #2a2200;
+
+    /* Status: info/blue */
+    --color-status-info-text: #60a5fa;
+    --color-status-info-border: #1e3a5c;
+    --color-status-info-bg: #0d1f35;
+  }
+
+  /* Remap bg-white / bg-white/85 cards to dark surface */
+  .bg-white {
+    background-color: var(--color-warm-surface);
+  }
+  .bg-white\/85 {
+    background-color: color-mix(in srgb, var(--color-warm-surface) 85%, transparent);
   }
 }
 
@@ -33,6 +188,8 @@ body {
   padding: 0;
   line-height: 1.5;
 }
+
+/* Typography - Responsive heading sizes */
 h1 { font-size: 2.5rem; }   
 h2 { font-size: 2rem; }    
 h3 { font-size: 1.5rem; }  
@@ -45,12 +202,42 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-primary);
   margin-bottom: var(--spacing-md);
 }
+
 @media (min-width: 768px) {
   h1 { font-size: 3rem; }   
   h2 { font-size: 2.25rem; }
   h3 { font-size: 1.75rem; }
 }
+
 p {
   margin-bottom: var(--spacing-sm);
 }
 
+.stat-card-primary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.stat-card-secondary {
+  background-color: #F3F4F6; 
+  color: #374151; 
+}
+
+.progress-track {
+  background-color: var(--color-progress-track);
+}
+
+.progress-fill {
+  background-color: var(--color-primary);
+  transition: width 0.5s ease;
+}
+
+.progress-fill-rejected {
+  background-color: var(--color-progress-rejected);
+}
+
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(-10px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }

@@ -146,9 +146,9 @@ export default function VerifyEmailForm() {
         <div className="space-y-5 sm:space-y-6">
           <div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
-              <span style={{ color: '#0F2A44' }}>Confirm it&apos;s </span>
-              <span style={{ color: '#26B9C8' }}>really </span>
-              <span style={{ color: '#0F2A44' }}>you.</span>
+              <span style={{ color: 'var(--color-secondary)' }}>Confirm it&apos;s </span>
+              <span style={{ color: 'var(--color-primary)' }}>really </span>
+              <span style={{ color: 'var(--color-secondary)' }}>you.</span>
             </h1>
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
               We&#39;ve sent a 6-digit verification code to{' '}
@@ -157,16 +157,16 @@ export default function VerifyEmailForm() {
             </p>
           </div>
 
-          <div className="rounded-xl px-4 sm:px-5 py-4 border" style={{ backgroundColor: '#F0F4F7', borderColor: '#E0EFFF' }}>
+          <div className="rounded-xl px-4 sm:px-5 py-4 border" style={{ backgroundColor: 'var(--color-input-bg-light)', borderColor: 'var(--color-status-info-bg)' }}>
             <div className="flex items-start gap-3 sm:gap-4">
-              <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#DAE2FF' }}>
-                <Mail className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#26B9C8' }} />
+              <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-status-info-bg)' }}>
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: 'var(--color-primary)' }} />
               </div>
               <div>
-                <h5 className="font-semibold text-sm mb-1" style={{ color: '#0F2A44' }}>Check your inbox</h5>
+                <h5 className="font-semibold text-sm mb-1" style={{ color: 'var(--color-secondary)' }}>Check your inbox</h5>
                 <p className="-mt-3 text-sm text-gray-600 leading-relaxed">
                   Don&#39;t see it? Check your spam folder or try resending the code in{' '}
-                  <span className="font-mono font-semibold" style={{ color: '#26B9C8' }}>
+                  <span className="font-mono font-semibold" style={{ color: 'var(--color-primary)' }}>
                     {resendDisabled ? formatTime(countdown) : '00:00'}
                   </span>
                 </p>
@@ -178,7 +178,7 @@ export default function VerifyEmailForm() {
         <div className="space-y-4">
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
             <div className="mb-6">
-              <h5 className="text-sm font-semibold uppercase tracking-wider mb-5 sm:mb-6" style={{ color: '#26B9C8' }}>
+              <h5 className="text-sm font-semibold uppercase tracking-wider mb-5 sm:mb-6" style={{ color: 'var(--color-primary)' }}>
                 Verification Code
               </h5>
               
@@ -219,7 +219,7 @@ export default function VerifyEmailForm() {
               </Button>
 
               <div className="flex items-center justify-between text-sm">
-                <Link href="/login" className="inline-flex items-center gap-1 font-medium transition-colors" style={{ color: '#26B9C8' }}>
+                <Link href="/login" className="inline-flex items-center gap-1 font-medium transition-colors" style={{ color: 'var(--color-primary)' }}>
                   <ArrowLeft className="w-4 h-4" />
                   Back to login
                 </Link>
@@ -241,7 +241,7 @@ export default function VerifyEmailForm() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Issues receiving the code?{' '}
-              <Link href="/support" className="font-medium" style={{ color: '#26B9C8' }}>
+              <Link href="/support" className="font-medium" style={{ color: 'var(--color-primary)' }}>
                 Contact Support
               </Link>
             </p>
@@ -251,14 +251,14 @@ export default function VerifyEmailForm() {
 
       <style jsx>{`
         .custom-button {
-          background-color: #26B9C8 !important;
+          background-color: var(--color-primary) !important;
           height: 48px !important;
           min-height: 48px !important;
           padding: 0 1.5rem !important;
           border-radius: 9999px !important;
         }
         .custom-button:hover {
-          background-color: #20a8b6 !important;
+          background-color: var(--color-primary-hover) !important;
           opacity: 0.95 !important;
         }
         .custom-button:disabled {

@@ -1,14 +1,13 @@
-'use client';
+import { redirect } from 'next/navigation';
+import JobsGrid from '@/components/recruiter/JobsGrid';
+import { getRecruiterHeaders } from '@/utils/serverFetch';
+import { loadJobs } from '@/hooks/useJobsPageData';
 
-export default function JobManagementPage() {
-  return (
-    <main className="p-4 md:p-8">
-      <h1 className="text-2xl font-heading font-bold text-[var(--color-secondary)] mb-4">
-        Page Under Development
-      </h1>
-      <p className="text-[var(--color-foreground)]/70">
-        This section is being built according to the ServiaAI SRD and will be available soon.
-      </p>
-    </main>
-  );
+export default async function JobManagementPage() {
+  const headers = await getRecruiterHeaders();
+  if (!headers) redirect('/login');
+
+  const { jobs, error } = await loadJobs(headers);
+
+  return <JobsGrid initialJobs={jobs} error={error} />;
 }

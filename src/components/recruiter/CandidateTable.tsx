@@ -54,13 +54,13 @@ function getStatusTone(status: string): CandidateStatusTone {
 function statusClasses(tone: CandidateStatusTone) {
   switch (tone) {
     case "success":
-      return "border-[#b8ead2] bg-[#ecfff4] text-[#0f7b43]";
+      return "border-[var(--color-status-active-border)] bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)]";
     case "warning":
-      return "border-[#f0e0a4] bg-[#fffbe2] text-[#8b6a00]";
+      return "border-[var(--color-status-warning-border)] bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]";
     case "danger":
-      return "border-[#efc7bf] bg-[#fff0ec] text-[#b13d2f]";
+      return "border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)]";
     default:
-      return "border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]";
+      return "border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] text-[var(--color-text-subtle)]";
   }
 }
 
@@ -162,18 +162,10 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
     );
   };
 
-  const paginationWindow = useMemo(() => {
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, start + 4);
-    const pages = [];
-    for (let pageNumber = start; pageNumber <= end; pageNumber += 1) {
-      pages.push(pageNumber);
-    }
-    return pages;
-  }, [currentPage, totalPages]);
+
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
       <ScheduleInterviewModal
         isOpen={isOpen}
         onClose={close}
@@ -183,10 +175,10 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#171717] sm:text-5xl">
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--color-foreground)] sm:text-5xl">
               Candidates
             </h1>
-            <p className="mt-3 max-w-2xl text-lg text-[#635b55]">
+            <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-muted)]">
               Review and manage your candidate pipeline, sorted by AI score so the strongest
               applications surface first.
             </p>
@@ -195,16 +187,16 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
           <button
             type="button"
             onClick={() => router.refresh()}
-            className="rounded-full border border-[#cfecef] bg-white px-5 py-3 text-sm font-semibold text-[#0c6c75] transition hover:border-[#26b9c8] hover:bg-[#f0fdff]"
+            className="rounded-full border border-[var(--color-teal-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
           >
             Refresh Candidates
           </button>
         </div>
 
         <section className="rounded-[2rem] border border-black/10 bg-white/85 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:p-6">
-          <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_220px_220px]">
+          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-[#5c5550]">Search Name</span>
+              <span className="text-sm font-semibold text-[var(--color-text-muted)]">Search Name</span>
               <input
                 value={search}
                 onChange={(event) => {
@@ -212,19 +204,19 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                   setPage(1);
                 }}
                 placeholder="Search candidates by name, email, or role"
-                className="rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]"
+                className="rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
               />
             </label>
 
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-[#5c5550]">Status</span>
+              <span className="text-sm font-semibold text-[var(--color-text-muted)]">Status</span>
               <select
                 value={statusFilter}
                 onChange={(event) => {
                   setStatusFilter(event.target.value);
                   setPage(1);
                 }}
-                className="rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]"
+                className="rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
               >
                 <option value="all">All statuses</option>
                 {statuses.map((status) => (
@@ -236,14 +228,14 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
             </label>
 
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-[#5c5550]">Role</span>
+              <span className="text-sm font-semibold text-[var(--color-text-muted)]">Role</span>
               <select
                 value={roleFilter}
                 onChange={(event) => {
                   setRoleFilter(event.target.value);
                   setPage(1);
                 }}
-                className="rounded-[1.1rem] border border-[#ddd5cf] bg-[#fcfbfa] px-4 py-3 text-sm text-[#201d1b] outline-none transition focus:border-[#26b9c8]"
+                className="rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
               >
                 <option value="all">All roles</option>
                 {roles.map((role) => (
@@ -255,10 +247,10 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
             </label>
           </div>
 
-          <div className="overflow-hidden rounded-[1.6rem] border border-[#ece4de]">
+          <div className="overflow-hidden rounded-[1.6rem] border border-[var(--color-warm-border)]">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-[#f0e8e2]">
-                <thead className="bg-[#fbf7f4]">
+              <table className="min-w-full divide-y divide-[var(--color-warm-surface)]">
+                <thead className="bg-[var(--color-warm-bg)]">
                   <tr>
                     {[
                       { key: "name", label: "Name" },
@@ -269,7 +261,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                     ].map((column) => (
                       <th
                         key={column.key}
-                        className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[#7e756f]"
+                        className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-faint)]"
                       >
                         <button
                           type="button"
@@ -277,7 +269,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                           className="inline-flex items-center gap-2"
                         >
                           <span>{column.label}</span>
-                          <span className="text-[10px] text-[#a29891]">
+                          <span className="text-[10px] text-[var(--color-text-lighter)]">
                             {sortColumn === column.key
                               ? sortDirection === "asc"
                                 ? "▲"
@@ -287,39 +279,39 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                         </button>
                       </th>
                     ))}
-                    <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[#7e756f]">
+                    <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-faint)]">
                       Actions
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#f4ece7] bg-white">
+                <tbody className="divide-y divide-[var(--color-warm-surface)] bg-white">
                   {error ? (
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-4 py-16 text-center text-sm font-medium text-[#b13d2f]"
+                        className="px-4 py-16 text-center text-sm font-medium text-[var(--color-status-error-text)]"
                       >
                         {error}
                       </td>
                     </tr>
                   ) : pagedCandidates.length > 0 ? (
                     pagedCandidates.map((candidate) => (
-                      <tr key={candidate.id} className="hover:bg-[#fcfaf8]">
+                      <tr key={candidate.id} className="hover:bg-[var(--color-warm-bg-page)]">
                         <td className="px-4 py-5">
                           <div>
-                            <p className="text-base font-semibold text-[#1f1d1b]">
+                            <p className="text-base font-semibold text-[var(--color-text-darkest)]">
                               {candidate.name}
                             </p>
-                            <p className="mt-1 text-sm text-[#77706a]">{candidate.email}</p>
+                            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">{candidate.email}</p>
                           </div>
                         </td>
                         <td className="px-4 py-5">
                           <div>
-                            <p className="text-base font-medium text-[#2a2522]">
+                            <p className="text-base font-medium text-[var(--color-text-darkest)]">
                               {candidate.role}
                             </p>
-                            <p className="mt-1 text-sm text-[#9a9088]">
+                            <p className="mt-1 text-sm text-[var(--color-text-faint)]">
                               {candidate.department}
                             </p>
                           </div>
@@ -336,14 +328,14 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                             {humanizeStatus(candidate.status)}
                           </span>
                         </td>
-                        <td className="px-4 py-5 text-sm text-[#5d5651]">
+                        <td className="px-4 py-5 text-sm text-[var(--color-text-muted)]">
                           {formatDate(candidate.appliedAt)}
                         </td>
                         <td className="px-4 py-5">
                           <div className="flex flex-wrap gap-2">
                             <Link
                               href={`/recruiter/dashboard/candidates/${candidate.id}`}
-                              className="inline-flex items-center rounded-[0.9rem] border border-[#d7c9c1] px-3 py-2 text-sm font-semibold text-[#4d4742] transition hover:border-[#26b9c8] hover:text-[#0c6c75]"
+                              className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
                             >
                               View Candidate
                             </Link>
@@ -351,7 +343,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                               <button
                                 type="button"
                                 onClick={() => openFor(candidate.id, candidate.jobId)}
-                                className="inline-flex items-center rounded-[0.9rem] border border-[#26b9c8] px-3 py-2 text-sm font-semibold text-[#0c6c75] transition hover:bg-[#f0fdff]"
+                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
                               >
                                 Schedule Interview
                               </button>
@@ -362,7 +354,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-4 py-16 text-center text-sm text-[#766f69]">
+                      <td colSpan={6} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
                         No candidates match the current filters.
                       </td>
                     </tr>
@@ -373,42 +365,31 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
           </div>
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-[#6f6863]">
+            <p className="text-sm text-[var(--color-text-subtle)]">
               Showing {pagedCandidates.length === 0 || error ? 0 : (currentPage - 1) * PAGE_SIZE + 1} to{" "}
               {Math.min(currentPage * PAGE_SIZE, filteredCandidates.length)} of{" "}
               {filteredCandidates.length} candidates
             </p>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
                 disabled={currentPage === 1}
-                className="rounded-full border border-[#d8cec8] px-4 py-2 text-sm font-semibold text-[#4f4944] disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[var(--color-warm-border-deep)] px-5 py-2 text-sm font-semibold text-[var(--color-text-body)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Prev
+                ← Previous
               </button>
-              {paginationWindow.map((pageNumber) => (
-                <button
-                  key={pageNumber}
-                  type="button"
-                  onClick={() => setPage(pageNumber)}
-                  className={`h-10 w-10 rounded-full text-sm font-semibold ${
-                    pageNumber === currentPage
-                      ? "bg-[#26b9c8] text-white"
-                      : "border border-[#d8cec8] text-[#4f4944]"
-                  }`}
-                >
-                  {pageNumber}
-                </button>
-              ))}
+              <span className="text-sm text-[var(--color-text-subtle)]">
+                Page {currentPage} of {totalPages}
+              </span>
               <button
                 type="button"
                 onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-full border border-[#d8cec8] px-4 py-2 text-sm font-semibold text-[#4f4944] disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-[var(--color-warm-border-deep)] px-5 py-2 text-sm font-semibold text-[var(--color-text-body)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Next
+                Next →
               </button>
             </div>
           </div>
