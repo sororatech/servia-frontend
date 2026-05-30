@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { AUTH_STORAGE } from '@/lib/auth';
 import { authAPI } from '@/lib/api';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { useProfile } from '@/hooks/useProfile';
 
 const Icons = {
   Overview: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
@@ -19,34 +21,11 @@ const Icons = {
   Logout: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>,
 };
 
-function useProfile() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const firstName = mounted ? AUTH_STORAGE.getFirstName() : null;
-  const lastName = mounted ? AUTH_STORAGE.getLastName() : null;
-  const role = mounted ? AUTH_STORAGE.getUserRole() : null;
-
-  const name = firstName || lastName
-    ? `${firstName ?? ''} ${lastName ?? ''}`.trim()
-    : 'User';
-
-  return {
-    name,
-    role: role === 'candidate' ? 'Candidate' : 'Recruiter',
-    isAdmin: false,
-    avatar: null,
-    isLoading: !mounted,
-  };
-}
-
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { name, role, isAdmin, avatar, isLoading } = useProfile();
+  const { profile, loading } = useProfile(); // use loading, not isLoading
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -62,6 +41,12 @@ export function Sidebar() {
     router.push('/login');
   }
 
+  const name = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}`.trim() 
+    : 'User';
+  const role = profile?.isAdmin ? 'Admin' : (profile?.role === 'candidate' ? 'Candidate' : 'Recruiter');  const isAdmin = profile?.isAdmin || false;
+  const avatarUrl = profile?.avatar || null;
+
   const menuItems = [
     { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview, exact: true },
     { name: 'Candidates', href: '/recruiter/dashboard/candidates', icon: Icons.Candidates },
@@ -70,6 +55,17 @@ export function Sidebar() {
     { name: 'Reports', href: '/recruiter/dashboard/reports', icon: Icons.Reports },
     ...(isAdmin ? [{ name: 'Settings', href: '/recruiter/dashboard/settings', icon: Icons.Settings }] : []),
   ];
+
+  if (loading) {
+    return <aside className="w-64 bg-[var(--color-secondary)] h-screen sticky top-0 animate-pulse" />;
+  }
+
+  const isMenuItemActive = (href: string) => {
+    if (href === '/recruiter/dashboard') {
+      return pathname === href || pathname === href + '/';
+    }
+    return pathname === href || pathname.startsWith(href + '/');
+  };
 
   return (
     <>
@@ -142,6 +138,7 @@ export function Sidebar() {
           const isActive = item.exact
             ? pathname === item.href
             : pathname === item.href || pathname.startsWith(item.href + '/');
+          const active = isMenuItemActive(item.href);
           return (
             <Link
               key={item.href}
@@ -150,7 +147,7 @@ export function Sidebar() {
               onClick={() => setIsMobileOpen(false)}
               className={`
                 flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
-                ${isActive 
+                ${active 
                   ? 'bg-[var(--color-primary)] text-[var(--color-secondary)] font-semibold shadow-md' 
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }
@@ -168,19 +165,32 @@ export function Sidebar() {
       </nav>
 
       <div className="px-3 py-4 border-t border-white/10 flex flex-col gap-3">
+      <Link
+        href="/profile"
+        className="block px-3 py-4 border-t border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+      >
         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-            {isLoading ? (
-              <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
-            ) : avatar ? (
-              <Image src={avatar} alt={name || 'User'} width={36} height={36} className="rounded-full object-cover" />
+          <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
+            {avatarUrl ? (
+              <Image 
+                src={avatarUrl} 
+                alt={name} 
+                width={36} 
+                height={36} 
+                className="rounded-full object-cover w-full h-full"
+              />
             ) : (
               name?.charAt(0)?.toUpperCase() || 'U'
             )}
           </div>
+
           <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            <span className="text-white font-semibold text-sm truncate">{isLoading ? 'Loading...' : name}</span>
-            <span className="text-white/60 text-xs truncate">{role}</span>
+            <span className="text-white font-semibold text-sm truncate">
+              {name}
+            </span>
+            <span className="text-white/60 text-xs truncate">
+              {role}
+            </span>
           </div>
         </div>
 
@@ -196,6 +206,7 @@ export function Sidebar() {
           </span>
         </button>
       </div>
+      </Link>
     </aside>
     </>
   );

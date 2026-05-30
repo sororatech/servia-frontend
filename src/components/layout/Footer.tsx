@@ -15,7 +15,7 @@ export function Footer() {
               <Image
                 src="/logo.png"
                 alt="ServiaAI"
-                width={83}
+                width={53}
                 height={24}
                 priority
               />

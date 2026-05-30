@@ -24,7 +24,19 @@ export const AUTH_STORAGE = {
   
   getFirstName: () => typeof window !== 'undefined' ? localStorage.getItem('first_name') : null,
   getLastName: () => typeof window !== 'undefined' ? localStorage.getItem('last_name') : null,
+  getUserId: () => typeof window !== 'undefined' ? localStorage.getItem('user_id') : null,
+  getUserEmail: () => typeof window !== 'undefined' ? localStorage.getItem('user_email') : null,
+  setAvatarUrl(url: string | null): void {
+    if (typeof window !== 'undefined') {
+      if (url) localStorage.setItem('avatar_url', url);
+      else localStorage.removeItem('avatar_url');
+    }
+  },
 
+  getAvatarUrl(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('avatar_url');
+  },
   clear(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');
@@ -32,6 +44,8 @@ export const AUTH_STORAGE = {
       localStorage.removeItem('user_id');
       localStorage.removeItem('first_name');
       localStorage.removeItem('last_name');
+      localStorage.removeItem('user_email'); 
+      localStorage.removeItem('avatar_url');
       document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
       document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     }
