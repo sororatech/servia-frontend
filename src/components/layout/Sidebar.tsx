@@ -48,7 +48,7 @@ export function Sidebar() {
   const avatarUrl = profile?.avatar || null;
 
   const menuItems = [
-    { name: 'Overview', href: '/recruiter/dashboard', icon: Icons.Overview, exact: true },
+    { name: 'Overview', href: '/recruiter/dashboard/overview', icon: Icons.Overview },
     { name: 'Candidates', href: '/recruiter/dashboard/candidates', icon: Icons.Candidates },
     { name: 'Jobs', href: '/recruiter/dashboard/jobs', icon: Icons.Jobs },
     { name: 'Interviews', href: '/recruiter/dashboard/interviews', icon: Icons.Interviews },

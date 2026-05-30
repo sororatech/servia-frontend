@@ -2,7 +2,7 @@ export const AUTH_STORAGE = {
   saveAuth(token: string, type: 'candidate' | 'recruiter', userId: string, rememberMe: boolean, firstName?: string, lastName?: string) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token);
-      localStorage.setItem('user_role', type);
+      localStorage.setItem('user_role', type); 
       localStorage.setItem('user_id', userId);
       if (firstName) localStorage.setItem('first_name', firstName);
       if (lastName) localStorage.setItem('last_name', lastName);
@@ -53,5 +53,5 @@ export const AUTH_STORAGE = {
 };
 
 export function getDashboardUrl(userType: 'candidate' | 'recruiter'): string {
-  return userType === 'candidate' ? '/jobs' : '/recruiter/dashboard';
+  return userType === 'candidate' ? '/jobs' : '/recruiter/dashboard/overview';
 }
