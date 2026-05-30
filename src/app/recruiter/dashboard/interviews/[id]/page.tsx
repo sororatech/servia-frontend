@@ -14,7 +14,7 @@ function getInitials(name: string) {
 
 function ScoreBar({ value }: { value: number }) {
   return (
-    <div className="h-3 w-full overflow-hidden rounded-full bg-[#e0e0e0]">
+    <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--color-neutral-light)]">
       <div
         className="h-full rounded-full bg-[var(--color-primary)] transition-all"
         style={{ width: `${value}%` }}
@@ -26,9 +26,9 @@ function ScoreBar({ value }: { value: number }) {
 function RecommendationBadge({ value }: { value: 'hire' | 'hold' | 'reject' | null }) {
   if (!value) return null;
   const styles = {
-    hire: 'bg-[#ecfff4] text-[#0f7b43] border-[#b8ead2]',
-    hold: 'bg-[#fffbe2] text-[#8b6a00] border-[#f0e0a4]',
-    reject: 'bg-[#fff0ec] text-[#b13d2f] border-[#efc7bf]',
+    hire: 'bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)] border-[var(--color-status-active-border)]',
+    hold: 'bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]',
+    reject: 'bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)] border-[var(--color-status-error-border)]',
   };
   const labels = { hire: 'Hire', hold: 'On Hold', reject: 'Reject' };
   return (
@@ -79,7 +79,7 @@ export default async function InterviewResultPage({ params }: Props) {
       </div>
 
       {/* Top card */}
-      <div className="mb-6 rounded-xl border border-[#e8e2de] bg-white p-6 shadow-sm">
+      <div className="mb-6 rounded-xl border border-[var(--color-warm-surface-dim)] bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-bold text-[var(--color-secondary)]">{fullName}</h2>
@@ -109,7 +109,7 @@ export default async function InterviewResultPage({ params }: Props) {
           </div>
 
           {/* Avatar */}
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#b0b0b0] text-lg font-bold text-white">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--color-neutral-mid)] text-lg font-bold text-white">
             {getInitials(fullName)}
           </div>
         </div>
@@ -118,7 +118,7 @@ export default async function InterviewResultPage({ params }: Props) {
       {report && (
         <div className="grid gap-6 md:grid-cols-2">
           {/* Left card — AI Summary */}
-          <div className="rounded-xl border border-[#e8e2de] bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-[var(--color-warm-surface-dim)] bg-white p-6 shadow-sm">
             <h3 className="mb-4 text-lg font-bold text-[var(--color-secondary)]">AI Summary</h3>
 
             <p className="mb-5 text-sm leading-relaxed text-[var(--color-foreground)]/70">
@@ -128,7 +128,7 @@ export default async function InterviewResultPage({ params }: Props) {
             <div className="mb-5 flex flex-wrap items-center gap-2">
               <RecommendationBadge value={report.recommendation} />
               {report.confidence && (
-                <span className="rounded-full border border-[#d0ccc8] bg-[#f4efeb] px-3 py-0.5 text-xs font-medium text-[var(--color-foreground)]/60">
+                <span className="rounded-full border border-[var(--color-warm-border-deep)] bg-[var(--color-warm-surface)] px-3 py-0.5 text-xs font-medium text-[var(--color-foreground)]/60">
                   Confidence: {report.confidence.charAt(0).toUpperCase() + report.confidence.slice(1)}
                 </span>
               )}
@@ -143,7 +143,7 @@ export default async function InterviewResultPage({ params }: Props) {
                   {report.extracted_skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-full bg-[#e8f9fb] px-3 py-1 text-xs font-medium text-[var(--color-primary)]"
+                      className="rounded-full bg-[var(--color-teal-light)] px-3 py-1 text-xs font-medium text-[var(--color-primary)]"
                     >
                       {skill}
                     </span>
@@ -154,7 +154,7 @@ export default async function InterviewResultPage({ params }: Props) {
           </div>
 
           {/* Right card — AI Feedback */}
-          <div className="rounded-xl border border-[#e8e2de] bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-[var(--color-warm-surface-dim)] bg-white p-6 shadow-sm">
             <h3 className="mb-4 text-lg font-bold text-[var(--color-secondary)]">AI Feedback</h3>
 
             <div className="mb-5">
@@ -183,7 +183,7 @@ export default async function InterviewResultPage({ params }: Props) {
                 <ul className="space-y-1.5">
                   {report.weaknesses.map((w, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-[var(--color-foreground)]/70">
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#e0735a]" />
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-status-error-text)]" />
                       {w}
                     </li>
                   ))}
@@ -194,7 +194,7 @@ export default async function InterviewResultPage({ params }: Props) {
             </div>
 
             {report.feedback && (
-              <div className="rounded-lg bg-[#f5f0ed] p-4">
+              <div className="rounded-lg bg-[var(--color-warm-bg-deep)] p-4">
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-foreground)]/40">
                   Feedback for Candidate
                 </p>

@@ -45,12 +45,6 @@ export const CANDIDATE_STATUSES = [
 
 export type CandidateStatus = typeof CANDIDATE_STATUSES[number];
 
-export type BackendJobSummary = {
-  id: string;
-  title: string;
-  department?: string;
-};
-
 export type CandidateListItem = {
   id: string;
   name: string;

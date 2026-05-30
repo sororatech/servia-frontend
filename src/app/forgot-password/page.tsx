@@ -64,16 +64,16 @@ export default function ForgotPasswordPage() {
         <div className="max-w-md w-full">
           <div className="bg-white rounded shadow-2xl p-8">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0F4F7' }}>
-                <RefreshCw size={32} style={{ color: '#26B9C8' }} />
+              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-input-bg-light)' }}>
+                <RefreshCw size={32} style={{ color: 'var(--color-primary)' }} />
               </div>
             </div>
 
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2 -mt-4" style={{ color: '#0F2A44' }}>
+              <h2 className="text-2xl font-bold mb-2 -mt-4" style={{ color: 'var(--color-secondary)' }}>
                 Forgot password?
               </h2>
-              <p className="text-sm" style={{ color: '#26B9C8' }}>
+              <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
                 No worries, it happens to the best of us. Enter your email and we&#39;ll send you a recovery link.
               </p>
             </div>
@@ -87,12 +87,12 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-3.5 mt-12" style={{ color: '#0F2A44' }}>
+                  <label htmlFor="email" className="block text-sm font-medium mb-3.5 mt-12" style={{ color: 'var(--color-secondary)' }}>
                     Work Email
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none pb-2.5">
-                      <Mail className="h-5 w-5" style={{ color: '#26B9C8' }} />
+                      <Mail className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
                     </div>
                     <input
                       type="email"
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
                       className={`w-full pl-10 pr-4 py-3.5 mb-3 rounded-lg border focus:outline-none focus:ring-2 transition ${
                         validationError ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                      style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                     />
                   </div>
                   {validationError && (
@@ -130,11 +130,11 @@ export default function ForgotPasswordPage() {
                   <Check className="w-8 h-8 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: '#0F2A44' }}>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-secondary)' }}>
                     Check your email!
                   </h3>
                   <p className="text-sm text-gray-600">
-                    We&#39;ve sent a password reset link to <span className="font-medium" style={{ color: '#0F2A44' }}>{email}</span>
+                    We&#39;ve sent a password reset link to <span className="font-medium" style={{ color: 'var(--color-secondary)' }}>{email}</span>
                   </p>
                   <p className="text-sm text-gray-500 mt-2">
                     Didn&#39;t receive the email? Check your spam folder or try again.
@@ -146,7 +146,7 @@ export default function ForgotPasswordPage() {
                     setEmail('');
                   }}
                   className="font-medium text-sm"
-                  style={{ color: '#26B9C8' }}
+                  style={{ color: 'var(--color-primary)' }}
                 >
                   Send another email
                 </button>
@@ -154,7 +154,7 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="mt-6 text-center">
-              <Link href="/login" className="inline-flex items-center text-sm font-medium" style={{ color: '#26B9C8' }}>
+              <Link href="/login" className="inline-flex items-center text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back to Login
               </Link>
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
 
       <style jsx>{`
         .custom-button {
-          background-color: #26B9C8 !important;
+          background-color: var(--color-primary) !important;
           height: 56px !important;
           min-height: 56px !important;
           padding: 0 1.5rem !important;
@@ -176,7 +176,7 @@ export default function ForgotPasswordPage() {
           font-size: 1rem !important;
         }
         .custom-button:hover {
-          background-color: #20a8b6 !important;
+          background-color: var(--color-primary-hover) !important;
           opacity: 0.95 !important;
         }
         .custom-button:disabled {

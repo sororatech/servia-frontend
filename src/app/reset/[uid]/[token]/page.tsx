@@ -131,9 +131,9 @@ export default function ResetPasswordPage() {
             </div>
             
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-3 text-center lg:text-left">
-              <span style={{ color: '#0F2A44' }}>Secure your </span>
-              <span style={{ color: '#26B9C8' }}>professional</span>
-              <span style={{ color: '#0F2A44' }}> future.</span>
+              <span style={{ color: 'var(--color-secondary)' }}>Secure your </span>
+              <span style={{ color: 'var(--color-primary)' }}>professional</span>
+              <span style={{ color: 'var(--color-secondary)' }}> future.</span>
             </h1>
             
             <p className="text-gray-600 leading-relaxed text-center lg:text-left mt-5 sm:mt-7 text-sm sm:text-base">
@@ -141,15 +141,15 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          <div className="rounded-xl px-4 sm:px-6 py-2.5 border mx-auto lg:mx-0 mt-4 sm:mt-5 w-full" style={{ backgroundColor: '#F0F4F7', maxWidth: '520px' }}>
+          <div className="rounded-xl px-4 sm:px-6 py-2.5 border mx-auto lg:mx-0 mt-4 sm:mt-5 w-full" style={{ backgroundColor: 'var(--color-input-bg-light)', maxWidth: '520px' }}>
             <div className="flex flex-col items-start gap-2 sm:gap-3">
               <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="#26B9C8" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="var(--color-primary)" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
               <div>
-                <h6 className="font-semibold text-sm mb-1 -mt-2" style={{ color: '#0F2A44' }}>Instant</h6>
+                <h6 className="font-semibold text-sm mb-1 -mt-2" style={{ color: 'var(--color-secondary)' }}>Instant</h6>
                 <p className="text-sm text-gray-600">
                   Update synced across all devices immediately.
                 </p>
@@ -162,10 +162,10 @@ export default function ResetPasswordPage() {
           <div className="w-full max-w-md">
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 py-8 sm:py-12">
               <div className="mb-6 sm:mb-8">
-                <h2 className="text-xl sm:text-2xl font-semibold mb-2" style={{ color: '#0F2A44' }}>
+                <h2 className="text-xl sm:text-2xl font-semibold mb-2" style={{ color: 'var(--color-secondary)' }}>
                   Reset Password
                 </h2>
-                <p className="text-sm -mt-3" style={{ color: '#26B9C8' }}>
+                <p className="text-sm -mt-3" style={{ color: 'var(--color-primary)' }}>
                   Please choose a strong password you haven&#39;t used before.
                 </p>
               </div>
@@ -178,7 +178,7 @@ export default function ResetPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 <div>
-                  <label htmlFor="newPassword" className="block text-xs mb-3 sm:mb-4 font-semibold uppercase tracking-wider mt-8 sm:mt-12" style={{ color: '#0F2A44' }}>
+                  <label htmlFor="newPassword" className="block text-xs mb-3 sm:mb-4 font-semibold uppercase tracking-wider mt-8 sm:mt-12" style={{ color: 'var(--color-secondary)' }}>
                     NEW PASSWORD
                   </label>
                   <div className="relative">
@@ -189,14 +189,14 @@ export default function ResetPasswordPage() {
                       value={formData.newPassword}
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-sm sm:text-base"
-                      style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                      style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                       placeholder="Enter new password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 inset-y-0 focus:outline-none p-1"
-                      style={{ color: '#26B9C8' }}
+                      style={{ color: 'var(--color-primary)' }}
                     >
                       {showPassword
                         ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -206,7 +206,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block mb-3 sm:mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0F2A44' }}>
+                  <label htmlFor="confirmPassword" className="block mb-3 sm:mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-secondary)' }}>
                     CONFIRM NEW PASSWORD
                   </label>
                   <div className="relative">
@@ -217,14 +217,14 @@ export default function ResetPasswordPage() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-sm sm:text-base"
-                      style={{ backgroundColor: '#D9E4EA', color: '#1a202c' }}
+                      style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                       placeholder="Confirm new password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-1"
-                      style={{ color: '#26B9C8' }}
+                      style={{ color: 'var(--color-primary)' }}
                     >
                       {showConfirmPassword
                         ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -236,22 +236,22 @@ export default function ResetPasswordPage() {
                   )}
                 </div>
 
-                <div className="rounded-lg p-3 sm:p-4 space-y-2" style={{ backgroundColor: '#F9FAFB' }}>
+                <div className="rounded-lg p-3 sm:p-4 space-y-2" style={{ backgroundColor: 'var(--color-input-bg-alt)' }}>
                   <div className="flex items-center gap-2 text-xs sm:text-sm">
                     <div className={`w-2 h-2 flex-shrink-0 rounded-full ${passwordRequirements.minLength ? 'bg-teal-500' : 'bg-gray-300'}`} />
-                    <span className={passwordRequirements.minLength ? 'font-medium' : ''} style={{ color: passwordRequirements.minLength ? '#26B9C8' : '#0F2A44' }}>
+                    <span className={passwordRequirements.minLength ? 'font-medium' : ''} style={{ color: passwordRequirements.minLength ? 'var(--color-primary)' : 'var(--color-secondary)' }}>
                       At least 8 characters long
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs sm:text-sm">
                     <div className={`w-2 h-2 flex-shrink-0 rounded-full ${passwordRequirements.hasNumber ? 'bg-teal-500' : 'bg-gray-300'}`} />
-                    <span className={passwordRequirements.hasNumber ? 'font-medium' : ''} style={{ color: passwordRequirements.hasNumber ? '#26B9C8' : '#0F2A44' }}>
+                    <span className={passwordRequirements.hasNumber ? 'font-medium' : ''} style={{ color: passwordRequirements.hasNumber ? 'var(--color-primary)' : 'var(--color-secondary)' }}>
                       Includes a number or symbol
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs sm:text-sm">
                     <div className={`w-2 h-2 flex-shrink-0 rounded-full ${passwordRequirements.passwordsMatch ? 'bg-teal-500' : 'bg-gray-300'}`} />
-                    <span className={passwordRequirements.passwordsMatch ? 'font-medium' : ''} style={{ color: passwordRequirements.passwordsMatch ? '#26B9C8' : '#0F2A44' }}>
+                    <span className={passwordRequirements.passwordsMatch ? 'font-medium' : ''} style={{ color: passwordRequirements.passwordsMatch ? 'var(--color-primary)' : 'var(--color-secondary)' }}>
                       Passwords match
                     </span>
                   </div>
@@ -269,7 +269,7 @@ export default function ResetPasswordPage() {
               </form>
 
               <div className="mt-5 sm:mt-6 text-center">
-                <Link href="/login" className="text-sm font-medium" style={{ color: '#26B9C8' }}>
+                <Link href="/login" className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                   Back to Sign In
                 </Link>
               </div>
@@ -282,14 +282,14 @@ export default function ResetPasswordPage() {
 
       <style jsx>{`
         .custom-button {
-          background-color: #26B9C8 !important;
+          background-color: var(--color-primary) !important;
           height: 48px !important;
           min-height: 48px !important;
           padding: 0 1.5rem !important;
           border-radius: 9999px !important;
         }
         .custom-button:hover {
-          background-color: #20a8b6 !important;
+          background-color: var(--color-primary-hover) !important;
           opacity: 0.95 !important;
         }
         .custom-button:disabled {

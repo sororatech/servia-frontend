@@ -1,4 +1,3 @@
-// src/hooks/useRegister.ts
 'use client';
 
 import { useState } from 'react';
