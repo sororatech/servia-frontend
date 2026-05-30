@@ -117,7 +117,6 @@ export const useJobDetail = (jobId: string | undefined) => {
       }
       
       if (!result.exists) {
-        // Clear any pending redirects first
         if (redirectTimerRef.current) {
           clearTimeout(redirectTimerRef.current);
           redirectTimerRef.current = null;
