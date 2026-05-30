@@ -1,8 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AUTH_STORAGE } from "@/lib/auth";
 
 type CandidateOption = {
   id: string;
@@ -22,36 +21,19 @@ type BackendCandidate = {
 };
 
 type BackendJob = { id: string; title: string };
-type Paginated<T> = { results: T[]; next: string | null };
-
-function getApiUrl(path: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
-  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
-}
 
 function toLocalDateTimeValue(date: Date) {
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return local.toISOString().slice(0, 16);
 }
 
-async function fetchAll<T>(url: string, token: string): Promise<T[]> {
-  const items: T[] = [];
-  let next: string | null = url;
-
-  while (next) {
-    const res = await fetch(next, {
-      headers: { Authorization: `Token ${token}` },
-    });
-    const data = (await res.json()) as T[] | Paginated<T>;
-    if (Array.isArray(data)) {
-      items.push(...data);
-      break;
-    }
-    items.push(...data.results);
-    next = data.next;
+async function fetchFromRoute<T>(path: string): Promise<T> {
+  const res = await fetch(path);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`API error ${res.status}: ${body}`);
   }
-
-  return items;
+  return res.json() as Promise<T>;
 }
 
 type Props = {
@@ -83,29 +65,28 @@ export default function ScheduleInterviewModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const token = AUTH_STORAGE.getToken();
-    if (!token) return;
-
     setCandidateId(defaultCandidateId);
     setJobId(defaultJobId);
     setError(null);
     setIsLoading(true);
 
     Promise.all([
-      fetchAll<BackendCandidate>(getApiUrl("/candidates/candidates/"), token),
-      fetchAll<BackendJob>(getApiUrl("/jobs/jobs/"), token),
+      fetchFromRoute<BackendCandidate[]>("/api/recruiter/candidates"),
+      fetchFromRoute<BackendJob[]>("/api/recruiter/jobs"),
     ])
       .then(([rawCandidates, rawJobs]) => {
         setCandidates(
-          rawCandidates.map((c) => ({
+          rawCandidates.map((c: BackendCandidate) => ({
             id: c.id,
             name: `${c.user.first_name} ${c.user.last_name}`.trim() || c.user.email,
             jobId: c.job,
           })),
         );
-        setJobs(rawJobs.map((j) => ({ id: j.id, title: j.title })));
+        setJobs(rawJobs.map((j: BackendJob) => ({ id: j.id, title: j.title })));
       })
-      .catch(() => setError("Failed to load candidates and jobs."))
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Failed to load candidates and jobs.");
+      })
       .finally(() => setIsLoading(false));
   }, [isOpen, defaultCandidateId, defaultJobId]);
 
@@ -115,15 +96,8 @@ export default function ScheduleInterviewModal({
     if (candidate?.jobId) setJobId(candidate.jobId);
   }, [candidateId, candidates]);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     setError(null);
-
-    const token = AUTH_STORAGE.getToken();
-    if (!token) {
-      router.push("/login");
-      return;
-    }
 
     if (!candidateId || !jobId) {
       setError("Please select a candidate and job.");
@@ -133,12 +107,9 @@ export default function ScheduleInterviewModal({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(getApiUrl("/interviews/interviews/"), {
+      const res = await fetch("/api/recruiter/interviews", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           candidate: candidateId,
           job: jobId,
@@ -170,22 +141,35 @@ export default function ScheduleInterviewModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl">
-        <h2 className="text-xl font-bold text-[#171717]">Schedule Interview</h2>
+      <div className="w-full max-w-lg rounded-3xl bg-[var(--color-warm-surface)] p-8 shadow-2xl">
+        <h2 className="text-xl font-bold text-[var(--color-foreground)]">Schedule Interview</h2>
 
         {isLoading ? (
-          <div className="mt-8 py-6 text-center text-sm text-gray-400">Loading...</div>
+          <div className="mt-8 py-6 text-center text-sm text-[var(--color-text-subtle)]">Loading...</div>
+        ) : error === "session_expired" ? (
+          <div className="mt-8 flex flex-col items-center gap-4 py-6 text-center">
+            <p className="text-sm text-[var(--color-status-error-text)]">
+              Your session has expired. Please log in again to continue.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push("/login")}
+              className="rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
+            >
+              Go to Login
+            </button>
+          </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-semibold text-[#171717]">
+              <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
                 Candidate Name
               </label>
               <select
                 value={candidateId}
                 onChange={(e) => setCandidateId(e.target.value)}
                 required
-                className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm text-[#374151] outline-none focus:border-[#26b9c8]"
+                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] outline-none focus:border-[var(--color-primary)]"
               >
                 <option value="">Select candidate</option>
                 {candidates.map((c) => (
@@ -197,14 +181,14 @@ export default function ScheduleInterviewModal({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-[#171717]">
+              <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
                 Candidate Job
               </label>
               <select
                 value={jobId}
                 onChange={(e) => setJobId(e.target.value)}
                 required
-                className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm text-[#374151] outline-none focus:border-[#26b9c8]"
+                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] outline-none focus:border-[var(--color-primary)]"
               >
                 <option value="">Select job</option>
                 {jobs.map((j) => (
@@ -216,7 +200,7 @@ export default function ScheduleInterviewModal({
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-[#171717]">
+              <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
                 Date & Time
               </label>
               <input
@@ -224,12 +208,12 @@ export default function ScheduleInterviewModal({
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
                 required
-                className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm text-[#374151] outline-none focus:border-[#26b9c8]"
+                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] outline-none focus:border-[var(--color-primary)]"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-[#171717]">
+              <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
                 Duration
               </label>
               <input
@@ -240,36 +224,38 @@ export default function ScheduleInterviewModal({
                 onChange={(e) => setDuration(e.target.value)}
                 placeholder="Duration (minutes)"
                 required
-                className="w-full rounded-full border border-gray-200 bg-white px-5 py-3 text-sm text-[#374151] outline-none focus:border-[#26b9c8]"
+                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] placeholder:text-[var(--color-text-subtle)] outline-none focus:border-[var(--color-primary)]"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-[#171717]">
+              <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
                 Meeting Link
               </label>
               <input
                 type="text"
                 disabled
                 placeholder="Auto-generated after scheduling"
-                className="w-full rounded-full border border-gray-100 bg-gray-50 px-5 py-3 text-sm text-gray-400 outline-none cursor-not-allowed"
+                className="w-full rounded-full border border-[var(--color-warm-border-faint)] bg-[var(--color-warm-bg)] px-5 py-3 text-sm text-[var(--color-text-subtle)] placeholder:text-[var(--color-text-subtle)] outline-none cursor-not-allowed opacity-60"
               />
             </div>
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && (
+              <p className="text-sm text-[var(--color-status-error-text)]">{error}</p>
+            )}
 
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 rounded-full border border-gray-200 py-3 text-sm font-semibold text-[#374151] transition hover:border-gray-300"
+                className="flex-1 rounded-full border border-[var(--color-warm-border)] py-3 text-sm font-semibold text-[var(--color-text-dark)] transition hover:border-[var(--color-warm-border-deep)]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 rounded-full bg-[#26b9c8] py-3 text-sm font-semibold text-white transition hover:bg-[#1fa8b6] disabled:opacity-60"
+                className="flex-1 rounded-full bg-[var(--color-primary)] py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
               >
                 {isSubmitting ? "Scheduling..." : "Done"}
               </button>

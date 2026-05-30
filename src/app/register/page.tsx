@@ -14,14 +14,14 @@ import { Button } from '@/components/ui';
 export default function RegisterPage() {
   const router = useRouter();
   const { loading, error, register } = useRegister();
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
   const [countryCode, setCountryCode] = useState('+251');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -30,7 +30,7 @@ export default function RegisterPage() {
     confirmPassword: '',
     agreeToTerms: false,
   });
-  
+
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [touchedFields, setTouchedFields] = useState<{[key: string]: boolean}>({});
 
@@ -65,7 +65,7 @@ export default function RegisterPage() {
   const handleBlur = (fieldName: keyof typeof formData) => {
     setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
     validateField(fieldName, formData[fieldName]);
-    
+
     if (fieldName === 'password') {
       setTimeout(() => setShowPasswordRequirements(false), 300);
     }
@@ -191,22 +191,22 @@ export default function RegisterPage() {
     <div className="min-h-screen flex flex-col overflow-hidden">
       <div className="flex flex-1 overflow-hidden">
         <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
-          <Image 
-            src="/images/registerimg.png" 
-            alt="ServiaAI background" 
-            fill 
+          <Image
+            src="/images/registerimg.png"
+            alt="ServiaAI background"
+            fill
             className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 45vw" 
-            priority 
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            priority
           />
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
         </div>
-        
+
         <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-white overflow-y-auto">
           <div className="w-full max-w-lg">
             <div className="mb-8 sm:mb-10">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: '#0F2A44' }}>Create your account</h2>
-              <p className="-mt-3" style={{ color: '#26B9C8' }}>Start your journey</p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: 'var(--color-secondary)' }}>Create your account</h2>
+              <p className="-mt-3" style={{ color: 'var(--color-primary)' }}>Start your journey</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
@@ -216,32 +216,32 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Full Name <span className="text-red-500">*</span></label>
-                <input 
-                  type="text" 
-                  name="fullName" 
-                  value={formData.fullName} 
-                  onChange={handleChange} 
-                  onBlur={() => handleBlur('fullName')} 
-                  placeholder="Enter your full name" 
-                  maxLength={100} 
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'}`} 
-                  style={{ backgroundColor: touchedFields.fullName ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('fullName')}
+                  placeholder="Enter your full name"
+                  maxLength={100}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+                  style={{ backgroundColor: touchedFields.fullName ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                 />
                 {validationErrors.fullName && <p className="text-sm text-red-600">{validationErrors.fullName}</p>}
               </div>
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Email Address <span className="text-red-500">*</span></label>
-                <input 
-                  type="email" 
-                  name="email" 
-                  value={formData.email} 
-                  onChange={handleChange} 
-                  onBlur={() => handleBlur('email')} 
-                  placeholder="name@company.com" 
-                  maxLength={254} 
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`} 
-                  style={{ backgroundColor: touchedFields.email ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('email')}
+                  placeholder="name@company.com"
+                  maxLength={254}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
+                  style={{ backgroundColor: touchedFields.email ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                 />
                 {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
               </div>
@@ -278,16 +278,16 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  <input 
-                    type="tel" 
-                    name="phone" 
-                    value={formData.phone} 
-                    onChange={handleChange} 
-                    onBlur={() => handleBlur('phone')} 
-                    placeholder="Phone number" 
-                    maxLength={15} 
-                    className={`flex-1 min-w-0 px-3 sm:px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.phone ? 'border-red-500' : 'border-gray-300'}`} 
-                    style={{ backgroundColor: touchedFields.phone ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('phone')}
+                    placeholder="Phone number"
+                    maxLength={15}
+                    className={`flex-1 min-w-0 px-3 sm:px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.phone ? 'border-red-500' : 'border-gray-300'}`}
+                    style={{ backgroundColor: touchedFields.phone ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                   />
                 </div>
                 {validationErrors.phone && <p className="text-sm text-red-600">{validationErrors.phone}</p>}
@@ -296,28 +296,28 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Password <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <input 
-                    type={showPassword ? 'text' : 'password'} 
-                    name="password" 
-                    value={formData.password} 
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
                     onChange={(e) => {
                       handleChange(e);
                       if (e.target.value.length > 0) {
                         setShowPasswordRequirements(true);
                       }
-                    }} 
-                    onBlur={() => handleBlur('password')} 
-                    placeholder="Enter password" 
-                    maxLength={128} 
-                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`} 
-                    style={{ backgroundColor: touchedFields.password ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
+                    }}
+                    onBlur={() => handleBlur('password')}
+                    placeholder="Enter password"
+                    maxLength={128}
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
+                    style={{ backgroundColor: touchedFields.password ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                   />
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="#26B9C8" />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)} 
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="var(--color-primary)" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: '#26B9C8' }}
+                    style={{ color: 'var(--color-primary)' }}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -327,7 +327,7 @@ export default function RegisterPage() {
                     )}
                   </button>
                 </div>
-                
+
                 {showPasswordRequirements && formData.password && (
                   <div className="mt-2 space-y-1 animate-fadeIn">
                     {[
@@ -351,23 +351,23 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Confirm Password <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <input 
-                    type={showConfirmPassword ? 'text' : 'password'} 
-                    name="confirmPassword" 
-                    value={formData.confirmPassword} 
-                    onChange={handleChange} 
-                    onBlur={() => handleBlur('confirmPassword')} 
-                    placeholder="Re-enter password" 
-                    maxLength={128} 
-                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`} 
-                    style={{ backgroundColor: touchedFields.confirmPassword ? '#ffffff' : '#D9E4EA', color: '#1a202c' }} 
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('confirmPassword')}
+                    placeholder="Re-enter password"
+                    maxLength={128}
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+                    style={{ backgroundColor: touchedFields.confirmPassword ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
                   />
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="#26B9C8" />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="var(--color-primary)" />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: '#26B9C8' }}
+                    style={{ color: 'var(--color-primary)' }}
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? (
@@ -382,23 +382,23 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <div className="flex items-start">
-                  <input 
-                    id="agreeToTerms" 
-                    name="agreeToTerms" 
-                    type="checkbox" 
-                    checked={formData.agreeToTerms} 
-                    onChange={handleChange} 
-                    className="w-4 h-4 mt-0.5 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" 
+                  <input
+                    id="agreeToTerms"
+                    name="agreeToTerms"
+                    type="checkbox"
+                    checked={formData.agreeToTerms}
+                    onChange={handleChange}
+                    className="w-4 h-4 mt-0.5 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
                   />
                   <label htmlFor="agreeToTerms" className="ml-2 text-sm text-gray-600">
-                    I agree to the <Link href="/terms-of-service" className="font-medium" style={{ color: '#26B9C8' }} target="_blank">Terms of Service</Link> and <Link href="/privacy-policy" className="font-medium" style={{ color: '#26B9C8' }} target="_blank">Privacy Policy</Link>.
+                    I agree to the <Link href="/terms-of-service" className="font-medium" style={{ color: 'var(--color-primary)' }} target="_blank">Terms of Service</Link> and <Link href="/privacy-policy" className="font-medium" style={{ color: 'var(--color-primary)' }} target="_blank">Privacy Policy</Link>.
                   </label>
                 </div>
                 {validationErrors.agreeToTerms && <p className="text-sm text-red-600">{validationErrors.agreeToTerms}</p>}
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 variant="primary"
                 size="lg"
@@ -410,7 +410,7 @@ export default function RegisterPage() {
             </form>
 
             <p className="mt-5 text-center text-sm text-gray-600">
-              Already have an account? <Link href="/login" className="font-medium" style={{ color: '#26B9C8' }}>Login here</Link>
+              Already have an account? <Link href="/login" className="font-medium" style={{ color: 'var(--color-primary)' }}>Login here</Link>
             </p>
           </div>
         </div>
@@ -425,14 +425,14 @@ export default function RegisterPage() {
           animation: fadeIn 0.3s ease-out;
         }
         .custom-button {
-          background-color: #26B9C8 !important;
+          background-color: var(--color-primary) !important;
           height: 48px !important;
           min-height: 48px !important;
           padding: 0 1.5rem !important;
           border-radius: 9999px !important;
         }
         .custom-button:hover {
-          background-color: #20a8b6 !important;
+          background-color: var(--color-primary-hover) !important;
           opacity: 0.95 !important;
         }
         .custom-button:disabled {

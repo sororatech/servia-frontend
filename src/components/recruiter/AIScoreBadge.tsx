@@ -8,12 +8,12 @@ export default function AIScoreBadge({ score }: AIScoreBadgeProps) {
   const label = score === null ? "N/A" : String(score);
   const toneClass =
     score === null
-      ? "border-[#ddd7d3] bg-[#f4efeb] text-[#7d746d]"
+      ? "border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] text-[var(--color-text-subtle)]"
       : score >= 85
-        ? "border-[#c8ece6] bg-[#ecfbf8] text-[#11796a]"
+        ? "border-[var(--color-teal-border)] bg-[var(--color-teal-light)] text-[var(--color-teal-dark)]"
         : score >= 70
-          ? "border-[#eadfb2] bg-[#fff9df] text-[#8a6a07]"
-          : "border-[#f2d2ca] bg-[#fff1ed] text-[#9a4c33]";
+          ? "border-[var(--color-status-warning-border)] bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]"
+          : "border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)]";
 
   return (
     <span

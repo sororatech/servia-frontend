@@ -5,6 +5,13 @@ import { unwrapCollection } from '@/lib/responseUtils';
 import type { PaginatedResponse } from '@/lib/responseUtils';
 export type { PaginatedResponse };
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('Your session has expired. Please sign in again.');
+    this.name = 'SessionExpiredError';
+  }
+}
+
 export function getApiUrl(path: string) {
   const base = getApiBaseUrl();
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
@@ -92,23 +99,9 @@ export async function fetchJson<T>(
     ...rest,
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 || response.status === 403) {
     if (softFail) return {} as T;
-    throw new Error('Authentication required. Please log in via Django admin.');
-  }
-
-  if (response.status === 403) {
-    const text = await response.text().catch(() => '');
-    let detail = 'You do not have permission';
-    try {
-      const json = JSON.parse(text);
-      detail = json.detail || json.message || detail;
-    } catch {}
-    
-    if (softFail) {
-      return {} as T;
-    }
-    throw new Error(`Access Denied: ${detail}`);
+    throw new SessionExpiredError();
   }
 
   if (response.status === 404) {
@@ -152,6 +145,11 @@ export async function fetchAllPages<T>(
           headers, cache: 'no-store', credentials: 'include' 
         });
         
+        if (res.status === 401 || res.status === 403) {
+          if (softFail) break;
+          throw new SessionExpiredError();
+        }
+        
         if (!res.ok) {
           if (softFail && [401, 403, 404].includes(res.status)) break;
           throw new Error(`Pagination failed: ${res.status}`);
@@ -163,6 +161,9 @@ export async function fetchAllPages<T>(
           nextUrl = pageData.next;
         } else break;
       } catch (err: any) {
+        if (err instanceof SessionExpiredError) {
+          throw err;
+        }
         if (softFail) break;
         throw err;
       }

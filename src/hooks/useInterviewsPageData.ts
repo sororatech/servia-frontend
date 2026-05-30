@@ -21,15 +21,28 @@ function formatStatusLabel(status: string) {
     .join(' ');
 }
 
+function dedup<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
 export async function getInterviewsPageData(
   headers: HeadersInit,
 ): Promise<{ stats: PageStats; interviews: InterviewRow[]; shortlisted: ShortlistedRow[] }> {
-  const [candidates, jobs, interviews, aiReports] = await Promise.all([
+  const [rawCandidates, rawJobs, rawInterviews, rawReports] = await Promise.all([
     fetchAllPages<CandidateRecord>('/candidates/candidates/', headers),
     fetchAllPages<JobRecord>('/jobs/jobs/', headers),
     fetchAllPages<InterviewRecord>('/interviews/interviews/', headers),
     fetchAllPages<AIReportRecord>('/ai-reports/reports/', headers),
   ]);
+  const candidates = dedup(rawCandidates);
+  const jobs = dedup(rawJobs);
+  const interviews = dedup(rawInterviews);
+  const aiReports = dedup(rawReports);
 
   const jobTitleById = new Map(jobs.map((j) => [j.id, j.title]));
   const candidateById = new Map(candidates.map((c) => [c.id, c]));
