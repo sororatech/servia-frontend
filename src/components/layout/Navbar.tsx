@@ -159,6 +159,12 @@ export function Navbar() {
                     </Link>
 
                     <button 
+                      onClick={toggleLogin}
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer"
+                      style={{ backgroundColor: 'var(--color-status-warning-border)' }}
+                      aria-label="Toggle login state (testing)"
+                    >
+                      <span className="text-[var(--color-status-warning-text)] text-sm">JD</span>
                       onClick={handleLogout}
                       className="text-sm font-medium text-gray-600 hover:text-red-500 transition-colors"
                       title="Logout"
@@ -235,6 +241,9 @@ export function Navbar() {
               <div className="pt-2 border-t border-gray-100">
                 {user ? (
                   <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: 'var(--color-status-warning-border)' }}>
+                        <span className="text-[var(--color-status-warning-text)] text-sm">JD</span>
                     <Link 
                       href={profileHref}
                       onClick={() => setIsMobileMenuOpen(false)}

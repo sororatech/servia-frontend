@@ -90,12 +90,17 @@ function mapSpeaker(
   return "AI";
 }
 
+function stableEntryId(timestamp: string): number {
+  const ms = new Date(timestamp).getTime();
+  return Number.isNaN(ms) ? Date.now() : ms;
+}
+
 function mapConversationEntry(
   entry: BackendInterviewConversation,
-  index: number,
+  _index: number,
 ): TranscriptEntry {
   return {
-    id: index + 1,
+    id: stableEntryId(entry.timestamp),
     speaker: mapSpeaker(entry.speaker),
     time: formatClock(entry.timestamp),
     text: entry.text,
@@ -370,7 +375,7 @@ export default function useInterview(interviewId: string): UseInterviewResult {
             transcript: mergeTranscriptEntries(
               currentInterview.transcript,
               {
-                id: Date.now(),
+                id: stableEntryId(lastMessage.timestamp ?? ""),
                 speaker: mapSpeaker(lastMessage.speaker),
                 time: formatClock(lastMessage.timestamp ?? ""),
                 text: lastMessage.text || lastMessage.message || "",

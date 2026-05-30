@@ -16,9 +16,9 @@ type LiveTranscriptProps = {
 };
 
 const speakerStyles: Record<TranscriptEntry["speaker"], string> = {
-  AI: "border-[#bfeef3] bg-[#e9fbfd] text-[#0c6c75]",
-  Candidate: "border-[#d9d1cb] bg-white text-[#2f2924]",
-  Recruiter: "border-[#ffd9c7] bg-[#fff4ed] text-[#8a4b2a]",
+  AI: "border-[var(--color-teal-border)] bg-[var(--color-teal-light)] text-[var(--color-teal-dark)]",
+  Candidate: "border-[var(--color-warm-border-deep)] bg-white text-[var(--color-text-darkest)]",
+  Recruiter: "border-[var(--color-status-warning-border)] bg-[var(--color-status-error-bg)] text-[var(--color-status-warning-text)]",
 };
 
 export default function LiveTranscript({
@@ -29,19 +29,19 @@ export default function LiveTranscript({
   isLive = false,
 }: LiveTranscriptProps) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-black/8 bg-[#f6efeb] shadow-[0_24px_60px_rgba(15,23,42,0.12)]">
+    <section className="overflow-hidden rounded-[2rem] border border-black/8 bg-[var(--color-warm-surface)] shadow-[0_24px_60px_rgba(15,23,42,0.12)]">
       <div className="h-[320px] bg-[linear-gradient(180deg,#d9f0f4_0%,#eff7f6_100%)] p-5 sm:p-6">
         <div className="flex h-full flex-col rounded-[1.5rem] border border-white/60 bg-white/35 p-4 backdrop-blur-sm">
           <div className="mb-4 flex items-center gap-3">
-            <div className="inline-flex items-center overflow-hidden rounded-full border border-[#efb4b4] bg-white shadow-sm">
-              <span className="bg-[#e3342f] px-4 py-1.5 text-sm font-semibold tracking-[0.2em] text-white uppercase">
+            <div className="inline-flex items-center overflow-hidden rounded-full border border-[var(--color-status-error-border)] bg-white shadow-sm">
+              <span className="bg-[var(--color-status-error-text)] px-4 py-1.5 text-sm font-semibold tracking-[0.2em] text-white uppercase">
                 {isLive ? "Rec" : "Paused"}
               </span>
-              <span className="px-4 py-1.5 text-sm font-semibold text-[#4b4743]">
+              <span className="px-4 py-1.5 text-sm font-semibold text-[var(--color-text-body)]">
                 {recordingTime}
               </span>
             </div>
-            <span className="text-sm font-medium text-[#4f6466]">
+            <span className="text-sm font-medium text-[var(--color-teal-dim)]">
               {isLive ? "Live interview stream active" : "Waiting for live interview stream"}
             </span>
           </div>
@@ -63,7 +63,7 @@ export default function LiveTranscript({
                 </article>
               ))
             ) : (
-              <div className="flex flex-1 items-center justify-center rounded-[1.25rem] border border-dashed border-[#b7cfd1] bg-white/45 px-6 py-10 text-center text-sm leading-6 text-[#5f7274]">
+              <div className="flex flex-1 items-center justify-center rounded-[1.25rem] border border-dashed border-[var(--color-teal-border)] bg-white/45 px-6 py-10 text-center text-sm leading-6 text-[var(--color-teal-dim)]">
                 Transcript will appear here once the live interview starts sending data.
               </div>
             )}
@@ -71,22 +71,22 @@ export default function LiveTranscript({
         </div>
       </div>
 
-      <div className="space-y-6 border-t border-black/8 bg-[#d8cecc]/85 px-5 py-5 sm:px-6 sm:py-6">
+      <div className="space-y-6 border-t border-black/8 bg-[var(--color-warm-border-deep)]/85 px-5 py-5 sm:px-6 sm:py-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6c6764]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
             Current Question
           </p>
-          <h2 className="mt-2 max-w-3xl text-2xl font-semibold leading-tight text-[#171717] sm:text-[2rem]">
+          <h2 className="mt-2 max-w-3xl text-2xl font-semibold leading-tight text-[var(--color-foreground)] sm:text-[2rem]">
             {currentQuestion || "Waiting for the first interview question..."}
           </h2>
           <div className="mt-4 h-px w-full bg-black/70" />
         </div>
 
         <div className="rounded-[1.4rem] border border-white/70 bg-white/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[#6c6764]">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-text-subtle)]">
             Interview Notes
           </p>
-          <p className="text-base leading-7 text-[#4b4743]">
+          <p className="text-base leading-7 text-[var(--color-text-body)]">
             {notes || "Notes from the live interview will appear here."}
           </p>
         </div>

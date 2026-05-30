@@ -5,6 +5,13 @@ import { unwrapCollection } from '@/lib/responseUtils';
 import type { PaginatedResponse } from '@/lib/responseUtils';
 export type { PaginatedResponse };
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('Your session has expired. Please sign in again.');
+    this.name = 'SessionExpiredError';
+  }
+}
+
 export function getApiUrl(path: string) {
   const base = getApiBaseUrl();
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
@@ -27,7 +34,7 @@ export async function fetchJson<T>(path: string, headers: HeadersInit): Promise<
   const response = await fetch(getApiUrl(path), { headers, cache: 'no-store' });
 
   if (response.status === 401 || response.status === 403) {
-    throw new Error('Recruiter session expired. Please sign in again.');
+    throw new SessionExpiredError();
   }
   if (!response.ok) {
     throw new Error(`Request failed for ${path} with status ${response.status}`);
@@ -46,7 +53,7 @@ export async function fetchAllPages<T>(path: string, headers: HeadersInit): Prom
   while (nextUrl) {
     const res = await fetch(nextUrl, { headers, cache: 'no-store' });
     if (res.status === 401 || res.status === 403) {
-      throw new Error('Recruiter session expired. Please sign in again.');
+      throw new SessionExpiredError();
     }
     if (!res.ok) {
       throw new Error(`Request failed for ${nextUrl} with status ${res.status}`);
