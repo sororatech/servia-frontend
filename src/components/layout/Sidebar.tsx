@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { AUTH_STORAGE } from '@/lib/auth';
 import { authAPI } from '@/lib/api';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 
@@ -24,8 +23,7 @@ const Icons = {
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { name, role, isAdmin, avatar, isLoading } = useProfile();
-  const { profile, loading } = useProfile(); // use loading, not isLoading
+  const { profile, loading } = useProfile();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -44,7 +42,8 @@ export function Sidebar() {
   const name = profile?.first_name && profile?.last_name 
     ? `${profile.first_name} ${profile.last_name}`.trim() 
     : 'User';
-  const role = profile?.isAdmin ? 'Admin' : (profile?.role === 'candidate' ? 'Candidate' : 'Recruiter');  const isAdmin = profile?.isAdmin || false;
+  const role = profile?.isAdmin ? 'Admin' : (profile?.role === 'candidate' ? 'Candidate' : 'Recruiter');
+  const isAdmin = profile?.isAdmin || false;
   const avatarUrl = profile?.avatar || null;
 
   const menuItems = [
@@ -88,126 +87,126 @@ export function Sidebar() {
         />
       )}
 
-    <aside
-      className={`
-        fixed md:sticky top-0 left-0 z-50 md:z-auto
-        flex flex-col bg-[var(--color-secondary)] h-screen
-        transition-all duration-300 ease-in-out overflow-hidden
-        w-72 md:w-auto
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        ${isCollapsed ? 'md:w-20' : 'md:w-64'}
-      `}
-    >
-      <div className="relative flex items-center h-30 px-4 border-b border-white/10">
-        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'md:opacity-0 md:-translate-x-4 md:pointer-events-none' : 'opacity-100 translate-x-0'}`}>
-          <Image
-            src="/logo.png"
-            alt="Servia AI"
-            width={40}
-            height={40}
-            className="h-auto w-10 shrink-0 object-contain"
-          />
-          <h3 className="text-lg mt-5 font-bold text-[var(--color-primary)] whitespace-nowrap">
-            ServiaAI
-          </h3>
-        </div>
-
-        {/* Mobile close button */}
-        <button
-          onClick={() => setIsMobileOpen(false)}
-          className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors md:hidden"
-          aria-label="Close menu"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* Desktop collapse button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors hidden md:block"
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
-        </button>
-      </div>
-
-      <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
-        {menuItems.map((item) => {
-          const isActive = item.exact
-            ? pathname === item.href
-            : pathname === item.href || pathname.startsWith(item.href + '/');
-          const active = isMenuItemActive(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch={false}
-              onClick={() => setIsMobileOpen(false)}
-              className={`
-                flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
-                ${active 
-                  ? 'bg-[var(--color-primary)] text-[var(--color-secondary)] font-semibold shadow-md' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }
-                ${isCollapsed ? 'justify-center px-0' : ''}
-              `}
-              title={isCollapsed ? item.name : undefined}
-            >
-              <span className="shrink-0 flex items-center justify-center w-5 h-5">{item.icon()}</span>
-              <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-                {item.name}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="px-3 py-4 border-t border-white/10 flex flex-col gap-3">
-      <Link
-        href="/profile"
-        className="block px-3 py-4 border-t border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+      <aside
+        className={`
+          fixed md:sticky top-0 left-0 z-50 md:z-auto
+          flex flex-col bg-[var(--color-secondary)] h-screen
+          transition-all duration-300 ease-in-out overflow-hidden
+          w-72 md:w-auto
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${isCollapsed ? 'md:w-20' : 'md:w-64'}
+        `}
       >
-        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
-            {avatarUrl ? (
-              <Image 
-                src={avatarUrl} 
-                alt={name} 
-                width={36} 
-                height={36} 
-                className="rounded-full object-cover w-full h-full"
-              />
-            ) : (
-              name?.charAt(0)?.toUpperCase() || 'U'
-            )}
+        <div className="relative flex items-center h-20 px-4 border-b border-white/10">
+          <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'md:opacity-0 md:-translate-x-4 md:pointer-events-none' : 'opacity-100 translate-x-0'}`}>
+            <Image
+              src="/logo.png"
+              alt="Servia AI"
+              width={40}
+              height={40}
+              className="h-auto w-10 shrink-0 object-contain"
+            />
+            <h3 className="text-lg font-bold text-[var(--color-primary)] whitespace-nowrap">
+              ServiaAI
+            </h3>
           </div>
 
-          <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            <span className="text-white font-semibold text-sm truncate">
-              {name}
-            </span>
-            <span className="text-white/60 text-xs truncate">
-              {role}
-            </span>
-          </div>
+          {/* Mobile close button */}
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors md:hidden"
+            aria-label="Close menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Desktop collapse button */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="absolute right-4 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors hidden md:block"
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
+          </button>
         </div>
 
-        <button
-          onClick={handleLogout}
-          disabled={loggingOut}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-full text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
-          title={isCollapsed ? 'Log out' : undefined}
-        >
-          <span className="shrink-0 flex items-center justify-center w-5 h-5"><Icons.Logout /></span>
-          <span className={`whitespace-nowrap text-sm transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
-            {loggingOut ? 'Logging out…' : 'Log out'}
-          </span>
-        </button>
-      </div>
-      </Link>
-    </aside>
+        <nav className="flex-1 flex flex-col gap-5 px-3 pt-10 overflow-y-auto">
+          {menuItems.map((item) => {
+            const active = isMenuItemActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                prefetch={false}
+                onClick={() => setIsMobileOpen(false)}
+                className={`
+                  flex items-center gap-3 px-3 py-3 rounded-full transition-all duration-200 relative
+                  ${active 
+                    ? 'bg-[var(--color-primary)] text-[var(--color-secondary)] font-semibold shadow-md' 
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }
+                  ${isCollapsed ? 'justify-center px-0' : ''}
+                `}
+                title={isCollapsed ? item.name : undefined}
+              >
+                <span className="shrink-0 flex items-center justify-center w-5 h-5">{item.icon()}</span>
+                <span className={`whitespace-nowrap transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-3 py-4 border-t border-white/10 flex flex-col gap-3">
+          {/* Profile Link */}
+          <Link
+            href="/profile"
+            onClick={() => setIsMobileOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-full hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}>
+              <div className="w-9 h-9 rounded-full bg-[var(--color-primary)]/30 border border-white/20 flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
+                {avatarUrl ? (
+                  <Image 
+                    src={avatarUrl} 
+                    alt={name} 
+                    width={36} 
+                    height={36} 
+                    className="rounded-full object-cover w-full h-full"
+                  />
+                ) : (
+                  name?.charAt(0)?.toUpperCase() || 'U'
+                )}
+              </div>
+
+              <div className={`flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                <span className="text-white font-semibold text-sm truncate">
+                  {name}
+                </span>
+                <span className="text-white/60 text-xs truncate">
+                  {role}
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          {/* Logout Button - Separate from Link */}
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-full text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
+            title={isCollapsed ? 'Log out' : undefined}
+          >
+            <span className="shrink-0 flex items-center justify-center w-5 h-5"><Icons.Logout /></span>
+            <span className={`whitespace-nowrap text-sm transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+              {loggingOut ? 'Logging out…' : 'Log out'}
+            </span>
+          </button>
+        </div>
+      </aside>
     </>
   );
 }

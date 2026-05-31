@@ -1,14 +1,14 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useApplicationSuccess } from '@/hooks/useApplicationSuccess';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
 import { Footer } from '@/components/layout/Footer';
 
-export default function ApplicationSuccess() {
+function ApplicationSuccessContent() {
   const router = useRouter();
   
   const {
@@ -71,7 +71,7 @@ export default function ApplicationSuccess() {
             </h1>
 
             <p className="text-gray-600 text-base leading-relaxed max-w-xl">
-              Your professional profile has been successfully delivered to the hiring team. You've taken the first step toward your next career move.
+              Your professional profile has been successfully delivered to the hiring team. You&apos;ve taken the first step toward your next career move.
             </p>
 
             <div className="bg-gray-50 text-gray-400 rounded-2xl p-8 border border-gray-100">
@@ -189,5 +189,13 @@ export default function ApplicationSuccess() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function ApplicationSuccess() {
+  return (
+    <Suspense fallback={<LoadingSkeleton variant="page" />}>
+      <ApplicationSuccessContent />
+    </Suspense>
   );
 }

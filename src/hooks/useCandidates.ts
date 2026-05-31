@@ -8,9 +8,9 @@ import { unwrapCollection } from "@/lib/responseUtils";
 import type { PaginatedResponse } from "@/lib/responseUtils";
 import type {
   BackendCandidate,
-  BackendJobSummary,
   CandidateListItem,
 } from "@/types/candidate";
+import type { BackendJobSummary } from "@/types/job"; 
 
 type UseCandidatesResult = {
   candidates: CandidateListItem[];
