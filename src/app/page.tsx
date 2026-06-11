@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useBrowseJobs } from '@/hooks/useJob';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -15,12 +16,22 @@ const isAuthenticated = (): boolean => {
 
 export default function BrowseJobs() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get('search') || '';
+
   const {
     jobs, loading, searchQuery, setSearchQuery, departmentGroups,
     expandedCategories, filters, toggleJobType, toggleDepartment,
     toggleCategory, clearFilters, getPostedDate, getDeadlineText,
     goToJob, goToDashboard, goToProfile
   } = useBrowseJobs();
+
+  // Sync URL search param with the hook's searchQuery
+  useEffect(() => {
+    if (urlSearch !== searchQuery) {
+      setSearchQuery(urlSearch);
+    }
+  }, [urlSearch, searchQuery, setSearchQuery]);
 
   const handleViewJobDetails = (jobId: string) => {
     if (!isAuthenticated()) {
