@@ -91,8 +91,8 @@ export default function VideoIntroPage() {
 
             <VideoRecord 
               ref={videoRef}
-              onSave={() => router.push('/candidate/dashboard/status')}
-              onSkip={() => router.push('/candidate/dashboard/status')}
+              onSave={() => router.push('/candidate/applications')}
+              onSkip={() => router.push('/candidate/applications')}
               hasUploadedVideo={hasUploadedFile}
               onHasVideoChange={handleHasVideoChange}
               onUploadedFileChange={handleUploadedFileChange}

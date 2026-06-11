@@ -47,12 +47,10 @@ export function Navbar() {
       .slice(0, 2);
   };
 
-  const profileHref = user?.role === 'candidate' 
-    ? '/candidate/dashboard/profile' 
-    : '/recruiter/dashboard/profile';
+  const profileHref = '/profile';
 
   const navLinks = useMemo(() => [
-    { href: '/jobs', label: 'Browse Jobs' },
+    { href: '/', label: 'Browse Jobs' },
     { href: '/candidate/applications', label: 'My Applications' },
   ], []);
 
