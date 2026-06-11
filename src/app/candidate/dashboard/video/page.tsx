@@ -85,7 +85,7 @@ export default function VideoIntroPage() {
               <p className="text-gray-600 leading-relaxed">
                 A short 60-second introduction helps recruiters understand your communication <br /> style and personality.
                 
-                Focus on your biggest professional achievement <br /> and why you're passionate about this role.
+                Focus on your biggest professional achievement <br /> and why you&apos;re passionate about this role.
               </p>
             </div>
 
@@ -104,7 +104,7 @@ export default function VideoIntroPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <p className="text-sm text-gray-600">
-                <span className="font-medium text-[#26B9C8]">Tip:</span> Ensure you're in a well-lit environment and using a clear microphone for the best impression.
+                <span className="font-medium text-[#26B9C8]">Tip:</span> Ensure you&apos;re in a well-lit environment and using a clear microphone for the best impression.
               </p>
             </div>
           </div>

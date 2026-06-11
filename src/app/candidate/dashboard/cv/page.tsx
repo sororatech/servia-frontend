@@ -1,7 +1,7 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { useCVUpload } from '@/hooks/useCVUpload';
 import { MAX_CV_SIZE_MB } from '@/utils/cvUpload';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -9,7 +9,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
 import { Footer } from '@/components/layout/Footer';
 
-export default function CVUploadPage() {
+function CVUploadContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const applicationId = searchParams.get('application');
@@ -266,5 +266,13 @@ export default function CVUploadPage() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function CVUploadPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton variant="page" />}>
+      <CVUploadContent />
+    </Suspense>
   );
 }
