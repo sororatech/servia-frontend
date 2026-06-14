@@ -1,8 +1,7 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import { useApplicationSuccess } from '@/hooks/useApplicationSuccess';
+import { Suspense, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/Button';
@@ -10,50 +9,18 @@ import { Footer } from '@/components/layout/Footer';
 
 function ApplicationSuccessContent() {
   const router = useRouter();
-  
-  const {
-    applicationData,
-    loading,
-    error,
-    
-    handleViewDashboard,
-    handleReturnToJobs,
-    
-    getStatusColor,
-    getProgressWidth,
-    formatStatus,
-    getDisplayJobTitle,
-    getDisplayCompany,
-    getDisplayRecruiter,
-  } = useApplicationSuccess();
+  const searchParams = useSearchParams();
+  const applicationId = searchParams.get('applicationId');
+  const jobTitle = decodeURIComponent(searchParams.get('jobTitle') || '');
+  const company = decodeURIComponent(searchParams.get('company') || 'Servia Hotels');
 
-  const status = applicationData?.status?.toLowerCase() || 'applied';
-  
-  const displayJobTitle = getDisplayJobTitle();
-  const displayCompany = getDisplayCompany();
-  const displayRecruiter = getDisplayRecruiter();
+  const handleViewDashboard = useCallback(() => {
+    router.push('/candidate/applications');
+  }, [router]);
 
-  if (loading) {
-    return <LoadingSkeleton variant="page" />;
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4 text-sm">{error}</p>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => window.location.reload()}
-            className="font-medium text-red-600 hover:text-red-700"
-          >
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleReturnToJobs = useCallback(() => {
+    router.push('/');
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -144,26 +111,26 @@ function ApplicationSuccessContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <span className={`px-3 py-1 bg-blue-50 text-xs font-semibold rounded-full capitalize ${getStatusColor(status)}`}>
-                  {formatStatus(status)}
+                <span className="px-3 py-1 bg-blue-50 text-xs font-semibold rounded-full capitalize text-green-600">
+                  Applied
                 </span>
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
-                {displayJobTitle}
+              <h3 className="text-xl font-bold text-gray-900 mb-1" title={jobTitle}>
+                {jobTitle || 'Position Applied'}
               </h3>
               <p className="text-[#26B9C8] text-sm font-medium mb-4">
-                {displayCompany}
+                {company}
               </p>
 
               <div className="mb-4">
                 <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div className={`h-full ${getProgressWidth(status)} bg-[#26B9C8] rounded-full transition-all duration-500`}></div>
+                  <div className="h-full w-1/3 bg-[#26B9C8] rounded-full transition-all duration-500"></div>
                 </div>
                 <div className="flex justify-between mt-2">
-                  <span className={`text-xs font-semibold ${getStatusColor('applied')}`}>APPLIED</span>
-                  <span className={`text-xs font-medium ${getStatusColor('review')}`}>REVIEW</span>
-                  <span className={`text-xs font-medium ${getStatusColor('interview')}`}>INTERVIEW</span>
+                  <span className="text-xs font-semibold text-green-600">APPLIED</span>
+                  <span className="text-xs font-medium text-gray-400">REVIEW</span>
+                  <span className="text-xs font-medium text-gray-400">INTERVIEW</span>
                 </div>
               </div>
             </div>
@@ -176,12 +143,12 @@ function ApplicationSuccessContent() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{displayRecruiter.name}</p>
-                  <p className="text-xs text-[#26B9C8]">{displayRecruiter.title}</p>
+                  <p className="text-sm font-semibold text-gray-900">Hiring Team</p>
+                  <p className="text-xs text-[#26B9C8]">{company}</p>
                 </div>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed italic">
-                &quot;{displayRecruiter.quote}&quot;
+                &quot;Thank you for your interest in joining our team!&quot;
               </p>
             </div>
           </div>

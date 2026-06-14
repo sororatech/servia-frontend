@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +11,7 @@ import { ArrowLeft, FileText, Video, MapPin, Calendar, Eye, Pencil, AlertTriangl
 import { formatDistanceToNow, format } from 'date-fns';
 import { useApplicationDetail } from '@/hooks/useApplicationDetail';
 import { formatStatusDisplay, getStatusBadgeClass, canWithdraw } from '@/lib/applications';
+import { api } from '@/lib/api';
 
 const formatDepartmentFallback = (deptCode: string): string => {
   if (!deptCode) return 'Department';
@@ -36,10 +37,87 @@ export default function ApplicationDetailPage() {
   } = useApplicationDetail(id);
 
   const [iframeError, setIframeError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+      const urlResponse = await api.post(
+        `/candidates/candidates/${id}/upload-cv/`,
+        { file_extension: ext }
+      );
+
+      const uploadResponse = await fetch(urlResponse.data.upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': urlResponse.data.content_type },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) throw new Error('Upload failed');
+
+      await api.post(
+        `/candidates/candidates/${id}/confirm-cv/`,
+        { file_key: urlResponse.data.file_key, filename: file.name }
+      );
+
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload CV');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingVideo(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+      const urlResponse = await api.post(
+        `/candidates/candidates/${id}/upload-video/`,
+        { file_extension: ext }
+      );
+
+      const uploadResponse = await fetch(urlResponse.data.upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': urlResponse.data.content_type },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) throw new Error('Upload failed');
+
+      await api.post(
+        `/candidates/candidates/${id}/confirm-video/`,
+        { file_key: urlResponse.data.file_key, filename: file.name }
+      );
+
+      window.location.reload();
+    } catch (err: any) {
+      console.error(err);
+      const errorMsg = err.response?.data?.error || 'Failed to upload video';
+      alert(errorMsg);
+    } finally {
+      setIsUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
+  };
 
   const jobTitle = jobDetails?.title || (typeof application?.job === 'object' ? application.job?.title : 'Position Applied For');
   const jobLocation = jobDetails?.location || (typeof application?.job === 'object' ? application.job?.location : 'Remote');
-  const jobDepartment = jobDetails?.department_display || 
+  const jobDepartment = jobDetails?.department_display ||
     (typeof application?.job === 'object' ? application.job?.department_display : '') ||
     formatDepartmentFallback(jobDetails?.department || (typeof application?.job === 'object' ? application.job?.department : ''));
   const jobId = jobDetails?.id || (typeof application?.job === 'string' ? application.job : application?.job?.id);
@@ -91,7 +169,6 @@ export default function ApplicationDetailPage() {
           <span className="font-medium">Back to My Applications</span>
         </button>
 
-        {/* Header Card */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-lg shadow-gray-200/50 overflow-hidden mb-8">
           <div className="p-8 border-b border-gray-100 bg-gray-50/50">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -118,9 +195,7 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
 
-        {/* CV and Video Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          {/* CV Card */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -139,8 +214,17 @@ export default function ApplicationDetailPage() {
                   >
                     <Eye className="w-5 h-5" />
                   </button>
-                  <button onClick={() => router.push(`/candidate/dashboard/cv?application=${id}`)} className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Edit/Replace CV">
-                    <Pencil className="w-5 h-5" />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors disabled:opacity-50"
+                    title="Replace CV"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                      <div className="w-5 h-5 border-2 border-gray-400 border-t-[var(--color-primary)] rounded-full animate-spin" />
+                    ) : (
+                      <Pencil className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               )}
@@ -170,7 +254,6 @@ export default function ApplicationDetailPage() {
             )}
           </div>
 
-          {/* Video Card */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -179,33 +262,67 @@ export default function ApplicationDetailPage() {
               </div>
               {application.video_uploaded_at && (
                 <div className="flex gap-2">
-                  <button className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Preview Video"><Eye className="w-5 h-5" /></button>
-                  <button onClick={() => router.push(`/candidate/dashboard/video?application=${id}`)} className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors" title="Edit/Replace Video"><Pencil className="w-5 h-5" /></button>
+                  <button
+                    onClick={() => setShowVideoPreview(true)}
+                    className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors"
+                    title="Preview Video"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => videoInputRef.current?.click()}
+                    className="p-2 text-gray-400 hover:text-[var(--color-primary)] transition-colors disabled:opacity-50"
+                    title="Upload Video File"
+                    disabled={isUploadingVideo}
+                  >
+                    {isUploadingVideo ? (
+                      <div className="w-5 h-5 border-2 border-gray-400 border-t-[var(--color-primary)] rounded-full animate-spin" />
+                    ) : (
+                      <Pencil className="w-5 h-5" />
+                    )}
+                  </button>
                 </div>
               )}
             </div>
             {application.video_uploaded_at ? (
               <>
                 <p className="text-sm text-gray-500 mb-4">Submitted {formatDistanceToNow(new Date(application.video_uploaded_at), { addSuffix: true })}</p>
-                <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center mb-3 border border-gray-200">
-                  <div className="text-center">
-                    <Video className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">Video Preview</p>
-                    <p className="text-xs text-gray-400 mt-1">{application.video_duration || '00:00'}</p>
-                  </div>
+                <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center mb-3 border border-gray-200 overflow-hidden relative">
+                  {application.video_intro_url ? (
+                    <video
+                      src={application.video_intro_url}
+                      controls
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error("Video failed to load", e);
+                        const target = e.target as HTMLVideoElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = '<div class="text-center text-red-500 text-sm p-4">Video failed to load. The file might be corrupted or the link expired.</div>';
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="text-center">
+                      <Video className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Video Preview Unavailable</p>
+                    </div>
+                  )}
                 </div>
                 <span className="inline-flex px-3 py-1 rounded-lg text-xs font-semibold bg-green-100 text-green-700">Submitted</span>
               </>
             ) : (
               <div className="text-center py-6">
-                <p className="text-sm text-gray-500 mb-4">You haven&apos;t recorded an intro yet.</p>
-                <Button size="sm" variant="secondary" onClick={() => router.push(`/candidate/dashboard/video?application=${id}`)}>Record Video</Button>
+                <p className="text-sm text-gray-500 mb-4">You haven&apos;t uploaded an intro video yet.</p>
+                <Button size="sm" variant="ghost" onClick={() => videoInputRef.current?.click()}>
+                  Upload Video
+                </Button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end gap-4 border-t border-gray-100 pt-8">
           <Button variant="ghost" onClick={() => jobId ? router.push(`/jobs/${jobId}`) : router.push('/jobs')}>
             View Job Description
@@ -223,7 +340,6 @@ export default function ApplicationDetailPage() {
         </div>
       </main>
 
-      {/* CV Preview Modal */}
       {showCVPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
@@ -256,7 +372,31 @@ export default function ApplicationDetailPage() {
         </div>
       )}
 
-      {/* Withdraw Modal */}
+      {showVideoPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-bold text-gray-900">Video Preview</h3>
+              <button onClick={() => setShowVideoPreview(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="flex-1 bg-black flex items-center justify-center">
+              {application.video_intro_url ? (
+                <video
+                  src={application.video_intro_url}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-full"
+                />
+              ) : (
+                <p className="text-white">No video available</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {showWithdrawModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6">
@@ -284,6 +424,22 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
       )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx"
+        onChange={handleCVUpload}
+        className="hidden"
+      />
+
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/mp4,video/webm,video/quicktime"
+        onChange={handleVideoUpload}
+        className="hidden"
+      />
 
       <Footer />
     </div>

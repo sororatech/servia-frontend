@@ -13,6 +13,9 @@ function CVUploadContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const applicationId = searchParams.get('application');
+    const jobTitle = searchParams.get('jobTitle') || '';
+  const department = searchParams.get('department') || '';
+
   
   const {
     cvFile,
@@ -33,7 +36,7 @@ function CVUploadContent() {
     isFileTooLarge,
   } = useCVUpload();
 
-  const onSubmit = (e: React.FormEvent) => handleSubmit(e, applicationId);
+  const onSubmit = (e: React.FormEvent) => handleSubmit(e, applicationId, jobTitle, department);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
