@@ -2,17 +2,15 @@
 
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { AnalyticsData } from '@/types/analytics';
+import { Button } from '@/components/ui/Button';
+import { LoadingSkeleton } from '@/components/ui';
+import { RefreshCw } from 'lucide-react';
 import StatsCard from './StatsCard';
 import AIFitScoreChart from './AIFitScoreChart';
 import PipelineBreakdown from './PipelineBreakdown';
 import ApplicationsChart from './ApplicationsChart';
 import ApplicationsTable from './ApplicationsTable';
-
-import dynamic from 'next/dynamic';
-const ExportButtons = dynamic(() => import('./ExportButtons'), { 
-  ssr: false,
-  loading: () => <span className="text-sm text-gray-400 px-4 py-2">Loading export...</span>
-});
+import ExportButtons from './ExportButtons';
 
 interface Props {
   initialData?: AnalyticsData;
@@ -27,10 +25,21 @@ export default function AnalyticsDashboard({ initialData }: Props) {
 
   if (loading && !data) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading analytics...</p>
+      <div className="flex min-h-screen items-center justify-center bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
+        <div className="w-full max-w-7xl">
+          <div className="mb-8">
+            <LoadingSkeleton className="h-10 w-64" />
+            <LoadingSkeleton className="mt-3 h-6 w-96" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <LoadingSkeleton key={i} className="h-28 rounded-2xl" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LoadingSkeleton className="h-96 rounded-2xl" />
+            <LoadingSkeleton className="h-96 rounded-2xl" />
+          </div>
         </div>
       </div>
     );
@@ -38,17 +47,16 @@ export default function AnalyticsDashboard({ initialData }: Props) {
 
   if (error && !data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-8">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-red-200 p-8 text-center">
-          <div className="text-red-500 text-4xl mb-4"></div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to load analytics</h2>
-          <p className="text-gray-600 mb-6">{error.message}</p>
-          <button
-            onClick={refresh}
-            className="px-5 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition font-medium"
-          >
+      <div className="flex min-h-screen items-center justify-center bg-page-gradient p-8">
+        <div className="max-w-md w-full rounded-2xl border border-[var(--color-status-error-border)] bg-white p-8 text-center shadow-sm">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h2 className="mb-2 text-xl font-bold text-[var(--color-status-error-text)]">
+            Failed to load analytics
+          </h2>
+          <p className="mb-6 text-sm text-[var(--color-text-muted)]">{error.message}</p>
+          <Button variant="primary" onClick={refresh}>
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -57,25 +65,30 @@ export default function AnalyticsDashboard({ initialData }: Props) {
   if (!data) return null;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+    <div className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-25">      
+    <div className="mx-auto max-w-8xl">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics & Reports</h1>
-            <p className="text-gray-500 mt-1">Track recruitment performance and AI efficacy</p>
+            <h1 className="text-3xl font-bold text-[var(--color-secondary)]">Analytics & Reports</h1>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              Track recruitment performance and AI efficacy
+            </p>
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={refresh}
               disabled={loading}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm font-medium disabled:opacity-50"
+              aria-label="Refresh analytics"
             >
-              {loading ? 'Refreshing...' : '↻ Refresh'}
-            </button>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
             <ExportButtons data={data} />
           </div>
         </div>
 
+        {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard title="Total Applications" value={data.total_applications} />
           <StatsCard title="Total Applicants" value={data.total_applicants} />
@@ -83,6 +96,7 @@ export default function AnalyticsDashboard({ initialData }: Props) {
           <StatsCard title="Acceptance Rate" value={data.acceptance_rate} suffix="%" />
         </div>
 
+        {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="h-96">
             <AIFitScoreChart data={data.ai_fit_score_distribution} />
@@ -92,6 +106,7 @@ export default function AnalyticsDashboard({ initialData }: Props) {
           </div>
         </div>
 
+        {/* Bottom row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="h-96">
             <ApplicationsChart data={data.applications_over_time} />
@@ -100,7 +115,7 @@ export default function AnalyticsDashboard({ initialData }: Props) {
             <ApplicationsTable data={data.applications_by_job} />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

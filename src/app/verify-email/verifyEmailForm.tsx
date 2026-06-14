@@ -120,7 +120,7 @@ export default function VerifyEmailForm() {
     return (
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 sm:p-8 text-center">
+          <div className="max-w-md w-full bg-[var(--color-background)] rounded-2xl shadow-xl p-6 sm:p-8 text-center">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -176,7 +176,7 @@ export default function VerifyEmailForm() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
+          <div className="bg-[var(--color-background)] rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
             <div className="mb-6">
               <h5 className="text-sm font-semibold uppercase tracking-wider mb-5 sm:mb-6" style={{ color: 'var(--color-primary)' }}>
                 Verification Code

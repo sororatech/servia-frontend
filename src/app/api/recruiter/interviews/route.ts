@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRecruiterHeaders } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth';
 import { getApiBaseUrl } from '@/lib/config';
 
 export async function POST(request: Request) {

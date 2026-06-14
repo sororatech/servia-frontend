@@ -241,3 +241,26 @@ p {
   to { opacity: 1; transform: translateY(0); } 
 }
 .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+/* Override browser autofill background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-input-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-input-bg) inset !important;
+  -webkit-text-fill-color: var(--color-text-darkest) !important;
+  caret-color: var(--color-text-darkest) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* For dark mode */
+@media (prefers-color-scheme: dark) {
+  input:-webkit-autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-input-bg) inset !important;
+    -webkit-text-fill-color: var(--color-foreground) !important;
+  }
+}

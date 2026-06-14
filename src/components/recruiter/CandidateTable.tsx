@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState, useEffect } from "react";
+import { RefreshCw } from "lucide-react";
 import AIScoreBadge from "@/components/recruiter/AIScoreBadge";
 import ScheduleInterviewModal from "@/components/recruiter/ScheduleInterviewModal";
+import BulkUpdateModal from "@/components/recruiter/BulkUpdateModal";
 import { useScheduleInterview } from "@/hooks/useScheduleInterview";
+import { Button } from "@/components/ui/Button";
 import type { CandidateListItem, CandidateStatusTone } from "@/types/candidate";
 
 const PAGE_SIZE = 4;
@@ -18,7 +21,6 @@ function formatDate(timestamp: string) {
   if (Number.isNaN(date.getTime())) {
     return "Unknown";
   }
-
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -34,20 +36,14 @@ function humanizeStatus(status: string) {
 }
 
 function getStatusTone(status: string): CandidateStatusTone {
-  if (status === "shortlisted") {
-    return "success";
-  }
-  if (status === "rejected_cv" || status === "rejected_interview") {
-    return "danger";
-  }
+  if (status === "shortlisted") return "success";
+  if (status === "rejected_cv" || status === "rejected_interview") return "danger";
   if (
     status === "screened" ||
     status === "video_submitted" ||
     status === "interview_scheduled" ||
     status === "interviewed"
-  ) {
-    return "warning";
-  }
+  ) return "warning";
   return "neutral";
 }
 
@@ -71,27 +67,15 @@ function compareCandidates(
   direction: SortDirection,
 ) {
   const multiplier = direction === "asc" ? 1 : -1;
-
   if (column === "aiScore") {
-    if (left.aiScore === null && right.aiScore === null) {
-      return 0;
-    }
-    if (left.aiScore === null) {
-      return 1;
-    }
-    if (right.aiScore === null) {
-      return -1;
-    }
+    if (left.aiScore === null && right.aiScore === null) return 0;
+    if (left.aiScore === null) return 1;
+    if (right.aiScore === null) return -1;
     return (left.aiScore - right.aiScore) * multiplier;
   }
-
   if (column === "appliedAt") {
-    return (
-      (new Date(left.appliedAt).getTime() - new Date(right.appliedAt).getTime()) *
-      multiplier
-    );
+    return (new Date(left.appliedAt).getTime() - new Date(right.appliedAt).getTime()) * multiplier;
   }
-
   return left[column].localeCompare(right[column]) * multiplier;
 }
 
@@ -111,36 +95,38 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
   const { scheduleTarget, openFor, close, isOpen } = useScheduleInterview();
   const deferredSearch = useDeferredValue(search);
   const candidates = initialCandidates;
+
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set());
+  const [showBulkModal, setShowBulkModal] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedCandidates(new Set());
+  }, [page, statusFilter, roleFilter, search]);
+
   const roles = useMemo(
-    () => Array.from(new Set(candidates.map((candidate) => candidate.role))).sort(),
+    () => Array.from(new Set(candidates.map((c) => c.role))).sort(),
     [candidates],
   );
   const statuses = useMemo(
-    () => Array.from(new Set(candidates.map((candidate) => candidate.status))).sort(),
+    () => Array.from(new Set(candidates.map((c) => c.status))).sort(),
     [candidates],
   );
 
   const filteredCandidates = useMemo(() => {
     const normalizedSearch = deferredSearch.trim().toLowerCase();
-
-    const nextCandidates = candidates.filter((candidate) => {
+    const next = candidates.filter((candidate) => {
       const matchesSearch =
         !normalizedSearch ||
         candidate.name.toLowerCase().includes(normalizedSearch) ||
         candidate.email.toLowerCase().includes(normalizedSearch) ||
         candidate.role.toLowerCase().includes(normalizedSearch);
-      const matchesStatus =
-        statusFilter === "all" || candidate.status === statusFilter;
+      const matchesStatus = statusFilter === "all" || candidate.status === statusFilter;
       const matchesRole = roleFilter === "all" || candidate.role === roleFilter;
-
       return matchesSearch && matchesStatus && matchesRole;
     });
-
-    nextCandidates.sort((left, right) =>
-      compareCandidates(left, right, sortColumn, sortDirection),
-    );
-
-    return nextCandidates;
+    next.sort((a, b) => compareCandidates(a, b, sortColumn, sortDirection));
+    return next;
   }, [candidates, deferredSearch, roleFilter, sortColumn, sortDirection, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCandidates.length / PAGE_SIZE));
@@ -153,16 +139,27 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
   const toggleSort = (column: SortColumn) => {
     setPage(1);
     if (sortColumn === column) {
-      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      setSortDirection((cur) => (cur === "asc" ? "desc" : "asc"));
       return;
     }
     setSortColumn(column);
-    setSortDirection(
-      column === "name" || column === "role" || column === "status" ? "asc" : "desc",
-    );
+    setSortDirection(column === "name" || column === "role" || column === "status" ? "asc" : "desc");
   };
 
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) setSelectedCandidates(new Set(pagedCandidates.map((c) => c.id)));
+    else setSelectedCandidates(new Set());
+  };
 
+  const toggleSelectCandidate = (id: string, checked: boolean) => {
+    const newSet = new Set(selectedCandidates);
+    if (checked) newSet.add(id);
+    else newSet.delete(id);
+    setSelectedCandidates(newSet);
+  };
+
+  const allSelected = pagedCandidates.length > 0 && selectedCandidates.size === pagedCandidates.length;
+  const someSelected = selectedCandidates.size > 0;
 
   return (
     <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
@@ -172,6 +169,15 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
         defaultCandidateId={scheduleTarget?.candidateId}
         defaultJobId={scheduleTarget?.jobId}
       />
+      <BulkUpdateModal
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        candidateIds={Array.from(selectedCandidates)}
+        onSuccess={() => {
+          router.refresh();
+          setSelectedCandidates(new Set());
+        }}
+      />
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -179,18 +185,20 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
               Candidates
             </h1>
             <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-muted)]">
-              Review and manage your candidate pipeline, sorted by AI score so the strongest
-              applications surface first.
+              Review and manage your candidate pipeline, sorted by AI score.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => router.refresh()}
-            className="rounded-full border border-[var(--color-teal-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
-          >
-            Refresh Candidates
-          </button>
+          <div className="flex justify-end">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.refresh()}
+              aria-label="Refresh candidates list"
+              className="shrink-0"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <section className="rounded-[2rem] border border-black/10 bg-white/85 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:p-6">
@@ -199,78 +207,91 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
               <span className="text-sm font-semibold text-[var(--color-text-muted)]">Search Name</span>
               <input
                 value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
+                onChange={(e) => {
+                  setSearch(e.target.value);
                   setPage(1);
                 }}
                 placeholder="Search candidates by name, email, or role"
                 className="rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
               />
             </label>
-
             <label className="flex flex-col gap-2">
               <span className="text-sm font-semibold text-[var(--color-text-muted)]">Status</span>
               <select
                 value={statusFilter}
-                onChange={(event) => {
-                  setStatusFilter(event.target.value);
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
                   setPage(1);
                 }}
                 className="rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
               >
                 <option value="all">All statuses</option>
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {humanizeStatus(status)}
-                  </option>
+                {statuses.map((s) => (
+                  <option key={s} value={s}>{humanizeStatus(s)}</option>
                 ))}
               </select>
             </label>
-
             <label className="flex flex-col gap-2">
               <span className="text-sm font-semibold text-[var(--color-text-muted)]">Role</span>
               <select
                 value={roleFilter}
-                onChange={(event) => {
-                  setRoleFilter(event.target.value);
+                onChange={(e) => {
+                  setRoleFilter(e.target.value);
                   setPage(1);
                 }}
                 className="rounded-[1.1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
               >
                 <option value="all">All roles</option>
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
+                {roles.map((r) => (
+                  <option key={r} value={r}>{r}</option>
                 ))}
               </select>
             </label>
           </div>
+
+          {someSelected && (
+            <div className="mb-4 flex items-center justify-between rounded-xl bg-[var(--color-primary)]/10 p-3">
+              <span className="text-sm font-medium text-[var(--color-primary)]">
+                {selectedCandidates.size} candidate{selectedCandidates.size !== 1 ? "s" : ""} selected
+              </span>
+              <Button variant="primary" size="sm" onClick={() => setShowBulkModal(true)}>
+                Bulk Update Status
+              </Button>
+            </div>
+          )}
 
           <div className="overflow-hidden rounded-[1.6rem] border border-[var(--color-warm-border)]">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-[var(--color-warm-surface)]">
                 <thead className="bg-[var(--color-warm-bg)]">
                   <tr>
+                    <th className="px-4 py-4 text-left">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={(e) => toggleSelectAll(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                      />
+                    </th>
                     {[
                       { key: "name", label: "Name" },
                       { key: "role", label: "Role" },
                       { key: "aiScore", label: "AI Score" },
                       { key: "status", label: "Status" },
                       { key: "appliedAt", label: "Date" },
-                    ].map((column) => (
+                    ].map((col) => (
                       <th
-                        key={column.key}
-                        className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-faint)]"
+                        key={col.key}
+                        className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]"
                       >
                         <button
                           type="button"
-                          onClick={() => toggleSort(column.key as SortColumn)}
+                          onClick={() => toggleSort(col.key as SortColumn)}
                           className="inline-flex items-center gap-2"
                         >
-                          <span>{column.label}</span>
+                          <span>{col.label}</span>
                           <span className="text-[10px] text-[var(--color-text-lighter)]">
-                            {sortColumn === column.key
+                            {sortColumn === col.key
                               ? sortDirection === "asc"
                                 ? "▲"
                                 : "▼"
@@ -279,19 +300,15 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                         </button>
                       </th>
                     ))}
-                    <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-faint)]">
+                    <th className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
                       Actions
                     </th>
                   </tr>
                 </thead>
-
                 <tbody className="divide-y divide-[var(--color-warm-surface)] bg-white">
                   {error ? (
                     <tr>
-                      <td
-                        colSpan={6}
-                        className="px-4 py-16 text-center text-sm font-medium text-[var(--color-status-error-text)]"
-                      >
+                      <td colSpan={7} className="px-4 py-16 text-center text-sm font-medium text-[var(--color-status-error-text)]">
                         {error}
                       </td>
                     </tr>
@@ -299,54 +316,47 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                     pagedCandidates.map((candidate) => (
                       <tr key={candidate.id} className="hover:bg-[var(--color-warm-bg-page)]">
                         <td className="px-4 py-5">
+                          <input
+                            type="checkbox"
+                            checked={selectedCandidates.has(candidate.id)}
+                            onChange={(e) => toggleSelectCandidate(candidate.id, e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                          />
+                        </td>
+                        <td className="px-4 py-5">
                           <div>
-                            <p className="text-base font-semibold text-[var(--color-text-darkest)]">
-                              {candidate.name}
-                            </p>
+                            <p className="text-base font-semibold text-[var(--color-text-darkest)]">{candidate.name}</p>
                             <p className="mt-1 text-sm text-[var(--color-text-subtle)]">{candidate.email}</p>
                           </div>
                         </td>
                         <td className="px-4 py-5">
                           <div>
-                            <p className="text-base font-medium text-[var(--color-text-darkest)]">
-                              {candidate.role}
-                            </p>
-                            <p className="mt-1 text-sm text-[var(--color-text-faint)]">
-                              {candidate.department}
-                            </p>
+                            <p className="text-base font-medium text-[var(--color-text-darkest)]">{candidate.role}</p>
+                            <p className="mt-1 text-sm text-[var(--color-text-faint)]">{candidate.department}</p>
                           </div>
                         </td>
                         <td className="px-4 py-5">
                           <AIScoreBadge score={candidate.aiScore} />
                         </td>
                         <td className="px-4 py-5">
-                          <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${statusClasses(
-                              getStatusTone(candidate.status),
-                            )}`}
-                          >
+                          <span className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${statusClasses(getStatusTone(candidate.status))}`}>
                             {humanizeStatus(candidate.status)}
                           </span>
                         </td>
-                        <td className="px-4 py-5 text-sm text-[var(--color-text-muted)]">
-                          {formatDate(candidate.appliedAt)}
-                        </td>
+                        <td className="px-4 py-5 text-sm text-[var(--color-text-muted)]">{formatDate(candidate.appliedAt)}</td>
                         <td className="px-4 py-5">
                           <div className="flex flex-wrap gap-2">
-                            <Link
-                              href={`/recruiter/dashboard/candidates/${candidate.id}`}
-                              className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
-                            >
-                              View Candidate
+                            <Link href={`/recruiter/dashboard/candidates/${candidate.id}`}>
+                              <Button variant="secondary" size="sm">View Candidate</Button>
                             </Link>
                             {candidate.status === "shortlisted" && (
-                              <button
-                                type="button"
+                              <Button
+                                variant="primary"
+                                size="sm"
                                 onClick={() => openFor(candidate.id, candidate.jobId)}
-                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
                               >
                                 Schedule Interview
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </td>
@@ -354,7 +364,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
+                      <td colSpan={7} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
                         No candidates match the current filters.
                       </td>
                     </tr>
@@ -367,30 +377,28 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-[var(--color-text-subtle)]">
               Showing {pagedCandidates.length === 0 || error ? 0 : (currentPage - 1) * PAGE_SIZE + 1} to{" "}
-              {Math.min(currentPage * PAGE_SIZE, filteredCandidates.length)} of{" "}
-              {filteredCandidates.length} candidates
+              {Math.min(currentPage * PAGE_SIZE, filteredCandidates.length)} of {filteredCandidates.length} candidates
             </p>
-
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPage((cur) => Math.max(1, cur - 1))}
                 disabled={currentPage === 1}
-                className="rounded-full border border-[var(--color-warm-border-deep)] px-5 py-2 text-sm font-semibold text-[var(--color-text-body)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                ← Previous
-              </button>
+                Previous
+              </Button>
               <span className="text-sm text-[var(--color-text-subtle)]">
                 Page {currentPage} of {totalPages}
               </span>
-              <button
-                type="button"
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPage((cur) => Math.min(totalPages, cur + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-full border border-[var(--color-warm-border-deep)] px-5 py-2 text-sm font-semibold text-[var(--color-text-body)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Next →
-              </button>
+                Next
+              </Button>
             </div>
           </div>
         </section>

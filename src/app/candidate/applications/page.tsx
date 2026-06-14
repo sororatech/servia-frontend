@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -15,7 +16,7 @@ import { Play, Star, MessageSquare, Users, Award, XCircle } from 'lucide-react';
 
 type FilterStatus = typeof APPLICATION_FILTER_OPTIONS[number]['value'] | 'all';
 
-export default function CandidateApplicationsPage() {
+function ApplicationsContent() {
   const { applications, loading, error } = useApplications();
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,5 +141,13 @@ export default function CandidateApplicationsPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function CandidateApplicationsPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton variant="page" />}>
+      <ApplicationsContent />
+    </Suspense>
   );
 }

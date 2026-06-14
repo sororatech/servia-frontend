@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 sm:p-8 text-center">
+          <div className="max-w-md w-full bg-[var(--color-background)] rounded-2xl shadow-xl p-6 sm:p-8 text-center">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -115,7 +115,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)]">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
         
         <div className="flex flex-col justify-center p-2 sm:p-4 lg:p-8">
@@ -160,7 +160,7 @@ export default function ResetPasswordPage() {
 
         <div className="flex items-center justify-center p-2 sm:p-4 lg:p-8">
           <div className="w-full max-w-md">
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 py-8 sm:py-12">
+            <div className="bg-[var(--color-background)] rounded-xl sm:rounded-2xl shadow-xl p-5 sm:p-8 py-8 sm:py-12">
               <div className="mb-6 sm:mb-8">
                 <h2 className="text-xl sm:text-2xl font-semibold mb-2" style={{ color: 'var(--color-secondary)' }}>
                   Reset Password

@@ -16,10 +16,14 @@ export type BackendCandidate = {
 };
 
 export type BackendCandidateDetail = BackendCandidate & {
+  id: string;
   cv_file: string | null;
   cv_filename: string | null;
   cv_status: string | null;
   cv_uploaded_at: string | null;
+  cv_download_url: string | null;
+  cv_preview_url: string | null;
+  video_download_url: string | null;
   video_intro_url: string | null;
   video_uploaded_at: string | null;
   ai_summary: string | null;
@@ -38,8 +42,10 @@ export const CANDIDATE_STATUSES = [
   'interview_scheduled',
   'interviewed',
   'offered',
+  'hired',
   'rejected_cv',
   'rejected_interview',
+  'withdrawn',
   'hold',
 ] as const;
 
