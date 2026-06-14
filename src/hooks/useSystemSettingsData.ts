@@ -1,7 +1,5 @@
-import { 
-  getRecruiterHeaders, 
-  fetchAllPagesSafe
-} from '@/utils/serverFetch';
+import { fetchAllPagesSafe } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth';
 import { Recruiter, Candidate, UserStats } from '@/types/settings';
 
 export async function getUserManagementData() {
@@ -40,6 +38,7 @@ export async function getUserManagementData() {
     return { recruiters, candidates, stats };
     
   } catch (error: any) {
+    console.error('Failed to fetch user management data:', error);
     return {
       recruiters: [],
       candidates: [],
