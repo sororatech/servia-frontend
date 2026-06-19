@@ -86,16 +86,20 @@ export default function JobDetail() {
             </div>
 
             <div className="mt-auto pt-4 border-t border-gray-200">
-              <Button
+                      <Button
                 variant="primary"
                 size="md"
                 fullWidth
                 onClick={handleApply}
-                disabled={applying}
+                disabled={applying || errorMessage?.toLowerCase().includes('already applied')}
                 isLoading={applying}
                 className="!rounded-xl"
               >
-                {applying ? 'Applying...' : 'Apply Now'}
+                {applying 
+                  ? 'Applying...' 
+                  : errorMessage?.toLowerCase().includes('already applied') 
+                    ? 'Already Applied' 
+                    : 'Apply Now'}
               </Button>
               
               {formattedDeadline ? (

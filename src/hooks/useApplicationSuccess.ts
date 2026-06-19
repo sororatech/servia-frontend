@@ -179,7 +179,7 @@ export const useApplicationSuccess = (): UseApplicationSuccessReturn => {
   }, [router]);
 
   const handleReturnToJobs = useCallback(() => {
-    router.push('/jobs');
+    router.push('/');
   }, [router]);
 
   const getDisplayJobTitle = useCallback((): string => {

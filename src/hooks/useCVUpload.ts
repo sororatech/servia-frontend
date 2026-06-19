@@ -20,7 +20,7 @@ export interface UseCVUploadReturn {
   handleDragOver: (e: React.DragEvent) => void;
   handleDragLeave: (e: React.DragEvent) => void;
   handleDrop: (e: React.DragEvent) => void;
-  handleSubmit: (e: React.FormEvent, applicationId: string | null) => Promise<void>;
+  handleSubmit: (e: React.FormEvent, applicationId: string | null, jobTitle?: string, department?: string) => Promise<void>;  
   clearError: () => void;
   removeFile: () => void;  
   
@@ -84,10 +84,12 @@ export const useCVUpload = (): UseCVUploadReturn => {
     }
   }, []);
 
-  const handleSubmit = useCallback(async (
-    e: React.FormEvent, 
-    applicationId: string | null
-  ) => {
+ const handleSubmit = useCallback(async (
+  e: React.FormEvent, 
+  applicationId: string | null,
+  jobTitle: string = '',
+  department: string = ''
+) => {
     e.preventDefault();
     setErrorMessage(null);
     
@@ -146,7 +148,9 @@ export const useCVUpload = (): UseCVUploadReturn => {
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      router.push(`/candidate/application-success?applicationId=${applicationId}`);
+      const jobTitleParam = encodeURIComponent(jobTitle);
+const departmentParam = encodeURIComponent(department);
+router.push(`/candidate/application-success?applicationId=${applicationId}&jobTitle=${jobTitleParam}&company=${departmentParam}`);
 
     } catch (error: any) {
       if (error.response?.status === 401) {
