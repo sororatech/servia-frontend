@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
 
       <div className="relative z-10 flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <div className="bg-white rounded shadow-2xl p-8">
+          <div className="bg-[var(--color-background)] rounded shadow-2xl p-8">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-input-bg-light)' }}>
                 <RefreshCw size={32} style={{ color: 'var(--color-primary)' }} />

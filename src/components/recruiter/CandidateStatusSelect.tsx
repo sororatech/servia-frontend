@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { CANDIDATE_STATUSES } from '@/types/candidate';
 import { updateCandidateStatus } from '@/utils/updateCandidateStatus';
 
-function humanize(status: string) {
+function humanize(status: string): string {
   return status
     .split('_')
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
@@ -28,10 +28,14 @@ export default function CandidateStatusSelect({ candidateId, currentStatus }: Pr
     setError(null);
 
     startTransition(() => {
-      updateCandidateStatus(candidateId, next).catch(() => {
-        setStatus(previous);
-        setError('Failed to update status. Please try again.');
-      });
+      updateCandidateStatus(candidateId, next)
+        .then(() => {
+          // success – no error
+        })
+        .catch((err: Error) => {
+          setStatus(previous);
+          setError(err.message);
+        });
     });
   }
 
@@ -55,7 +59,9 @@ export default function CandidateStatusSelect({ candidateId, currentStatus }: Pr
         </span>
       </div>
       {error && (
-        <p className="text-xs font-medium text-red-600">{error}</p>
+        <p className="max-w-[220px] text-right text-xs font-medium text-red-600">
+          {error}
+        </p>
       )}
     </div>
   );

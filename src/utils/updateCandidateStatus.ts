@@ -20,7 +20,19 @@ export async function updateCandidateStatus(candidateId: string, status: string)
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to update status: ${response.status}`);
+    let errorMsg = `Failed to update status (HTTP ${response.status})`;
+    try {
+      const errorData = await response.json();
+      // Backend error format: { "status": ["Cannot transition..."] }
+      if (errorData.status && Array.isArray(errorData.status) && errorData.status.length > 0) {
+        errorMsg = errorData.status[0];
+      } else if (errorData.error) {
+        errorMsg = errorData.error;
+      }
+    } catch {
+      // fallback to generic message
+    }
+    throw new Error(errorMsg);
   }
 
   revalidatePath(`/recruiter/dashboard/candidates/${candidateId}`);

@@ -1,7 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getRecruiterHeaders, fetchJson } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth';
+import { fetchJson } from '@/utils/serverFetch';     
 import { Recruiter } from '@/types/settings';
 
 async function requireAuth() {
@@ -13,15 +14,11 @@ async function requireAuth() {
 }
 
 export async function createRecruiter(formData: {
-  user: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-  };
-  department: string;
-  role: string;
-  is_active: boolean;
+  email: string;
+  first_name: string;
+  last_name: string;
+  department?: string;
+  role?: string;
 }) {
   try {
     const headers = await requireAuth();
@@ -31,20 +28,26 @@ export async function createRecruiter(formData: {
       headers,
       {
         method: 'POST',
-        body: formData,
+        body: {
+          email: formData.email,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          department: formData.department,
+          role: formData.role,
+        },
       }
     );
     
-    revalidatePath('/settings');
+    revalidatePath('/recruiter/dashboard/settings');
     return { success: true, data: response };
     
   } catch (error: any) {
     let userError = 'Failed to create recruiter';
     if (error.message?.includes('Authentication')) {
       userError = 'Session expired. Please log in again.';
-    } else if (error.message?.includes('Access Denied') || error.message?.includes('403')) {
+    } else if (error.message?.includes('403') || error.message?.includes('Access Denied')) {
       userError = 'Permission denied. Only administrators can create recruiters.';
-    } else if (error.message?.includes('email')) {
+    } else if (error.message?.includes('email') || error.message?.includes('already exists')) {
       userError = 'A recruiter with this email already exists.';
     }
     
@@ -65,7 +68,7 @@ export async function updateRecruiter(id: string, updates: Partial<Recruiter>) {
       }
     );
     
-    revalidatePath('/settings');
+    revalidatePath('/recruiter/dashboard/settings');
     return { success: true, data: response };
     
   } catch (error: any) {
@@ -92,7 +95,7 @@ export async function deleteRecruiter(id: string) {
       }
     );
     
-    revalidatePath('/settings');
+    revalidatePath('/recruiter/dashboard/settings');
     return { success: true };
     
   } catch (error: any) {
@@ -118,7 +121,7 @@ export async function toggleRecruiterStatus(id: string, is_active: boolean) {
       }
     );
     
-    revalidatePath('/settings');
+    revalidatePath('/recruiter/dashboard/settings');
     return { success: true, data: response };
     
   } catch (error: any) {

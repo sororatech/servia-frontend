@@ -202,7 +202,7 @@ export default function RegisterPage() {
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
         </div>
 
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-white overflow-y-auto">
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-[var(--color-background)] overflow-y-auto">
           <div className="w-full max-w-lg">
             <div className="mb-8 sm:mb-10">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: 'var(--color-secondary)' }}>Create your account</h2>
@@ -253,7 +253,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 transition w-[84px] sm:w-[110px]"
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-3 rounded-lg border border-gray-300 bg-[var(--color-background)] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 transition w-[84px] sm:w-[110px]"
                     >
                       <span className="text-lg sm:text-xl leading-none">{selectedCountry.flag}</span>
                       <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">{countryCode}</span>
@@ -261,7 +261,7 @@ export default function RegisterPage() {
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-50 mt-1 w-64 sm:w-72 max-h-60 sm:max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+                      <div className="absolute z-50 mt-1 w-64 sm:w-72 max-h-60 sm:max-h-64 overflow-y-auto bg-[var(--color-background)] border border-gray-200 rounded-lg shadow-lg">
                         {countries.map((country) => (
                           <button
                             key={country.code}

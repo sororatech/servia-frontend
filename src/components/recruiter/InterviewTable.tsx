@@ -213,7 +213,7 @@ export default function InterviewTable({ interviews }: Props) {
             disabled={currentPage === 1}
             className="rounded-full border border-[var(--color-warm-border-deep)] px-5 py-2 text-sm font-semibold text-[var(--color-text-body)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            ← Previous
+            Previous
           </button>
           <span className="text-sm text-[var(--color-text-subtle)]">
             Page {currentPage} of {totalPages}
@@ -224,7 +224,7 @@ export default function InterviewTable({ interviews }: Props) {
             disabled={currentPage === totalPages}
             className="rounded-full border border-[var(--color-warm-border-deep)] px-5 py-2 text-sm font-semibold text-[var(--color-text-body)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Next →
+            Next
           </button>
         </div>
       </div>

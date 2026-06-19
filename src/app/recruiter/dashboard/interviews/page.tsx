@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 import ScheduleInterviewButton from '@/components/recruiter/ScheduleInterviewButton';
 import InterviewTable from '@/components/recruiter/InterviewTable';
 import ShortlistedCandidates from '@/components/recruiter/ShortlistedCandidates';
-import { getRecruiterHeaders, SessionExpiredError } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth';             
+import { SessionExpiredError } from '@/utils/serverFetch';         
 import { getInterviewsPageData } from '@/hooks/useInterviewsPageData';
 
 export default async function RecruiterInterviewsPage() {
@@ -49,8 +50,8 @@ export default async function RecruiterInterviewsPage() {
               key={stat.label}
               className="rounded-[1.5rem] border border-black/10 bg-white/85 p-5 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm"
             >
-              <p className="text-sm font-medium text-[var(--color-text-faint)]">{stat.label}</p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--color-primary)]">{stat.value}</p>
+              <p className="text-sm font-semibold text-[var(--color-primary)]">{stat.label}</p>
+              <p className="mt-2 text-3xl font-semibold text-[var(--color-foreground)]">{stat.value}</p>
             </div>
           ))}
         </div>

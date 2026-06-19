@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { LoadingSkeleton } from "@/components/ui";
 
 type CandidateOption = {
   id: string;
@@ -76,13 +78,13 @@ export default function ScheduleInterviewModal({
     ])
       .then(([rawCandidates, rawJobs]) => {
         setCandidates(
-          rawCandidates.map((c: BackendCandidate) => ({
+          rawCandidates.map((c) => ({
             id: c.id,
             name: `${c.user.first_name} ${c.user.last_name}`.trim() || c.user.email,
             jobId: c.job,
           })),
         );
-        setJobs(rawJobs.map((j: BackendJob) => ({ id: j.id, title: j.title })));
+        setJobs(rawJobs.map((j) => ({ id: j.id, title: j.title })));
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Failed to load candidates and jobs.");
@@ -145,19 +147,17 @@ export default function ScheduleInterviewModal({
         <h2 className="text-xl font-bold text-[var(--color-foreground)]">Schedule Interview</h2>
 
         {isLoading ? (
-          <div className="mt-8 py-6 text-center text-sm text-[var(--color-text-subtle)]">Loading...</div>
+          <div className="mt-8 py-6">
+            <LoadingSkeleton variant="card" />
+          </div>
         ) : error === "session_expired" ? (
           <div className="mt-8 flex flex-col items-center gap-4 py-6 text-center">
             <p className="text-sm text-[var(--color-status-error-text)]">
               Your session has expired. Please log in again to continue.
             </p>
-            <button
-              type="button"
-              onClick={() => router.push("/login")}
-              className="rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
-            >
+            <Button variant="primary" onClick={() => router.push("/login")}>
               Go to Login
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mt-6 space-y-4">
@@ -182,7 +182,7 @@ export default function ScheduleInterviewModal({
 
             <div>
               <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
-                Candidate Job
+                Job (will auto-select based on candidate)
               </label>
               <select
                 value={jobId}
@@ -214,7 +214,7 @@ export default function ScheduleInterviewModal({
 
             <div>
               <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
-                Duration
+                Duration (minutes)
               </label>
               <input
                 type="number"
@@ -222,9 +222,8 @@ export default function ScheduleInterviewModal({
                 step="15"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                placeholder="Duration (minutes)"
                 required
-                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] placeholder:text-[var(--color-text-subtle)] outline-none focus:border-[var(--color-primary)]"
+                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] outline-none focus:border-[var(--color-primary)]"
               />
             </div>
 
@@ -236,7 +235,7 @@ export default function ScheduleInterviewModal({
                 type="text"
                 disabled
                 placeholder="Auto-generated after scheduling"
-                className="w-full rounded-full border border-[var(--color-warm-border-faint)] bg-[var(--color-warm-bg)] px-5 py-3 text-sm text-[var(--color-text-subtle)] placeholder:text-[var(--color-text-subtle)] outline-none cursor-not-allowed opacity-60"
+                className="w-full rounded-full border border-[var(--color-warm-border-faint)] bg-[var(--color-warm-bg)] px-5 py-3 text-sm text-[var(--color-text-subtle)] cursor-not-allowed opacity-60"
               />
             </div>
 
@@ -245,20 +244,12 @@ export default function ScheduleInterviewModal({
             )}
 
             <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 rounded-full border border-[var(--color-warm-border)] py-3 text-sm font-semibold text-[var(--color-text-dark)] transition hover:border-[var(--color-warm-border-deep)]"
-              >
+              <Button variant="ghost" onClick={onClose} className="flex-1">
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 rounded-full bg-[var(--color-primary)] py-3 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
-              >
-                {isSubmitting ? "Scheduling..." : "Done"}
-              </button>
+              </Button>
+              <Button variant="primary" type="submit" disabled={isSubmitting} className="flex-1">
+                {isSubmitting ? "Scheduling..." : "Schedule Interview"}
+              </Button>
             </div>
           </form>
         )}

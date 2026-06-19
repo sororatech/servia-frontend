@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getRecruiterHeaders, fetchJson } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth';          
+import { fetchJson } from '@/utils/serverFetch';
 import { loadJobDetail } from '@/hooks/useJobDetailData';
 import CollapsibleSection from '@/components/recruiter/CollapsibleSection';
 import JobDetailActions from '@/components/recruiter/JobDetailActions';
 import AIScoreBadge from '@/components/recruiter/AIScoreBadge';
+import { Button } from '@/components/ui/Button';                 
 import type { BackendCandidate } from '@/types/candidate';
 
 function daysSince(iso: string): string {
@@ -45,11 +47,10 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
   return (
     <main className="bg-page-gradient min-h-screen px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-4xl">
-        <Link
-          href="/recruiter/dashboard/jobs"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:underline"
-        >
-          ← Back to Jobs
+        <Link href="/recruiter/dashboard/jobs">
+          <Button variant="ghost" size="sm" className="mb-2">
+            ← Back to Jobs
+          </Button>
         </Link>
 
         <div className="mt-6 rounded-[2rem] border border-black/10 bg-white/85 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm">
@@ -80,7 +81,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Stats – labels now use primary color */}
           <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-5 py-4 sm:grid-cols-4">
             {[
               { label: 'Candidates', value: job.candidate_count },
@@ -89,13 +90,13 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
               { label: 'Days Since Posted', value: daysSince(job.created_at) },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="text-xs text-[var(--color-text-faint)]">{label}</p>
+                <p className="text-xs font-semibold text-[var(--color-primary)]">{label}</p>
                 <p className="mt-1 text-lg font-bold text-[var(--color-foreground)]">{value}</p>
               </div>
             ))}
           </div>
 
-          {/* Actions */}
+          {/* Actions (uses JobDetailActions – ensure that component uses shared Button) */}
           <div className="mt-6">
             <JobDetailActions jobId={job.id} />
           </div>
@@ -174,7 +175,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
                     <Link
                       key={c.id}
                       href={`/recruiter/dashboard/candidates/${c.id}`}
-                      className="flex items-center justify-between rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-4 py-3 transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] px-4 py-3 transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
                     >
                       <div>
                         <p className="text-sm font-semibold text-[var(--color-text-dark)]">{candidateName(c)}</p>
@@ -182,7 +183,7 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
                           Applied {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(c.applied_at))}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 mt-2 sm:mt-0">
                         <AIScoreBadge score={c.ai_score} />
                         <span className="rounded-full border border-[var(--color-warm-border-faint)] bg-white px-3 py-1 text-xs font-semibold text-[var(--color-text-muted)]">
                           {humanizeStatus(c.status)}
@@ -192,24 +193,22 @@ export default async function JobDetailsPage({ params }: { params: Promise<{ id:
                   ))}
                 </div>
                 <div className="mt-4">
-                  <Link
-                    href={`/recruiter/dashboard/candidates?job=${job.id}`}
-                    className="text-sm font-semibold text-[var(--color-teal-dark)] hover:underline"
-                  >
-                    View all {job.candidate_count} application{job.candidate_count !== 1 ? 's' : ''} →
-                  </Link>
+                  <Button  variant="ghost" size="sm">
+                    <Link href={`/recruiter/dashboard/candidates?job=${job.id}`}>
+                      View all {job.candidate_count} application{job.candidate_count !== 1 ? 's' : ''} →
+                    </Link>
+                  </Button>
                 </div>
               </CollapsibleSection>
             )}
 
             {recentCandidates.length === 0 && (
               <div className="border-t border-[var(--color-warm-border)] pt-6">
-                <Link
-                  href={`/recruiter/dashboard/candidates?job=${job.id}`}
-                  className="rounded-full border border-[var(--color-primary)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
-                >
-                  View Candidates
-                </Link>
+                <Button variant="primary">
+                  <Link href={`/recruiter/dashboard/candidates?job=${job.id}`}>
+                    View Candidates
+                  </Link>
+                </Button>
               </div>
             )}
           </div>

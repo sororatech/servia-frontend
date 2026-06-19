@@ -80,7 +80,7 @@ export default function LoginPage() {
           />
           <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
 
-          <div className="relative z-10 w-[85%] xl:w-auto xl:max-w-[460px] px-8 xl:px-14 py-10 xl:py-14 bg-white shadow-2xl rounded-[2px]">
+          <div className="relative z-10 w-[85%] xl:w-auto xl:max-w-[460px] px-8 xl:px-14 py-10 xl:py-14 bg-[var(--color-background)] shadow-2xl rounded-[2px]">
             <div className="mb-8">
               <div className="mb-6">
                 <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain w-12 h-12 xl:w-16 xl:h-16" />
@@ -93,7 +93,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="mt-16 xl:mt-44 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
+            <div className="mt-16 xl:mt-44 p-4 rounded-xl border border-gray-100 bg-[var(--color-background)] shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-teal-light)' }}>
                   <ShieldCheck className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
@@ -107,7 +107,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-white overflow-y-auto">
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-[var(--color-background)] overflow-y-auto">
           <div className="w-full max-w-md">
             <div className="mb-8 sm:mb-12">
               <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-secondary)' }}>Welcome back</h2>

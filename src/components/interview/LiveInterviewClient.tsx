@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Mic, MicOff, Video, VideoOff, Share2, StickyNote, RefreshCw, PhoneOff } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { LoadingSkeleton } from "@/components/ui";
 import LiveTranscript from "@/components/interview/LiveTranscript";
 import useInterview from "@/hooks/useInterview";
 
@@ -22,6 +25,7 @@ export default function LiveInterviewClient({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [controlMessage, setControlMessage] = useState<string | null>(null);
+
   const hasTranscript = interview.transcript.length > 0;
   const hasCandidateTranscript = interview.transcript.some(
     (entry) => entry.speaker === "Candidate",
@@ -55,26 +59,50 @@ export default function LiveInterviewClient({
     setControlMessage("Moved to interview notes.");
   };
 
-  return (
-    <main className="min-h-screen bg-page-gradient text-[var(--color-foreground)]">
-      <div className="border-b border-black/8 bg-white/75 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-
-          <div className="space-y-1 text-center">
-            <h1 className="text-xl font-semibold tracking-[-0.03em] text-[var(--color-foreground)] sm:text-3xl">
-              Live Interview with {interview.candidateName || initialCandidateName || "Candidate"}
-            </h1>
-            <div className="space-y-1 text-sm text-[var(--color-text-muted)]">
-              <p>
-                {interview.candidateEmail || initialCandidateEmail || "Candidate email will appear once the session loads."}
-              </p>
-              <p>
-                {interview.candidateRole || initialCandidateRole || "Candidate role will appear once the session loads."}
-              </p>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8">
+            <LoadingSkeleton className="h-10 w-96" />
+            <LoadingSkeleton className="mt-2 h-5 w-72" />
+          </div>
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-6">
+              <LoadingSkeleton className="h-96 rounded-2xl" />
+              <LoadingSkeleton className="h-24 rounded-2xl" />
+            </div>
+            <div className="space-y-6">
+              <LoadingSkeleton className="h-80 rounded-2xl" />
+              <LoadingSkeleton className="h-40 rounded-2xl" />
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          <div className="flex items-center justify-center gap-3 lg:justify-end">
+  const candidateName = interview.candidateName || initialCandidateName || "Candidate";
+  const candidateEmail = interview.candidateEmail || initialCandidateEmail;
+  const candidateRole = interview.candidateRole || initialCandidateRole;
+
+  return (
+    <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-25">
+      <div className="mx-auto max-w-8xl">
+        {/* Header */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[var(--color-secondary)]">
+              Live Interview with {candidateName}
+            </h1>
+            {(candidateEmail || candidateRole) && (
+              <div className="mt-1 space-y-0.5 text-sm text-[var(--color-text-muted)]">
+                {candidateEmail && <p>{candidateEmail}</p>}
+                {candidateRole && <p>{candidateRole}</p>}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
             <div
               className={`rounded-full px-4 py-2 text-sm font-semibold ${
                 streamStatus === "connected"
@@ -82,153 +110,148 @@ export default function LiveInterviewClient({
                   : "border border-[var(--color-warm-border)] bg-white text-[var(--color-text-subtle)]"
               }`}
             >
-              {streamStatus === "connected" ? "Live stream connected" : "Waiting for stream"}
+              {streamStatus === "connected" ? "● Live stream connected" : "○ Waiting for stream"}
             </div>
-            <button
-              type="button"
-              onClick={() => void refresh()}
-              className="rounded-full border border-[var(--color-warm-border-deep)] bg-white px-4 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refresh}
+              disabled={isLoading}
+              aria-label="Refresh"
             >
-              Refresh
-            </button>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-      </div>
 
-      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
-        {error ? (
-          <div className="mb-6 rounded-[1.5rem] border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm text-[var(--color-status-warning-text)]">
+        {/* Error / control messages */}
+        {error && (
+          <div className="mb-6 rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm text-[var(--color-status-error-text)]">
             {error}
           </div>
-        ) : null}
-        {controlMessage ? (
-          <div className="mb-6 rounded-[1.5rem] border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] px-5 py-4 text-sm text-[var(--color-teal-dark)]">
+        )}
+        {controlMessage && (
+          <div className="mb-6 rounded-2xl border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] px-5 py-4 text-sm text-[var(--color-teal-dark)]">
             {controlMessage}
           </div>
-        ) : null}
+        )}
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.45fr)_420px]">
-          <section className="space-y-6">
-            <LiveTranscript
-              currentQuestion={interview.currentQuestion}
-              entries={interview.transcript}
-              notes={interview.notes}
-              recordingTime={interview.recordingTime}
-              isLive={interview.status === "live"}
-            />
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+              <LiveTranscript
+                currentQuestion={interview.currentQuestion}
+                entries={interview.transcript}
+                notes={interview.notes}
+                recordingTime={interview.recordingTime}
+                isLive={interview.status === "live"}
+              />
+            </div>
 
-            <div className="flex flex-col gap-4 rounded-[2rem] bg-white/60 px-5 py-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
-              <button
-                type="button"
+            {/* Control buttons row */}
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[var(--color-warm-border)] bg-white p-5 shadow-sm">
+              <Button
+                variant="danger"
                 onClick={handleEndCall}
-                className="min-w-[180px] rounded-[1.1rem] bg-[var(--color-neutral-border)] px-8 py-4 text-xl font-medium text-[var(--color-foreground)] transition hover:bg-[var(--color-neutral-border)]"
+                leftIcon={<PhoneOff className="h-5 w-5" />}
+                className="min-w-36"
               >
                 End Call
-              </button>
+              </Button>
 
-              <div className="flex items-center gap-4">
-                {[
-                  {
-                    label: "Mute",
-                    text: isMuted ? "U" : "M",
-                    onClick: () => {
-                      setIsMuted((current) => !current);
-                      setControlMessage(`Microphone ${!isMuted ? "muted" : "unmuted"} locally.`);
-                    },
-                    active: isMuted,
-                  },
-                  {
-                    label: "Video",
-                    text: isVideoOff ? "V" : "C",
-                    onClick: () => {
-                      setIsVideoOff((current) => !current);
-                      setControlMessage(`Video ${isVideoOff ? "enabled" : "disabled"} locally.`);
-                    },
-                    active: isVideoOff,
-                  },
-                  {
-                    label: "Share",
-                    text: "S",
-                    onClick: () => void handleShare(),
-                    active: false,
-                  },
-                  {
-                    label: "Notes",
-                    text: "N",
-                    onClick: handleNotes,
-                    active: false,
-                  },
-                ].map((control) => (
-                  <button
-                    key={control.label}
-                    type="button"
-                    aria-label={control.label}
-                    aria-pressed={control.active}
-                    onClick={control.onClick}
-                    className={`h-16 w-16 rounded-full text-sm font-medium transition ${
-                      control.active
-                        ? "bg-[var(--color-primary)] text-white"
-                        : "bg-[var(--color-neutral-border)] text-[var(--color-text-body)] hover:bg-[var(--color-neutral-border)]"
-                    }`}
-                  >
-                    {control.text}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant={isMuted ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => {
+                    setIsMuted(!isMuted);
+                    setControlMessage(`Microphone ${!isMuted ? "muted" : "unmuted"} locally.`);
+                  }}
+                  aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+
+                <Button
+                  variant={isVideoOff ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => {
+                    setIsVideoOff(!isVideoOff);
+                    setControlMessage(`Video ${isVideoOff ? "enabled" : "disabled"} locally.`);
+                  }}
+                  aria-label={isVideoOff ? "Turn on video" : "Turn off video"}
+                >
+                  {isVideoOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                </Button>
+
+                <Button variant="secondary" size="sm" onClick={handleShare}>
+                  <Share2 className="h-4 w-4" />
+                </Button>
+
+                <Button variant="secondary" size="sm" onClick={handleNotes}>
+                  <StickyNote className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </section>
+          </div>
 
-          <aside className="rounded-[2rem] border border-black/12 bg-[var(--color-warm-bg-deep)]/90 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.1)]">
-            <div className="mb-8">
-              <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--color-foreground)]">
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-[var(--color-secondary)]">
                 AI Follow-Up Suggestions
               </h2>
-              <p className="mt-2 text-lg text-[var(--color-text-muted)]">
-                AI recommended follow-up questions for the recruiter
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                AI-recommended questions for the recruiter
               </p>
-            </div>
 
-            <div className="space-y-4">
-              {interview.followUpSuggestions.length > 0 ? (
-                interview.followUpSuggestions.map((question, index) => (
-                  <button
-                    key={question.id}
-                    className={`w-full rounded-[1.25rem] border px-4 py-4 text-left text-lg leading-7 text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:bg-white ${
-                      index === 0
-                        ? "border-[var(--color-warm-border-deep)] bg-[var(--color-warm-bg-page)] shadow-[0_12px_30px_rgba(15,23,42,0.05)]"
-                        : "border-[var(--color-warm-border)] bg-white/70"
-                    }`}
-                  >
-                    {question.text}
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-[1.25rem] border border-dashed border-[var(--color-warm-border-deep)] bg-white/60 px-4 py-6 text-center text-base leading-7 text-[var(--color-text-subtle)]">
-                  {followUpEmptyStateMessage}
-                </div>
-              )}
+              <div className="mt-4 space-y-3">
+                {interview.followUpSuggestions.length > 0 ? (
+                  interview.followUpSuggestions.map((question) => (
+                    <button
+                      key={question.id}
+                      className="w-full rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] p-4 text-left text-sm text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:bg-white"
+                    >
+                      {question.text}
+                    </button>
+                  ))
+                ) : (
+                  <div className="rounded-xl border border-dashed border-[var(--color-warm-border-deep)] bg-[var(--color-warm-bg)] p-6 text-center text-sm text-[var(--color-text-subtle)]">
+                    {followUpEmptyStateMessage}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div
               id="interview-notes"
-              className="mt-10 rounded-[1.5rem] border border-dashed border-[var(--color-warm-border-deep)] bg-white/60 p-5"
+              className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm"
             >
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--color-text-faint)]">
-                Suggested next angle
-              </p>
-              <p className="mt-3 text-base leading-7 text-[var(--color-text-body)]">
-                Additional recruiter guidance will show up here when live coaching data is available.
-              </p>
+              <h2 className="text-xl font-bold text-[var(--color-secondary)]">
+                Interview Notes
+              </h2>
+              <div className="mt-4 text-sm text-[var(--color-text-muted)]">
+                {interview.notes ? (
+                  <p className="whitespace-pre-wrap">{interview.notes}</p>
+                ) : (
+                  <p className="italic">Notes from the live interview will appear here.</p>
+                )}
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => void refresh()}
-              className="mt-10 w-full rounded-[1.2rem] border border-[var(--color-warm-border-deep)] bg-white px-6 py-4 text-2xl font-medium text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
-            >
-              {isLoading ? "Loading..." : "Refresh Suggestions"}
-            </button>
-          </aside>
+            <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-bold text-[var(--color-secondary)]">
+                Suggested Next Angle
+              </h2>
+              <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+                Additional recruiter guidance
+              </p>
+              <div className="mt-4 text-sm text-[var(--color-text-muted)]">
+                <p>
+                  Additional recruiter guidance will show up here when live coaching data is available.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>

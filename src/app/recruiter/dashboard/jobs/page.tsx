@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import JobsGrid from '@/components/recruiter/JobsGrid';
-import { getRecruiterHeaders } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth';   // ✅ fixed import
 import { loadJobs } from '@/hooks/useJobsPageData';
 
 export default async function JobManagementPage() {

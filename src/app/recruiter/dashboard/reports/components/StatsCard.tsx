@@ -6,14 +6,14 @@ interface StatsCardProps {
 
 export default function StatsCard({ title, value, suffix }: StatsCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
-      <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-      <div className="flex items-baseline">
-        <p className="text-3xl font-bold text-[var(--color-primary,#26B9C8)]">
+    <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm hover:shadow-md transition-all">
+      <p className="text-sm font-semibold text-[var(--color-primary)]">{title}</p>
+      <div className="mt-2 flex items-baseline">
+        <p className="text-3xl font-bold text-[var(--color-foreground)]">
           {value}
         </p>
         {suffix && (
-          <span className="text-lg font-bold text-[var(--color-primary,#26B9C8)] ml-1">{suffix}</span>
+          <span className="ml-1 text-lg font-bold text-[var(--color-foreground)]">{suffix}</span>
         )}
       </div>
     </div>

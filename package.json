@@ -13,7 +13,6 @@
     "start": "cross-env NEXT_DISABLE_TURBOPACK=1 next start",
     "lint": "eslint"
   },
-
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "axios": "^1.14.0",
@@ -41,6 +40,7 @@
     "@types/react": "^19.2.14",
     "@types/react-csv": "^1.1.10",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.0",
     "tailwindcss": "^4",

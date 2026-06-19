@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getRecruiterHeaders } from '@/utils/serverFetch';
+import { getRecruiterHeaders } from '@/lib/serverAuth'; 
 import { getJob } from '@/utils/fetchJob';
 import { fetchJobFormChoices } from '@/utils/jobFormChoices';
 import CreateJobForm from '@/components/recruiter/CreateJobForm';
