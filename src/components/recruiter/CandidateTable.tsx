@@ -18,6 +18,13 @@ const PAGE_SIZE = 4;
 type SortColumn = "name" | "role" | "aiScore" | "status" | "appliedAt";
 type SortDirection = "asc" | "desc";
 
+function humanizeString(str: string): string {
+  if (!str) return str;
+  return str
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function formatDate(timestamp: string) {
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) {
@@ -103,7 +110,6 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
   const [showBulkModal, setShowBulkModal] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedCandidates(new Set());
   }, [page, statusFilter, roleFilter, search]);
 
@@ -344,7 +350,9 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                         <td className="px-4 py-5">
                           <div>
                             <p className="text-base font-medium text-[var(--color-text-darkest)]">{candidate.role}</p>
-                            <p className="mt-1 text-sm text-[var(--color-text-faint)]">{candidate.department}</p>
+                            <p className="mt-1 text-sm text-[var(--color-text-faint)]">
+                              {humanizeString(candidate.department)}
+                            </p>
                           </div>
                         </td>
                         <td className="px-4 py-5">

@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
@@ -14,7 +15,7 @@ const isAuthenticated = (): boolean => {
   return !!localStorage.getItem('auth_token');
 };
 
-export default function BrowseJobs() {
+function BrowseJobsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearch = searchParams.get('search') || '';
@@ -244,5 +245,13 @@ export default function BrowseJobs() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function BrowseJobs() {
+  return (
+    <Suspense fallback={<LoadingSkeleton variant="page" />}>
+      <BrowseJobsContent />
+    </Suspense>
   );
 }

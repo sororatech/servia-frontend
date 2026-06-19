@@ -1,11 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { VideoRecord, type VideoRecordHandle } from '@/components/candidate/VideoRecorder';
 
-export default function VideoIntroPage() {
+function VideoIntroPageContent() {
   const router = useRouter();
   const videoRef = useRef<VideoRecordHandle>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -21,7 +22,8 @@ export default function VideoIntroPage() {
     await videoRef.current?.handleFileUpload(file);
   };
 
-  const handleSave = async () => {    setIsUploading(true);
+  const handleSave = async () => {
+    setIsUploading(true);
     await videoRef.current?.handleSave();
     setIsUploading(false);
   };
@@ -84,12 +86,11 @@ export default function VideoIntroPage() {
               </h1>
               <p className="text-gray-600 leading-relaxed">
                 A short 60-second introduction helps recruiters understand your communication <br /> style and personality.
-                
                 Focus on your biggest professional achievement <br /> and why you&apos;re passionate about this role.
               </p>
             </div>
 
-            <VideoRecord 
+            <VideoRecord
               ref={videoRef}
               onSave={() => router.push('/candidate/applications')}
               onSkip={() => router.push('/candidate/applications')}
@@ -113,11 +114,11 @@ export default function VideoIntroPage() {
             <div className="bg-gray-50 rounded-xl p-6 relative">
               <h3 className="font-semibold text-gray-900 mb-1">Already have a video?</h3>
               <p className="text-sm text-gray-600 mb-4">Upload your pre-recorded introduction in MP4, MOV, or WEBM format.</p>
-              
+
               {hasUploadedFile && uploadedPreviewUrl ? (
                 <div className="mb-4">
                   <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden mb-3">
-                    <video 
+                    <video
                       src={uploadedPreviewUrl}
                       className="w-full h-full object-cover"
                       controls
@@ -125,7 +126,7 @@ export default function VideoIntroPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600 truncate">{uploadedFileName}</p>
-                    <button 
+                    <button
                       onClick={handleRemoveFile}
                       className="px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200 transition-colors"
                     >
@@ -197,16 +198,16 @@ export default function VideoIntroPage() {
             </div>
 
             <div className="space-y-3">
-              <button 
-                onClick={handleSave} 
+              <button
+                onClick={handleSave}
                 disabled={isUploading || (!hasUploadedFile && !hasRecordedVideo)}
                 className="w-full py-3 bg-[#26B9C8] text-white rounded-full font-medium hover:bg-[#26B9C8]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
               >
                 {isUploading ? 'Uploading...' : 'Save & Continue'}
               </button>
-              <button 
-                onClick={() => router.push('/candidate/dashboard/status')} 
-                disabled={isUploading} 
+              <button
+                onClick={() => router.push('/candidate/dashboard/status')}
+                disabled={isUploading}
                 className="w-full py-3 border-2 border-[#26B9C8] text-[#26B9C8] bg-white rounded-full font-medium hover:bg-[#26B9C8]/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
               >
                 Skip for now
@@ -216,5 +217,13 @@ export default function VideoIntroPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function VideoIntroPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <VideoIntroPageContent />
+    </Suspense>
   );
 }

@@ -8,6 +8,7 @@ import { SearchInput } from '../ui/SearchInput';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AUTH_STORAGE } from '@/lib/auth';
 
+const SEARCH_VISIBLE_PATHS = ['/']; 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -74,6 +75,10 @@ export function Navbar() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const showSearch = SEARCH_VISIBLE_PATHS.some((path) => {
+    return pathname === path;
+  });
+
   return (
     <>
       <nav className="sticky top-0 z-50 w-full bg-[var(--color-background)] border-b border-gray-100 h-20">
@@ -120,9 +125,11 @@ export function Navbar() {
 
             {/* Right side: Search & Auth */}
             <div className="hidden lg:flex items-center justify-end gap-4">
-              <div className="w-full max-w-[240px]">
-                <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
-              </div>
+              {showSearch && (
+                <div className="w-full max-w-[240px]">
+                  <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
+                </div>
+              )}
 
               <div className="flex items-center gap-3 min-w-[100px] justify-end">
                 {user ? (
@@ -196,9 +203,11 @@ export function Navbar() {
                   </Link>
                 ))}
               </div>
-              <div className="w-full">
-                <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
-              </div>
+              {showSearch && (
+                <div className="w-full">
+                  <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
+                </div>
+              )}
               <div className="pt-2 border-t border-gray-100">
                 {user ? (
                   <div className="flex items-center justify-between">

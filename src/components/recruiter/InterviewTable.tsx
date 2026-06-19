@@ -147,7 +147,7 @@ export default function InterviewTable({ interviews }: Props) {
                 {["Name", "Job Role", "Status", "Score", "Date", "Actions"].map((col) => (
                   <th
                     key={col}
-                    className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-faint)]"
+                    className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]"
                   >
                     {col}
                   </th>

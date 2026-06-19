@@ -12,6 +12,16 @@ function humanizeStatus(status: string): string {
     .join(' ');
 }
 
+function humanizeErrorMessage(raw: string): string {
+  if (raw.includes('Allowed: []') || raw.includes('Allowed: [ ]')) {
+    return 'No further status changes are allowed for this candidate.';
+  }
+  return raw.replace(
+    /'([^']+)'/g,
+    (match, p1) => `'${humanizeStatus(p1)}'`
+  );
+}
+
 interface BulkUpdateModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -39,15 +49,20 @@ export default function BulkUpdateModal({ isOpen, onClose, candidateIds, onSucce
     try {
       const result: BulkUpdateResult = await bulkUpdateCandidates(candidateIds, selectedStatus);
       if (result.updated_count > 0) {
-        onSuccess(); // refresh the page
+        onSuccess(); // refresh
       }
       if (result.errors && result.errors.length > 0) {
-        setPartialErrors(result.errors);
+        // Humanize each error message
+        const humanizedErrors = result.errors.map((err) => ({
+          ...err,
+          error: humanizeErrorMessage(err.error),
+        }));
+        setPartialErrors(humanizedErrors);
       } else {
         onClose();
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(humanizeErrorMessage(err.message));
     } finally {
       setIsSubmitting(false);
     }

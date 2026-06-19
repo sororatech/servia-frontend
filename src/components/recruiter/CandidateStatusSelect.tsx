@@ -11,6 +11,16 @@ function humanize(status: string): string {
     .join(' ');
 }
 
+function humanizeErrorMessage(raw: string): string {
+  if (raw.includes('Allowed: []') || raw.includes('Allowed: [ ]')) {
+    return 'No further status changes are allowed for this candidate.';
+  }
+  return raw.replace(
+    /'([^']+)'/g,
+    (match, p1) => `'${humanize(p1)}'`
+  );
+}
+
 type Props = {
   candidateId: string;
   currentStatus: string;
@@ -30,11 +40,11 @@ export default function CandidateStatusSelect({ candidateId, currentStatus }: Pr
     startTransition(() => {
       updateCandidateStatus(candidateId, next)
         .then(() => {
-          // success – no error
+          // success
         })
         .catch((err: Error) => {
           setStatus(previous);
-          setError(err.message);
+          setError(humanizeErrorMessage(err.message));
         });
     });
   }
