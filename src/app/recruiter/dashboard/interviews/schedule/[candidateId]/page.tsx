@@ -1,5 +1,10 @@
 import Link from 'next/link';
 import { getScheduleInterviewPageData } from '@/hooks/useScheduleInterviewPage';
+import {
+  MEETING_LINK_HELP,
+  MEETING_LINK_INPUT_PATTERN,
+  MEETING_LINK_PLACEHOLDER,
+} from '@/lib/meetLink';
 import type { ScheduleInterviewPageProps } from '@/types/interview';
 
 export default async function ScheduleInterviewPage({ params, searchParams }: ScheduleInterviewPageProps) {
@@ -63,6 +68,24 @@ export default async function ScheduleInterviewPage({ params, searchParams }: Sc
               <option value="stage_2">Stage 2</option>
               <option value="stage_3">Stage 3</option>
             </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-[var(--color-text-body)]">
+              Meeting Link
+            </span>
+            <input
+              type="url"
+              name="meet_link"
+              placeholder={MEETING_LINK_PLACEHOLDER}
+              pattern={MEETING_LINK_INPUT_PATTERN}
+              title={MEETING_LINK_HELP}
+              className="w-full rounded-[1rem] border border-[var(--color-warm-border-faint)] bg-[var(--color-input-bg-light)] px-4 py-3 text-sm text-[var(--color-text-darkest)] outline-none transition focus:border-[var(--color-primary)]"
+              required
+            />
+            <span className="mt-2 block text-xs text-[var(--color-text-subtle)]">
+              {MEETING_LINK_HELP} The AI bot will automatically join this meeting.
+            </span>
           </label>
 
           {error && (

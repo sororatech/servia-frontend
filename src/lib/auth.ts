@@ -16,6 +16,17 @@ export const AUTH_STORAGE = {
   },
 
   getToken: () => typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null,
+
+  /** Token for WebSocket auth (localStorage first, then auth_token cookie). */
+  getWebSocketToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    const fromStorage = localStorage.getItem('auth_token');
+    if (fromStorage) {
+      return fromStorage.replace(/^["']|["']$/g, '');
+    }
+    const match = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  },
   
   getUserRole: () => {
     if (typeof window === 'undefined') return null;

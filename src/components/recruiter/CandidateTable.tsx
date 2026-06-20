@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useDeferredValue, useMemo, useState, useEffect } from "react";
 import { RefreshCw } from "lucide-react";
 import AIScoreBadge from "@/components/recruiter/AIScoreBadge";
+import EditMeetLinkModal from "@/components/recruiter/EditMeetLinkModal";
 import ScheduleInterviewModal from "@/components/recruiter/ScheduleInterviewModal";
 import BulkUpdateModal from "@/components/recruiter/BulkUpdateModal";
 import { useScheduleInterview } from "@/hooks/useScheduleInterview";
 import { Button } from "@/components/ui/Button";
+import { slugifyInterviewLabel } from "@/lib/interviewRoutes";
 import type { CandidateListItem, CandidateStatusTone } from "@/types/candidate";
 
 const PAGE_SIZE = 4;
@@ -93,6 +95,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
   const [sortColumn, setSortColumn] = useState<SortColumn>("aiScore");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const { scheduleTarget, openFor, close, isOpen } = useScheduleInterview();
+  const [editingInterview, setEditingInterview] = useState<CandidateListItem | null>(null);
   const deferredSearch = useDeferredValue(search);
   const candidates = initialCandidates;
 
@@ -178,6 +181,15 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
           setSelectedCandidates(new Set());
         }}
       />
+      {editingInterview?.activeInterview && (
+        <EditMeetLinkModal
+          isOpen
+          onClose={() => setEditingInterview(null)}
+          interviewId={editingInterview.activeInterview.id}
+          candidateName={editingInterview.name}
+          initialMeetLink={editingInterview.activeInterview.meetLink}
+        />
+      )}
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -345,18 +357,46 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                         </td>
                         <td className="px-4 py-5 text-sm text-[var(--color-text-muted)]">{formatDate(candidate.appliedAt)}</td>
                         <td className="px-4 py-5">
-                          <div className="flex flex-wrap gap-2">
-                            <Link href={`/recruiter/dashboard/candidates/${candidate.id}`}>
-                              <Button variant="secondary" size="sm">View Candidate</Button>
+                          <div className="flex min-w-[14rem] flex-wrap gap-2">
+                            <Link
+                              href={`/recruiter/dashboard/candidates/${candidate.id}`}
+                              className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                            >
+                              View Candidate
                             </Link>
-                            {candidate.status === "shortlisted" && (
-                              <Button
-                                variant="primary"
-                                size="sm"
+                            {candidate.activeInterview && (
+                              <>
+                                <Link
+                                  href={{
+                                    pathname: `/recruiter/dashboard/interviews/live/${slugifyInterviewLabel(candidate.name)}`,
+                                    query: {
+                                      interviewId: candidate.activeInterview.id,
+                                      candidateName: candidate.name,
+                                      candidateEmail: candidate.email,
+                                      candidateRole: candidate.role,
+                                    },
+                                  }}
+                                  className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
+                                >
+                                  Start Interview
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingInterview(candidate)}
+                                  className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                                >
+                                  Edit Meet Link
+                                </button>
+                              </>
+                            )}
+                            {candidate.status === "shortlisted" && !candidate.activeInterview && (
+                              <button
+                                type="button"
                                 onClick={() => openFor(candidate.id, candidate.jobId)}
+                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
                               >
                                 Schedule Interview
-                              </Button>
+                              </button>
                             )}
                           </div>
                         </td>
