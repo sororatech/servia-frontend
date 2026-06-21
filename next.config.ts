@@ -6,10 +6,12 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       // Let App Router handlers (including dynamic /api/recruiter/* routes) win first.
+      // Django's REST endpoints have no /api/ prefix (e.g. /users/, /interviews/) —
+      // only /api/schema/ and /api/docs/ do — so strip it before forwarding.
       fallback: [
         {
           source: '/api/:path*',
-          destination: 'http://localhost:8000/api/:path*',
+          destination: 'http://localhost:8000/:path*',
         },
       ],
     };
