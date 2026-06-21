@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Mic, MicOff, Video, VideoOff, Share2, StickyNote, RefreshCw, PhoneOff } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Mic, MicOff, Video, VideoOff, Share2, StickyNote, RefreshCw, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoadingSkeleton } from "@/components/ui";
 import LiveTranscript from "@/components/interview/LiveTranscript";
@@ -25,6 +26,7 @@ export default function LiveInterviewClient({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(true);
   const [controlMessage, setControlMessage] = useState<string | null>(null);
+  const [isLaunchingBot, setIsLaunchingBot] = useState(false);
 
   const hasTranscript = interview.transcript.length > 0;
   const hasCandidateTranscript = interview.transcript.some(
@@ -41,6 +43,24 @@ export default function LiveInterviewClient({
         ? "End-call signal sent to the backend."
         : "Unable to end the call right now because the live stream is disconnected.",
     );
+  };
+
+  const handleLaunchBot = async () => {
+    setIsLaunchingBot(true);
+    try {
+      const res = await fetch(`/api/recruiter/interviews/${interviewId}/launch-bot`, {
+        method: "POST",
+      });
+      const payload = (await res.json().catch(() => null)) as { detail?: string } | null;
+      if (!res.ok) {
+        throw new Error(payload?.detail ?? "Unable to start the interview bot.");
+      }
+      setControlMessage(payload?.detail ?? "Bot launch initiated — it will join the meeting shortly.");
+    } catch (err) {
+      setControlMessage(err instanceof Error ? err.message : "Unable to start the interview bot.");
+    } finally {
+      setIsLaunchingBot(false);
+    }
   };
 
   const handleShare = async () => {
@@ -89,6 +109,14 @@ export default function LiveInterviewClient({
   return (
     <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-25">
       <div className="mx-auto max-w-8xl">
+        <Link
+          href="/recruiter/dashboard/interviews"
+          prefetch={false}
+          className="mb-6 inline-flex items-center gap-2 text-[var(--color-secondary)] transition hover:opacity-70"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          <span className="text-lg font-semibold">Back to Interviews</span>
+        </Link>
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -125,11 +153,28 @@ export default function LiveInterviewClient({
         </div>
 
         {/* Error / control messages */}
-        {error && (
+        {error ? (
           <div className="mb-6 rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-5 py-4 text-sm text-[var(--color-status-error-text)]">
             {error}
           </div>
-        )}
+        ) : interview.status !== "ended" ? (
+          <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] px-5 py-4 text-sm text-[var(--color-teal-dark)] sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              {hasTranscript
+                ? "If the bot disconnects or needs to rejoin the Google Meet call, you can restart it here."
+                : "Start the interview bot to have it join the Google Meet call — the transcript will appear here once audio is sent."}
+            </span>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => void handleLaunchBot()}
+              disabled={isLaunchingBot}
+              className="shrink-0"
+            >
+              {isLaunchingBot ? "Starting..." : hasTranscript ? "Restart Interview Bot" : "Start Interview Bot"}
+            </Button>
+          </div>
+        ) : null}
         {controlMessage && (
           <div className="mb-6 rounded-2xl border border-[var(--color-teal-border)] bg-[var(--color-teal-light)] px-5 py-4 text-sm text-[var(--color-teal-dark)]">
             {controlMessage}

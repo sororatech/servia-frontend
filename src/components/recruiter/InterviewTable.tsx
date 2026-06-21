@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import EditMeetLinkModal from "@/components/recruiter/EditMeetLinkModal";
 import { slugifyInterviewLabel } from "@/lib/interviewRoutes";
 
 const PAGE_SIZE = 10;
@@ -17,6 +19,7 @@ export type InterviewRow = {
   recommendation: "hire" | "hold" | "reject" | null;
   score: number | null;
   scheduledTime: string | null;
+  meetLink: string;
 };
 
 type Props = {
@@ -77,7 +80,42 @@ function getStatusStyle(key: string): { bg: string; text: string; border: string
 }
 
 export default function InterviewTable({ interviews }: Props) {
+  const router = useRouter();
   const [page, setPage] = useState(1);
+  const [editingInterview, setEditingInterview] = useState<InterviewRow | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  async function handleCancelInterview(interview: InterviewRow) {
+    const confirmed = window.confirm(
+      `Cancel the scheduled interview for ${interview.candidateName}? This cannot be undone.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setCancelError(null);
+    setCancellingId(interview.interviewId);
+
+    try {
+      const res = await fetch(`/api/recruiter/interviews/${interview.interviewId}/cancel`, {
+        method: "POST",
+      });
+      const payload = (await res.json()) as { detail?: string; error?: string };
+
+      if (!res.ok) {
+        throw new Error(payload.detail ?? payload.error ?? "Unable to cancel interview.");
+      }
+
+      router.refresh();
+    } catch (error) {
+      setCancelError(
+        error instanceof Error ? error.message : "Unable to cancel interview.",
+      );
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   const totalPages = Math.max(1, Math.ceil(interviews.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -96,6 +134,10 @@ export default function InterviewTable({ interviews }: Props) {
           </p>
         </div>
       </div>
+
+      {cancelError ? (
+        <p className="mb-4 text-sm text-[var(--color-status-error-text)]">{cancelError}</p>
+      ) : null}
 
       <div className="overflow-hidden rounded-[1.6rem] border border-[var(--color-warm-border)]">
         <div className="overflow-x-auto">
@@ -163,20 +205,39 @@ export default function InterviewTable({ interviews }: Props) {
                       <td className="px-4 py-5">
                         <div className="flex flex-wrap gap-2">
                           {["scheduled", "confirmed", "in_progress"].includes(statusKey) && (
-                            <Link
-                              href={{
-                                pathname: `/recruiter/dashboard/interviews/live/${slugifyInterviewLabel(interview.candidateName)}`,
-                                query: {
-                                  interviewId: interview.interviewId,
-                                  candidateName: interview.candidateName,
-                                  candidateEmail: interview.candidateEmail,
-                                  candidateRole: interview.role,
-                                },
-                              }}
-                              className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                            <>
+                              <Link
+                                href={{
+                                  pathname: `/recruiter/dashboard/interviews/live/${slugifyInterviewLabel(interview.candidateName)}`,
+                                  query: {
+                                    interviewId: interview.interviewId,
+                                    candidateName: interview.candidateName,
+                                    candidateEmail: interview.candidateEmail,
+                                    candidateRole: interview.role,
+                                  },
+                                }}
+                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                              >
+                                Start Interview
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => setEditingInterview(interview)}
+                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                              >
+                                Edit Meet Link
+                              </button>
+                            </>
+                          )}
+                          {["scheduled", "confirmed"].includes(statusKey) && (
+                            <button
+                              type="button"
+                              onClick={() => void handleCancelInterview(interview)}
+                              disabled={cancellingId === interview.interviewId}
+                              className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-status-error-border)] px-3 py-2 text-sm font-semibold text-[var(--color-status-error-text)] transition hover:bg-[var(--color-status-error-bg)] disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                              Start Interview
-                            </Link>
+                              {cancellingId === interview.interviewId ? "Cancelling..." : "Cancel"}
+                            </button>
                           )}
                           <Link
                             href={`/recruiter/dashboard/interviews/${interview.interviewId}`}
@@ -228,6 +289,16 @@ export default function InterviewTable({ interviews }: Props) {
           </button>
         </div>
       </div>
+
+      {editingInterview && (
+        <EditMeetLinkModal
+          isOpen
+          onClose={() => setEditingInterview(null)}
+          interviewId={editingInterview.interviewId}
+          candidateName={editingInterview.candidateName}
+          initialMeetLink={editingInterview.meetLink}
+        />
+      )}
     </section>
   );
 }

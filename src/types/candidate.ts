@@ -61,6 +61,11 @@ export type CandidateListItem = {
   status: string;
   appliedAt: string;
   jobId: string;
+  activeInterview?: {
+    id: string;
+    status: string;
+    meetLink: string;
+  } | null;
 };
 
 export type CandidateStatusTone =

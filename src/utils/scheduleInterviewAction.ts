@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getApiUrl } from '@/utils/serverFetch';
+import { isValidMeetingLink, MEETING_LINK_HELP } from '@/lib/meetLink';
 
 export type CandidateContext = {
   candidateId: string;
@@ -93,6 +94,21 @@ export async function scheduleInterview(
   }
 
 
+  // Validate Google Meet link
+
+
+  const rawMeetLink = formData.get('meet_link');
+  const meetLink =
+    typeof rawMeetLink === 'string' ? rawMeetLink.trim() : '';
+
+  if (!isValidMeetingLink(meetLink)) {
+    errorRedirect(
+      context,
+      MEETING_LINK_HELP,
+    );
+  }
+
+
   // Create interview
 
 
@@ -113,6 +129,7 @@ export async function scheduleInterview(
           scheduledTime.toISOString(),
         duration_minutes: duration,
         stage,
+        meet_link: meetLink,
         status: 'scheduled',
       }),
     },

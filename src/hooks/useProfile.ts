@@ -68,34 +68,60 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get('/users/me/', { signal });
-      const mappedProfile = mapApiResponse(response.data);
+
+      const response = await fetch('/api/users/me', {
+        signal,
+        cache: 'no-store',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw Object.assign(new Error('Unauthorized'), { code: 'ERR_UNAUTHORIZED' });
+        }
+        throw new Error(`Profile request failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      const mappedProfile = mapApiResponse(data);
       
       let finalProfile = { ...mappedProfile };
 
       if (mappedProfile.role === 'candidate') {
         try {
-          const statsRes = await api.get('/candidates/my-applications-stats/', { signal });
-          const stats = statsRes.data;
-          finalProfile = {
-            ...mappedProfile,
-            applications_count: stats.total_applications ?? 0,
-            pending_actions: stats.pending_actions ?? 0,
-          };
+          const statsRes = await fetch('/api/candidates/my-applications-stats', {
+            signal,
+            cache: 'no-store',
+            credentials: 'include',
+          });
+          if (statsRes.ok) {
+            const stats = await statsRes.json();
+            finalProfile = {
+              ...mappedProfile,
+              applications_count: stats.total_applications ?? 0,
+              pending_actions: stats.pending_actions ?? 0,
+            };
+          }
         } catch (e) {
           if (e instanceof CanceledError) return;
           console.warn('Failed to fetch candidate stats', e);
         }
       } else if (mappedProfile.role === 'recruiter') {
         try {
-          const statsRes = await api.get('/users/recruiters/stats/', { signal });
-          const recruiterStats = statsRes.data;
-          finalProfile = {
-            ...mappedProfile,
-            managed_jobs: recruiterStats.total_jobs ?? 0,
-            total_candidates: recruiterStats.total_candidates ?? 0,
-            pending_review: recruiterStats.pending_review ?? 0,
-          };
+          const statsRes = await fetch('/api/users/recruiters/stats', {
+            signal,
+            cache: 'no-store',
+            credentials: 'include',
+          });
+          if (statsRes.ok) {
+            const recruiterStats = await statsRes.json();
+            finalProfile = {
+              ...mappedProfile,
+              managed_jobs: recruiterStats.total_jobs ?? 0,
+              total_candidates: recruiterStats.total_candidates ?? 0,
+              pending_review: recruiterStats.pending_review ?? 0,
+            };
+          }
         } catch (e) {
           if (e instanceof CanceledError) return;
           console.warn('Failed to fetch recruiter stats', e);
@@ -118,12 +144,16 @@ export function useProfile() {
         AUTH_STORAGE.setAvatarUrl(null);
       }
     } catch (err: any) {
-      if (err instanceof CanceledError) return;
-      console.error('Failed to fetch profile:', err);
+      if (err instanceof CanceledError || err?.name === 'AbortError') return;
+      console.warn('Failed to fetch profile:', err);
       let errorMsg = 'Unable to load profile from server. ';
-      if (err.code === 'ERR_NETWORK') errorMsg += 'Check your internet connection.';
-      else if (err.response?.status === 401) errorMsg += 'Please log in again.';
-      else errorMsg += 'Using local data, but some features may be limited.';
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('fetch')) {
+        errorMsg += 'Make sure the backend is running on port 8000.';
+      } else if (err.code === 'ERR_UNAUTHORIZED' || err.response?.status === 401) {
+        errorMsg += 'Please log in again.';
+      } else {
+        errorMsg += 'Using local data, but some features may be limited.';
+      }
       setError(errorMsg);
       AUTH_STORAGE.setAvatarUrl(null);
       
@@ -182,7 +212,16 @@ export function useProfile() {
       if (formData.phone !== (profile.phone || '')) payload.phone = formData.phone;
 
       if (Object.keys(payload).length > 0) {
-        await api.patch('/users/me/', payload);
+        const response = await fetch('/api/users/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          throw Object.assign(new Error('Save failed'), { response: { data: body } });
+        }
       }
       await fetchProfile();
       setIsEditing(false);

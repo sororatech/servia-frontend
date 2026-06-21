@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { LoadingSkeleton } from "@/components/ui";
+import {
+  isValidMeetingLink,
+  MEETING_LINK_HELP,
+  MEETING_LINK_INPUT_PATTERN,
+  MEETING_LINK_PLACEHOLDER,
+} from "@/lib/meetLink";
 
 type CandidateOption = {
   id: string;
@@ -23,6 +29,13 @@ type BackendCandidate = {
 };
 
 type BackendJob = { id: string; title: string };
+
+type Paginated<T> = { results: T[] };
+
+function toList<T>(payload: T[] | Paginated<T>): T[] {
+  if (Array.isArray(payload)) return payload;
+  return payload?.results ?? [];
+}
 
 function toLocalDateTimeValue(date: Date) {
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -60,6 +73,7 @@ export default function ScheduleInterviewModal({
     toLocalDateTimeValue(new Date(Date.now() + 24 * 60 * 60 * 1000)),
   );
   const [duration, setDuration] = useState("30");
+  const [meetLink, setMeetLink] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,22 +83,23 @@ export default function ScheduleInterviewModal({
 
     setCandidateId(defaultCandidateId);
     setJobId(defaultJobId);
+    setMeetLink("");
     setError(null);
     setIsLoading(true);
 
     Promise.all([
-      fetchFromRoute<BackendCandidate[]>("/api/recruiter/candidates"),
-      fetchFromRoute<BackendJob[]>("/api/recruiter/jobs"),
+      fetchFromRoute<BackendCandidate[] | Paginated<BackendCandidate>>("/api/recruiter/candidates"),
+      fetchFromRoute<BackendJob[] | Paginated<BackendJob>>("/api/recruiter/jobs"),
     ])
       .then(([rawCandidates, rawJobs]) => {
         setCandidates(
-          rawCandidates.map((c) => ({
+          toList(rawCandidates).map((c) => ({
             id: c.id,
             name: `${c.user.first_name} ${c.user.last_name}`.trim() || c.user.email,
             jobId: c.job,
           })),
         );
-        setJobs(rawJobs.map((j) => ({ id: j.id, title: j.title })));
+        setJobs(toList(rawJobs).map((j) => ({ id: j.id, title: j.title })));
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Failed to load candidates and jobs.");
@@ -106,6 +121,12 @@ export default function ScheduleInterviewModal({
       return;
     }
 
+    const trimmedMeetLink = meetLink.trim();
+    if (!isValidMeetingLink(trimmedMeetLink)) {
+      setError(MEETING_LINK_HELP);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -117,6 +138,7 @@ export default function ScheduleInterviewModal({
           job: jobId,
           scheduled_time: new Date(scheduledTime).toISOString(),
           duration_minutes: Number(duration),
+          meet_link: trimmedMeetLink,
           status: "scheduled",
         }),
       });
@@ -232,11 +254,18 @@ export default function ScheduleInterviewModal({
                 Meeting Link
               </label>
               <input
-                type="text"
-                disabled
-                placeholder="Auto-generated after scheduling"
-                className="w-full rounded-full border border-[var(--color-warm-border-faint)] bg-[var(--color-warm-bg)] px-5 py-3 text-sm text-[var(--color-text-subtle)] cursor-not-allowed opacity-60"
+                type="url"
+                value={meetLink ?? ""}
+                onChange={(e) => setMeetLink(e.target.value)}
+                required
+                placeholder={MEETING_LINK_PLACEHOLDER}
+                pattern={MEETING_LINK_INPUT_PATTERN}
+                title={MEETING_LINK_HELP}
+                className="w-full rounded-full border border-[var(--color-warm-border)] bg-[var(--color-input-bg-light)] px-5 py-3 text-sm text-[var(--color-text-darkest)] placeholder:text-[var(--color-text-subtle)] outline-none focus:border-[var(--color-primary)]"
               />
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">
+                {MEETING_LINK_HELP} The AI bot will join it automatically.
+              </p>
             </div>
 
             {error && (

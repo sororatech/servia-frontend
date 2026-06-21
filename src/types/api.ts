@@ -6,10 +6,11 @@ export type ApiResponse<T> = {
 export type TranscriptSpeaker = "AI" | "Candidate" | "Recruiter";
 
 export type TranscriptEntry = {
-  id: number;
+  id: string;
   speaker: TranscriptSpeaker;
   time: string;
   text: string;
+  sortAt: number;
 };
 
 export type FollowUpSuggestion = {
@@ -86,11 +87,23 @@ export type LiveInterviewSocketEvent =
       interview_id: string;
       timestamp?: string;
     }
-  | {
+    | {
       type: "interview_analysis_ready";
       interview_id: string;
       timestamp?: string;
       analysis?: {
-        overall_summary?: string;
+        fit_score?: number;
+        summary?: string;
+        strengths?: string[];
+        weaknesses?: string[];
+        feedback?: string;
+        recommendation?: string;
+        confidence?: string;
       };
+    }
+  | {
+      type: "session_started";
+      interview_id: string;
+      timestamp?: string;
+      cleared_transcript_rows?: number;
     };

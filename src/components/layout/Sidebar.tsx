@@ -40,8 +40,8 @@ export function Sidebar() {
   }
 
   const name = profile?.first_name && profile?.last_name 
-    ? `${profile.first_name} ${profile.last_name}`.trim() 
-    : 'User';
+    ? `${profile.first_name} ${profile.last_name}`.trim()
+    : [AUTH_STORAGE.getFirstName(), AUTH_STORAGE.getLastName()].filter(Boolean).join(' ') || 'User';
   const role = profile?.isAdmin ? 'Admin' : (profile?.role === 'candidate' ? 'Candidate' : 'Recruiter');
   const isAdmin = profile?.isAdmin || false;
   const avatarUrl = profile?.avatar || null;

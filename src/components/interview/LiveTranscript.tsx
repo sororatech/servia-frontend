@@ -1,11 +1,6 @@
 "use client";
 
-type TranscriptEntry = {
-  id: number;
-  speaker: "AI" | "Candidate" | "Recruiter";
-  time: string;
-  text: string;
-};
+import type { TranscriptEntry } from "@/types/api";
 
 type LiveTranscriptProps = {
   currentQuestion: string;

@@ -67,7 +67,11 @@ export async function getInterviewsPageData(
       : null;
 
   const rows: InterviewRow[] = interviews
-    .filter((i) => candidateById.get(i.candidate)?.status !== 'rejected_cv')
+    .filter(
+      (i) =>
+        candidateById.get(i.candidate)?.status !== 'rejected_cv'
+        && i.status !== 'cancelled',
+    )
     .map((interview) => {
       const candidate = candidateById.get(interview.candidate);
       return {
@@ -81,6 +85,7 @@ export async function getInterviewsPageData(
         recommendation: recommendationByInterviewId.get(interview.id) ?? null,
         score: scoreByInterviewId.get(interview.id) ?? null,
         scheduledTime: interview.scheduled_time ?? null,
+        meetLink: interview.meet_link ?? '',
       };
     });
 

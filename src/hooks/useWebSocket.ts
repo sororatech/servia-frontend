@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 const WS_OPEN = 1;
 const WS_CLOSED = 3;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY_MS = 2000;
 
 type UseWebSocketOptions = {
   enabled?: boolean;
@@ -22,6 +24,7 @@ export default function useWebSocket<TMessage = unknown>(
   options: UseWebSocketOptions = {},
 ): UseWebSocketResult<TMessage> {
   const { enabled = true, protocols } = options;
+  const protocolsKey = protocols?.join("\0") ?? "";
   const protocolsRef = useRef(protocols);
   protocolsRef.current = protocols;
   const socketRef = useRef<WebSocket | null>(null);
@@ -44,46 +47,97 @@ export default function useWebSocket<TMessage = unknown>(
       return;
     }
 
-    const activeProtocols = protocolsRef.current;
-    const socket = activeProtocols?.length
-      ? new WebSocket(url, activeProtocols)
-      : new WebSocket(url);
-    socketRef.current = socket;
+    let unmounted = false;
+    let intentionalClose = false;
+    let reconnectAttempts = 0;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    socket.onopen = () => {
-      setReadyState(WS_OPEN);
-      setError(null);
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const parsedMessage = JSON.parse(event.data) as TMessage;
-        setLastMessage(parsedMessage);
-      } catch {
-        setError("Received an unreadable websocket message.");
+    const connect = () => {
+      if (unmounted) {
+        return;
       }
-    };
 
-    socket.onerror = () => {
-      setError("Unable to connect to the live interview stream.");
-    };
+      const activeProtocols = protocolsRef.current;
+      const socket = activeProtocols?.length
+        ? new WebSocket(url, activeProtocols)
+        : new WebSocket(url);
+      socketRef.current = socket;
 
-    socket.onclose = (event) => {
-      setReadyState(WS_CLOSED);
-      if (!event.wasClean) {
-        if (event.code === 4003) {
-          setError("Live interview stream rejected authentication. Check the frontend auth token.");
+      socket.onopen = () => {
+        if (unmounted) {
           return;
         }
-        setError(`Live interview stream disconnected (code ${event.code}).`);
-      }
+        reconnectAttempts = 0;
+        setReadyState(WS_OPEN);
+        setError(null);
+      };
+
+      socket.onmessage = (event) => {
+        if (unmounted) {
+          return;
+        }
+        try {
+          const parsedMessage = JSON.parse(event.data) as TMessage;
+          setLastMessage(parsedMessage);
+        } catch {
+          setError("Received an unreadable websocket message.");
+        }
+      };
+
+      socket.onerror = () => {
+        // Error details arrive via onclose; avoid flashing a message while reconnecting.
+      };
+
+      socket.onclose = (event) => {
+        if (unmounted) {
+          return;
+        }
+
+        setReadyState(WS_CLOSED);
+        socketRef.current = null;
+
+        if (intentionalClose) {
+          return;
+        }
+
+        if (event.code === 4003) {
+          setError(
+            "Live interview stream rejected authentication. Please log in again and reopen this page.",
+          );
+          return;
+        }
+
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts += 1;
+          reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+          return;
+        }
+
+        if (event.code === 1006) {
+          setError(
+            "Unable to connect to the live interview stream. Check that the backend is running on port 8000.",
+          );
+          return;
+        }
+
+        if (!event.wasClean) {
+          setError(`Live interview stream disconnected (code ${event.code}).`);
+        }
+      };
     };
 
+    connect();
+
     return () => {
-      socket.close();
+      unmounted = true;
+      intentionalClose = true;
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+      socketRef.current?.close();
       socketRef.current = null;
     };
-  }, [enabled, url]);
+  }, [enabled, url, protocolsKey]);
 
   return {
     lastMessage,

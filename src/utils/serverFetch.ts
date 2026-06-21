@@ -11,6 +11,39 @@ export class SessionExpiredError extends Error {
   }
 }
 
+export class BackendUnavailableError extends Error {
+  constructor(message = 'Unable to reach the Servia backend.') {
+    super(message);
+    this.name = 'BackendUnavailableError';
+  }
+}
+
+const SERVER_FETCH_TIMEOUT_MS = 15_000;
+
+function wrapFetchError(error: unknown, url: string): Error {
+  if (error instanceof SessionExpiredError || error instanceof BackendUnavailableError) {
+    return error;
+  }
+
+  if (error instanceof DOMException && error.name === 'TimeoutError') {
+    return new BackendUnavailableError(
+      `The Servia backend did not respond in time (${url}). Restart it with: python manage.py runserver 0.0.0.0:8000`,
+    );
+  }
+
+  if (error instanceof TypeError) {
+    return new BackendUnavailableError(
+      `Unable to connect to the Servia backend (${url}). Make sure Django is running on port 8000.`,
+    );
+  }
+
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return new BackendUnavailableError(String(error));
+}
+
 export function getApiUrl(path: string) {
   const base = getApiBaseUrl();
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
@@ -41,17 +74,24 @@ export async function fetchJson<T>(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          ...headers,
-        },
-        cache: 'no-store',
-        credentials: 'include',
-        body: body ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined,
-      });
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            ...headers,
+          },
+          cache: 'no-store',
+          credentials: 'include',
+          signal: AbortSignal.timeout(SERVER_FETCH_TIMEOUT_MS),
+          body: body ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined,
+        });
+      } catch (error) {
+        if (softFail) return {} as T;
+        throw wrapFetchError(error, url);
+      }
 
       if (response.status === 429) {
         const retryAfter = response.headers.get('Retry-After');

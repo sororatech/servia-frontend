@@ -15,9 +15,13 @@ import type {
 import { unwrapCollection } from "@/lib/responseUtils";
 import type { PaginatedResponse } from "@/lib/responseUtils";
 import useWebSocket from "@/hooks/useWebSocket";
+import { AUTH_STORAGE } from "@/lib/auth";
 
 const WS_OPEN = 1;
 const REFRESH_INTERVAL_MS = 5000;
+const ANALYZING_NOTES = "Generating interview summary...";
+const ANALYSIS_FAILED_NOTES =
+  "Interview summary could not be generated. Try refreshing in a moment.";
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -39,6 +43,70 @@ type BackendCandidate = {
   };
 };
 
+
+type BackendAIReport = {
+  id: string;
+  interview: string | null;
+  report_type: string;
+  fit_score: number;
+  summary: string;
+  recommendation: string | null;
+};
+
+function formatInterviewNotes(
+  analysis:
+    | {
+        summary?: string;
+        fit_score?: number;
+        recommendation?: string;
+      }
+    | null
+    | undefined,
+): string {
+  const summary = analysis?.summary?.trim();
+  if (!summary) {
+    return "";
+  }
+
+  const parts = [summary];
+  if (analysis?.recommendation) {
+    const labels: Record<string, string> = {
+      hire: "Hire",
+      hold: "Hold",
+      reject: "Reject",
+    };
+    const label = labels[analysis.recommendation] ?? analysis.recommendation;
+    const score =
+      typeof analysis.fit_score === "number"
+        ? ` · ${analysis.fit_score}/100 fit`
+        : "";
+    parts.push(`Recommendation: ${label}${score}.`);
+  }
+
+  return parts.join("\n\n");
+}
+
+async function fetchInterviewAnalysisNotes(interviewId: string): Promise<string> {
+  try {
+    const response = await api.get<
+      ApiResponse<BackendAIReport[]> | BackendAIReport[]
+    >(
+      `/ai-reports/reports/?interview=${interviewId}&report_type=interview_analysis`,
+    );
+    const payload = unwrapCollection(
+      response.data as
+        | ApiResponse<BackendAIReport[]>
+        | PaginatedResponse<BackendAIReport>
+        | BackendAIReport[],
+    );
+    const report = payload.items.find(
+      (item) => item.interview === interviewId && item.report_type === "interview_analysis",
+    );
+    return formatInterviewNotes(report);
+  } catch {
+    return "";
+  }
+}
 
 function createEmptyInterview(interviewId: string): LiveInterviewState {
   return {
@@ -90,7 +158,7 @@ function mapSpeaker(
   return "AI";
 }
 
-function stableEntryId(timestamp: string): number {
+function timestampSortKey(timestamp: string): number {
   const ms = new Date(timestamp).getTime();
   return Number.isNaN(ms) ? Date.now() : ms;
 }
@@ -100,11 +168,22 @@ function mapConversationEntry(
   _index: number,
 ): TranscriptEntry {
   return {
-    id: stableEntryId(entry.timestamp),
+    id: entry.id,
     speaker: mapSpeaker(entry.speaker),
     time: formatClock(entry.timestamp),
     text: entry.text,
+    sortAt: timestampSortKey(entry.timestamp),
   };
+}
+
+function liveTranscriptEntryId(
+  message: Extract<LiveInterviewSocketEvent, { type: "transcript" }>,
+): string {
+  const text = message.text || message.message || "";
+  if (typeof message.start === "number" && typeof message.end === "number") {
+    return `live-${message.start}-${message.end}-${message.speaker}`;
+  }
+  return `live-${message.timestamp ?? "unknown"}-${message.speaker}-${text.slice(0, 48)}`;
 }
 
 function mergeTranscriptEntries(
@@ -113,30 +192,61 @@ function mergeTranscriptEntries(
 ) {
   const nextEntries = currentEntries.filter((entry) => entry.id !== incomingEntry.id);
   nextEntries.push(incomingEntry);
-  return nextEntries.sort((left, right) => left.id - right.id);
+  return nextEntries.sort((left, right) => left.sortAt - right.sortAt);
+}
+
+// REST polling fetches the persisted transcript, which uses real DB ids — different
+// from the "live-..." placeholder ids used for entries pushed over the WebSocket
+// before they're saved. Replacing the array outright on every poll would unmount
+// and remount those recent lines under a new key, flickering the live view. Instead,
+// keep the persisted entries as the source of truth and only retain WebSocket-only
+// entries that are genuinely ahead of what's been persisted so far.
+function mergeRestTranscript(
+  currentEntries: TranscriptEntry[],
+  persistedEntries: TranscriptEntry[],
+) {
+  const persistedIds = new Set(persistedEntries.map((entry) => entry.id));
+  const latestPersistedSortAt = persistedEntries.reduce(
+    (max, entry) => Math.max(max, entry.sortAt),
+    -Infinity,
+  );
+  const aheadLiveEntries = currentEntries.filter(
+    (entry) =>
+      entry.id.startsWith("live-") &&
+      !persistedIds.has(entry.id) &&
+      entry.sortAt > latestPersistedSortAt,
+  );
+  return [...persistedEntries, ...aheadLiveEntries].sort(
+    (left, right) => left.sortAt - right.sortAt,
+  );
 }
 
 function deriveWebSocketUrl(interviewId: string) {
   const configuredUrl =
     process.env.NEXT_PUBLIC_WS_URL ?? process.env.NEXT_PUBLIC_WS_BASE_URL;
 
+  let baseUrl: string | null = null;
   if (configuredUrl) {
-    const baseUrl = configuredUrl.replace(/\/$/, "");
-    return `${baseUrl}/${interviewId}/`;
+    baseUrl = configuredUrl.replace(/\/$/, "");
+  } else if (process.env.NEXT_PUBLIC_API_URL) {
+    baseUrl = `${process.env.NEXT_PUBLIC_API_URL.replace(/^http/, "ws").replace(/\/$/, "")}/ws/interview`;
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiUrl) {
+  if (!baseUrl) {
     return null;
   }
 
-  const normalizedApiUrl = apiUrl.replace(/^http/, "ws").replace(/\/$/, "");
-  return `${normalizedApiUrl}/ws/interview/${interviewId}/`;
-}
+  const url = `${baseUrl}/${interviewId}/`;
+  if (typeof window === "undefined") {
+    return url;
+  }
 
-function getWsProtocols(): string[] | undefined {
-  const token = process.env.NEXT_PUBLIC_AUTH_TOKEN;
-  return token ? ["auth", token] : undefined;
+  const token = AUTH_STORAGE.getWebSocketToken();
+  if (!token) {
+    return url;
+  }
+
+  return `${url}?token=${encodeURIComponent(token)}`;
 }
 
 function isValidInterviewId(interviewId: string) {
@@ -148,11 +258,25 @@ function mapBackendStatus(status: string): LiveInterviewState["status"] {
     return "live";
   }
 
-  if (status === "completed") {
+  if (status === "completed" || status === "analyzing") {
     return "ended";
   }
 
   return "idle";
+}
+
+function mapFollowUpSuggestions(
+  payload: { questions?: string[] } | null | undefined,
+): FollowUpSuggestion[] {
+  const questions = payload?.questions ?? [];
+  if (!questions.length) {
+    return [];
+  }
+
+  return questions.map((question, index) => ({
+    id: `${index}-${question}`,
+    text: question,
+  }));
 }
 
 function formatCandidateName(candidate: BackendCandidate | null) {
@@ -174,18 +298,51 @@ export default function useInterview(interviewId: string): UseInterviewResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startedAtMs, setStartedAtMs] = useState<number | null>(null);
+  const [webSocketUrl, setWebSocketUrl] = useState<string | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const isRefreshingRef = useRef(false);
+  const hasLoadedRef = useRef(false);
   const hasValidInterviewId = useMemo(() => isValidInterviewId(interviewId), [interviewId]);
 
-  const webSocketUrl = useMemo(
-    () => (hasValidInterviewId ? deriveWebSocketUrl(interviewId) : null),
-    [hasValidInterviewId, interviewId],
-  );
-  const wsProtocols = useMemo(() => getWsProtocols(), []);
+  useEffect(() => {
+    if (!hasValidInterviewId) {
+      setWebSocketUrl(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const response = await fetch(`/api/interviews/${interviewId}/ws-url`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (response.ok) {
+          const payload = (await response.json()) as { url?: string };
+          if (!cancelled && payload.url) {
+            setWebSocketUrl(payload.url);
+            return;
+          }
+        }
+      } catch {
+        // Fall back to client-side URL construction below.
+      }
+
+      if (!cancelled) {
+        setWebSocketUrl(deriveWebSocketUrl(interviewId));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasValidInterviewId, interviewId]);
+
   const { lastMessage, readyState, error: socketError, sendMessage } =
     useWebSocket<LiveInterviewSocketEvent>(webSocketUrl, {
       enabled: Boolean(webSocketUrl),
-      protocols: wsProtocols,
     });
 
   const endInterview = useCallback(() => {
@@ -199,6 +356,7 @@ export default function useInterview(interviewId: string): UseInterviewResult {
       setInterview((currentInterview) => ({
         ...currentInterview,
         status: "ended",
+        notes: ANALYZING_NOTES,
       }));
     }
 
@@ -212,15 +370,33 @@ export default function useInterview(interviewId: string): UseInterviewResult {
       return;
     }
 
-    setIsLoading(true);
+    // Guard against overlapping calls: a slow refresh (network latency) combined
+    // with a fixed polling tick can otherwise pile up concurrent in-flight
+    // requests that never let the page settle.
+    if (isRefreshingRef.current) {
+      return;
+    }
+    isRefreshingRef.current = true;
+
+    // Only show the full loading state for the initial fetch — background
+    // polling refreshes should update data quietly without flickering the
+    // whole page back to a loading skeleton.
+    if (!hasLoadedRef.current) {
+      setIsLoading(true);
+    }
     try {
-      const [interviewResponse, conversationsResponse] = await Promise.all([
+      const [interviewResponse, conversationsResponse, followUpsResponse] = await Promise.all([
         api.get<ApiResponse<BackendInterview> | BackendInterview>(
           `/interviews/interviews/${interviewId}/`,
         ),
         api.get<
           ApiResponse<BackendInterviewConversation[]> | BackendInterviewConversation[]
         >(`/interviews/conversations/?interview=${interviewId}`),
+        api
+          .get<
+            ApiResponse<{ questions?: string[] }> | { questions?: string[] }
+          >(`/interviews/interviews/${interviewId}/follow-ups/`)
+          .catch(() => null),
       ]);
 
       const interviewPayload =
@@ -236,16 +412,30 @@ export default function useInterview(interviewId: string): UseInterviewResult {
       const filteredConversations = conversationPayload.items.filter(
         (conversation) => conversation.interview === interviewId,
       );
+      const followUpPayload =
+        followUpsResponse &&
+        ("data" in followUpsResponse.data
+          ? followUpsResponse.data.data
+          : followUpsResponse.data);
+
+      const mappedStatus = mapBackendStatus(interviewPayload.status);
+      let analysisNotes = "";
+      if (mappedStatus === "ended" && interviewPayload.status === "completed") {
+        analysisNotes = await fetchInterviewAnalysisNotes(interviewId);
+      }
 
       setInterview((currentInterview) => ({
         ...currentInterview,
         interviewId,
         currentQuestion: "",
-        transcript: filteredConversations.map(mapConversationEntry),
-        followUpSuggestions: [],
-        notes: "",
+        transcript: mergeRestTranscript(
+          currentInterview.transcript,
+          filteredConversations.map(mapConversationEntry),
+        ),
+        followUpSuggestions: mapFollowUpSuggestions(followUpPayload),
+        notes: analysisNotes || currentInterview.notes,
         recordingTime: currentInterview.recordingTime,
-        status: mapBackendStatus(interviewPayload.status),
+        status: mappedStatus,
       }));
       setError(null);
       if (interviewPayload.status === "in_progress" && startedAtRef.current === null) {
@@ -295,6 +485,8 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     } catch {
       setError("Waiting for live interview data from the backend.");
     } finally {
+      isRefreshingRef.current = false;
+      hasLoadedRef.current = true;
       setIsLoading(false);
     }
   }, [hasValidInterviewId, interviewId]);
@@ -304,7 +496,7 @@ export default function useInterview(interviewId: string): UseInterviewResult {
   }, [refresh]);
 
   useEffect(() => {
-    if (!hasValidInterviewId) {
+    if (!hasValidInterviewId || interview.status === "ended") {
       return;
     }
 
@@ -315,7 +507,7 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [hasValidInterviewId, refresh]);
+  }, [hasValidInterviewId, interview.status, refresh]);
 
   useEffect(() => {
     if (!hasValidInterviewId || readyState !== WS_OPEN) {
@@ -375,10 +567,14 @@ export default function useInterview(interviewId: string): UseInterviewResult {
             transcript: mergeTranscriptEntries(
               currentInterview.transcript,
               {
-                id: stableEntryId(lastMessage.timestamp ?? ""),
+                id: liveTranscriptEntryId(lastMessage),
                 speaker: mapSpeaker(lastMessage.speaker),
                 time: formatClock(lastMessage.timestamp ?? ""),
                 text: lastMessage.text || lastMessage.message || "",
+                sortAt:
+                  typeof lastMessage.start === "number"
+                    ? lastMessage.start * 1000
+                    : timestampSortKey(lastMessage.timestamp ?? ""),
               },
             ),
             status: "live",
@@ -391,7 +587,35 @@ export default function useInterview(interviewId: string): UseInterviewResult {
               text: question,
             })),
           };
+        case "session_started":
+          if (startedAtRef.current === null) {
+            const now = Date.now();
+            startedAtRef.current = now;
+            setStartedAtMs(now);
+          }
+          return {
+            ...currentInterview,
+            transcript: [],
+            followUpSuggestions: [],
+            currentQuestion: "",
+            notes: "",
+            status: "live",
+          };
         case "interview_status":
+          if (lastMessage.status === "analyzing") {
+            return {
+              ...currentInterview,
+              status: "ended",
+              notes: ANALYZING_NOTES,
+            };
+          }
+          if (lastMessage.status === "analysis_failed") {
+            return {
+              ...currentInterview,
+              status: "ended",
+              notes: ANALYSIS_FAILED_NOTES,
+            };
+          }
           return {
             ...currentInterview,
             status: mapBackendStatus(lastMessage.status),
@@ -399,8 +623,8 @@ export default function useInterview(interviewId: string): UseInterviewResult {
         case "interview_analysis_ready":
           return {
             ...currentInterview,
-            notes:
-              lastMessage.analysis?.overall_summary ?? currentInterview.notes,
+            status: "ended",
+            notes: formatInterviewNotes(lastMessage.analysis) || currentInterview.notes,
           };
         default:
           return currentInterview;
@@ -412,11 +636,11 @@ export default function useInterview(interviewId: string): UseInterviewResult {
     interview,
     isLoading,
     error:
-      hasValidInterviewId &&
-      readyState === WS_OPEN &&
-      interview.transcript.length === 0
-        ? socketError
-        : error ?? socketError,
+      readyState === WS_OPEN
+        ? error
+        : interview.transcript.length > 0
+          ? error
+          : (error ?? socketError),
     streamStatus: readyState === WS_OPEN ? "connected" : "disconnected",
     refresh,
     endInterview,

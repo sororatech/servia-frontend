@@ -30,6 +30,7 @@ export type InterviewRecord = {
   candidate: string;
   job: string;
   status: string;
+  meet_link?: string;
   scheduled_time?: string;
   created_at?: string;
   updated_at?: string;
@@ -65,6 +66,7 @@ export type InterviewRow = {
   recommendation: 'hire' | 'hold' | 'reject' | null;
   score: number | null;
   scheduledTime: string | null;
+  meetLink: string;
 };
 
 export type PageStats = {

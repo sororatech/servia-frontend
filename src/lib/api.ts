@@ -21,12 +21,14 @@ api.interceptors.request.use((config) => {
     ];
     const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
     if (!isPublicRoute) {
-      const token = localStorage.getItem('auth_token');
+      let token = localStorage.getItem('auth_token');
+      if (!token) {
+        const match = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+        token = match ? decodeURIComponent(match[1]) : null;
+      }
       if (token) {
         const cleanToken = token.replace(/^["']|["']$/g, '');
         config.headers.Authorization = `Token ${cleanToken}`;
-      } else {
-        console.warn(`No token found in localStorage for: ${config.url}`);
       }
     }
   }
