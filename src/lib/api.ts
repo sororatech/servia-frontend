@@ -9,14 +9,14 @@ const API_URL = getApiBaseUrl();
 export const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30000, 
+  timeout: 30000,
   withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const publicRoutes = [
-      '/users/login/', '/users/register/', '/users/verify-email/', 
+      '/users/login/', '/users/register/', '/users/verify-email/',
       '/users/resend-verification/', '/users/password-reset/'
     ];
     const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
@@ -41,7 +41,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       if (!window.location.pathname.includes('/login')) {
         localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_role'); 
+        localStorage.removeItem('user_role');
         localStorage.removeItem('user_id');
         document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
         document.cookie = "user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
@@ -58,7 +58,7 @@ async function fetchAllResults<T>(url: string): Promise<T[]> {
     return data?.results || [];
   } catch (error) {
     console.warn(`️ Failed to fetch data for ${url}`);
-    return []; 
+    return [];
   }
 }
 
@@ -77,10 +77,9 @@ function getDayName(date: Date): string {
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
 }
 
-
 export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsData> {
   const recruiterId = getCurrentRecruiterId();
-  
+
   const [jobsResult, candidatesResult, interviewsResult, aiReportsResult] = await Promise.allSettled([
     fetchAllResults<any>(ENDPOINTS.JOBS),
     fetchAllResults<any>(ENDPOINTS.CANDIDATES),
@@ -93,57 +92,50 @@ export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsDa
   const interviews = interviewsResult.status === 'fulfilled' ? interviewsResult.value : [];
   const aiReports = aiReportsResult.status === 'fulfilled' ? aiReportsResult.value : [];
 
-  const activeJobs = jobs.filter((job: any) => 
-    job.is_active !== false && 
-    (!job.deleted_at || job.deleted_at === null) &&
-    (!recruiterId || String(job.posted_by) === String(recruiterId))
-  );
+  console.log('Jobs:', jobs);
+  console.log('Candidates:', candidates);
+  console.log('AI Reports:', aiReports);
 
-  const total_applications = activeJobs.reduce((sum: number, job: any) => 
-    sum + (job.candidate_count || 0), 0);
-  const total_applicants = candidates.length;
+  // ---- Build job map (all jobs) ----
+  const allJobsMap = new Map(jobs.map((j: any) => [String(j.id), j]));
 
-  const scores = aiReports
-    .map((r: any) => r.fit_score)
-    .filter((s: any) => s != null && !isNaN(Number(s)));
-  const avg_ai_fit_score = scores.length 
-    ? Math.round((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) * 10) / 10 
-    : 0;
+  // ---- Build candidate → job map ----
+  const candidateJobMap = new Map<string, string>();
+  candidates.forEach((c: any) => {
+    if (c.id && c.job) {
+      const jobId = typeof c.job === 'object' ? c.job.id : c.job;
+      candidateJobMap.set(c.id, jobId);
+    }
+  });
+  console.log('Candidate→Job map:', candidateJobMap);
 
-  const hiredCount = interviews.filter((i: any) => {
-    const status = (i.status || '').toLowerCase();
-    return status === 'hired' || status === 'offer_accepted';
-  }).length;
-  const uniqueCandidatesInInterviews = new Set(interviews.map((i: any) => i.candidate)).size;
-  const acceptance_rate = uniqueCandidatesInInterviews > 0 
-    ? Math.round((hiredCount / uniqueCandidatesInInterviews) * 1000) / 10 
-    : 0;
-
-  const interviewMap = new Map(interviews.map((i: any) => [String(i.id), i]));
-  const jobMap = new Map(activeJobs.map((j: any) => [String(j.id), j]));
+  // ---- Link AI reports to jobs ----
   const aiByJob: Record<string, number[]> = {};
-  
   aiReports.forEach((report: any) => {
-    const interviewId = typeof report.interview === 'object' && report.interview?.id
-      ? String(report.interview.id)
-      : String(report.interview);
-    const interview = interviewMap.get(interviewId);
-    
-    if (interview?.job) {
-      const jobId = typeof interview.job === 'object' && interview.job?.id
-        ? String(interview.job.id)
-        : String(interview.job);
-      const job = jobMap.get(jobId);
-      
+    let jobId: string | null = null;
+    // Try via interview
+    const interviewId = report.interview ? (typeof report.interview === 'object' ? report.interview.id : report.interview) : null;
+    if (interviewId) {
+      const interview = interviews.find((i: any) => String(i.id) === String(interviewId));
+      if (interview?.job) {
+        jobId = typeof interview.job === 'object' ? interview.job.id : interview.job;
+      }
+    }
+    // Fallback via candidate
+    if (!jobId && report.candidate) {
+      const candidateId = typeof report.candidate === 'object' ? report.candidate.id : report.candidate;
+      jobId = candidateJobMap.get(String(candidateId)) || null;
+    }
+    if (jobId) {
+      const job = allJobsMap.get(String(jobId));
       if (job) {
-        // Robust title extraction
-        let jobTitle = job.title || job.job_title || job.name || job.position || `Job #${String(job.id).slice(0, 8)}`;
+        const jobTitle = job.title || job.job_title || job.name || `Job #${String(job.id).slice(0, 8)}`;
         if (!aiByJob[jobTitle]) aiByJob[jobTitle] = [];
         if (report.fit_score != null) aiByJob[jobTitle].push(Number(report.fit_score));
       }
     }
   });
-  
+
   const ai_fit_score_distribution = Object.entries(aiByJob)
     .map(([job_title, scores]) => ({
       job_title,
@@ -152,6 +144,37 @@ export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsDa
     .sort((a, b) => b.average_score - a.average_score)
     .slice(0, 5);
 
+  console.log('AI fit score distribution:', ai_fit_score_distribution);
+
+  // ---- Active jobs (for other metrics) ----
+  const activeJobs = jobs.filter((job: any) =>
+    job.is_active !== false &&
+    (!job.deleted_at || job.deleted_at === null) &&
+    (!recruiterId || String(job.posted_by) === String(recruiterId))
+  );
+
+  const total_applications = activeJobs.reduce((sum: number, job: any) =>
+    sum + (job.candidate_count || 0), 0);
+  const total_applicants = candidates.length;
+
+  const scores = aiReports
+    .map((r: any) => r.fit_score)
+    .filter((s: any) => s != null && !isNaN(Number(s)));
+  const avg_ai_fit_score = scores.length
+    ? Math.round((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) * 10) / 10
+    : 0;
+
+  // ---- Acceptance rate ----
+  const hiredCount = interviews.filter((i: any) => {
+    const status = (i.status || '').toLowerCase();
+    return status === 'hired' || status === 'offer_accepted';
+  }).length;
+  const uniqueCandidatesInInterviews = new Set(interviews.map((i: any) => i.candidate)).size;
+  const acceptance_rate = uniqueCandidatesInInterviews > 0
+    ? Math.round((hiredCount / uniqueCandidatesInInterviews) * 1000) / 10
+    : 0;
+
+  // ---- Pipeline breakdown ----
   const statusCounts: Record<string, number> = {};
   interviews.forEach((interview: any) => {
     const status = (interview.status || 'unknown').toLowerCase().replace(/\s+/g, '_');
@@ -162,6 +185,7 @@ export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsDa
     count: count as number,
   }));
 
+  // ---- Applications over time ----
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const now = new Date();
   const dailyCounts: Record<string, number> = {};
@@ -185,6 +209,7 @@ export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsDa
     count: count as number,
   }));
 
+  // ---- Applications by job (using active jobs only) ----
   const applications_by_job = activeJobs
     .map((job: any) => ({
       job_title: job.title || job.job_title || job.name || `Job #${job.id}`,
@@ -192,6 +217,8 @@ export async function fetchAnalyticsFromMultipleEndpoints(): Promise<AnalyticsDa
     }))
     .sort((a, b) => b.applications - a.applications)
     .slice(0, 5);
+
+  console.log('Applications by job:', applications_by_job);
 
   return {
     total_applications,
@@ -251,6 +278,7 @@ export const authAPI = {
     const response = await api.post<{ message: string }>('/users/resend-verification/', data);
     return response.data;
   },
+
   async logout(): Promise<void> {
     try { await api.post('/users/logout/'); } catch (err) { console.error("Logout failed:", err); }
     finally {
@@ -316,10 +344,9 @@ export interface RecruiterProfile {
 export const dashboardAPI = {
   async getCurrentRecruiter(): Promise<RecruiterProfile> {
     const response = await api.get<RecruiterProfile>('/users/profile/');
-        if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       console.log('Profile response:', response.data);
     }
-    
     return response.data;
   },
 
@@ -332,7 +359,7 @@ export const dashboardAPI = {
     const response = await api.get('/candidates/candidates/', {
       params: {
         limit,
-        ordering: '-applied_at', 
+        ordering: '-applied_at',
       },
     });
 
@@ -359,12 +386,16 @@ export const dashboardAPI = {
     }));
   },
 
+  async getInterviews(): Promise<any[]> {
+    return fetchAllResults('/interviews/interviews/');
+  },
+
   async getOpenRoles(limit: number = 5): Promise<OpenRole[]> {
     const response = await api.get('/jobs/jobs/', {
       params: {
         is_active: true,
         limit,
-        ordering: '-created_at', 
+        ordering: '-created_at',
       },
     });
 
@@ -376,7 +407,7 @@ export const dashboardAPI = {
       department: job.department,
       location: job.location,
       openings_count: job.openings_count,
-      applications_count: job.candidate_count || 0, 
+      applications_count: job.candidate_count || 0,
       created_at: job.created_at,
     }));
   },
