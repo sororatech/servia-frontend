@@ -1,27 +1,30 @@
 export interface Recruiter {
   id: string;
-  user:{
+  user: {
+    id: number;
     first_name: string;
     last_name: string;
     email: string;
-  }
+  };
   department?: string;
-  role: 'Admin' | 'Recruiter' | string;
+  role: 'admin' | 'recruiter' | string;
   is_active: boolean;
-  last_login: string;
-  date_joined: string;
+  last_login: string | null;
+  date_joined: string | null;
 }
 
 export interface Candidate {
   id: string;
   user: {
-  first_name: string;
-  last_name: string;
-  email: string;
-  }
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
   status?: string;
-  applied_date?: string;
-  date_joined: string;
+  date_joined: string | null;
+  last_login: string | null;
+  applied_date: string | null; 
 }
 
 export interface UserStats {

@@ -35,6 +35,7 @@ export type BackendJob = {
   openings_remaining: number;
   core_skills: string[];
   education_level?: string;
+  posted_by_name?: string;
 };
 
 export type JobListItem = {
@@ -49,6 +50,7 @@ export type JobListItem = {
   openingsCount: number;
   openingsRemaining: number;
   postedAt: string;
+  postedByName?: string;
 };
 
 export type CreateJobPayload = {

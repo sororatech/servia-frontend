@@ -86,6 +86,7 @@ export async function getInterviewsPageData(
         score: scoreByInterviewId.get(interview.id) ?? null,
         scheduledTime: interview.scheduled_time ?? null,
         meetLink: interview.meet_link ?? '',
+        recruiterName: interview.recruiter_name ?? 'Unknown',
       };
     });
 

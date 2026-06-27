@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import EditMeetLinkModal from "@/components/recruiter/EditMeetLinkModal";
 import { slugifyInterviewLabel } from "@/lib/interviewRoutes";
+import { useProfile } from "@/hooks/useProfile";
 
 const PAGE_SIZE = 10;
 
@@ -20,6 +21,7 @@ export type InterviewRow = {
   score: number | null;
   scheduledTime: string | null;
   meetLink: string;
+  recruiterName?: string;
 };
 
 type Props = {
@@ -81,6 +83,8 @@ function getStatusStyle(key: string): { bg: string; text: string; border: string
 
 export default function InterviewTable({ interviews }: Props) {
   const router = useRouter();
+  const { profile } = useProfile();
+  const isAdmin = profile?.isAdmin || false;
   const [page, setPage] = useState(1);
   const [editingInterview, setEditingInterview] = useState<InterviewRow | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -124,6 +128,10 @@ export default function InterviewTable({ interviews }: Props) {
   const showingFrom = interviews.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const showingTo = Math.min(currentPage * PAGE_SIZE, interviews.length);
 
+  const columns = isAdmin 
+    ? ["Name", "Job Role", "Scheduled By", "Status", "Score", "Date", "Actions"]
+    : ["Name", "Job Role", "Status", "Score", "Date", "Actions"];
+
   return (
     <section className="rounded-[2rem] border border-black/10 bg-white/85 p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -144,7 +152,7 @@ export default function InterviewTable({ interviews }: Props) {
           <table className="min-w-full divide-y divide-[var(--color-warm-surface)]">
             <thead className="bg-[var(--color-warm-bg)]">
               <tr>
-                {["Name", "Job Role", "Status", "Score", "Date", "Actions"].map((col) => (
+                {columns.map((col) => (
                   <th
                     key={col}
                     className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]"
@@ -181,6 +189,15 @@ export default function InterviewTable({ interviews }: Props) {
                       <td className="px-4 py-4">
                         <p className="text-sm font-medium text-[var(--color-text-darkest)]">{interview.role}</p>
                       </td>
+                      
+                      {isAdmin && (
+                        <td className="px-4 py-5">
+                          <p className="text-sm font-medium text-[var(--color-text-darkest)]">
+                            {interview.recruiterName || 'Unknown'}
+                          </p>
+                        </td>
+                      )}
+                      
                       <td className="px-4 py-5">
                         <span
                           className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${bg} ${text} ${border}`}
@@ -204,7 +221,8 @@ export default function InterviewTable({ interviews }: Props) {
                       </td>
                       <td className="px-4 py-5">
                         <div className="flex flex-wrap gap-2">
-                          {["scheduled", "confirmed", "in_progress"].includes(statusKey) && (
+                          {/* 👇 All action buttons hidden for admins */}
+                          {!isAdmin && ["scheduled", "confirmed", "in_progress"].includes(statusKey) && (
                             <>
                               <Link
                                 href={{
@@ -229,7 +247,7 @@ export default function InterviewTable({ interviews }: Props) {
                               </button>
                             </>
                           )}
-                          {["scheduled", "confirmed"].includes(statusKey) && (
+                          {!isAdmin && ["scheduled", "confirmed"].includes(statusKey) && (
                             <button
                               type="button"
                               onClick={() => void handleCancelInterview(interview)}
@@ -252,7 +270,7 @@ export default function InterviewTable({ interviews }: Props) {
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
+                  <td colSpan={columns.length} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
                     No interviews found.
                   </td>
                 </tr>
@@ -290,7 +308,8 @@ export default function InterviewTable({ interviews }: Props) {
         </div>
       </div>
 
-      {editingInterview && (
+      {/* 👇 EditMeetLinkModal hidden for admins */}
+      {!isAdmin && editingInterview && (
         <EditMeetLinkModal
           isOpen
           onClose={() => setEditingInterview(null)}

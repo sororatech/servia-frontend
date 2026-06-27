@@ -25,11 +25,13 @@ export async function loadInitialCandidates(headers: HeadersInit): Promise<Candi
     fetchAllPages<BackendJobSummary>('/jobs/jobs/', headers),
     fetchAllPages<InterviewRecord>('/interviews/interviews/', headers),
   ]);
+  
   const candidates = dedup(rawCandidates);
   const jobs = dedup(rawJobs);
   const interviews = dedup(rawInterviews);
 
-  const jobsById = new Map(jobs.map((job) => [job.id, job]));
+  // Use String() to ensure consistent key types in the Map (prevents number vs string mismatches)
+  const jobsById = new Map(jobs.map((job) => [String(job.id), job]));
 
   const activeInterviewByCandidateId = new Map<string, InterviewRecord>();
   for (const interview of interviews) {
@@ -51,19 +53,22 @@ export async function loadInitialCandidates(headers: HeadersInit): Promise<Candi
   }
 
   return candidates.map((candidate) => {
-    const job = jobsById.get(candidate.job);
+    const jobData = typeof candidate.job === 'object' && candidate.job !== null ? candidate.job : null;
+    const jobId = jobData?.id || (typeof candidate.job === 'string' ? candidate.job : '');
+    const fallbackJob = jobsById.get(String(jobId));
+
     const activeInterview = activeInterviewByCandidateId.get(candidate.id);
 
     return {
       id: candidate.id,
       name: formatCandidateName(candidate),
       email: candidate.user.email,
-      role: job?.title || 'Unknown Role',
-      department: job?.department || 'General',
+      role: jobData?.title || fallbackJob?.title || 'Unknown Role',
+      department: jobData?.department || fallbackJob?.department || 'General',
       aiScore: candidate.ai_score,
       status: candidate.status,
       appliedAt: candidate.applied_at,
-      jobId: candidate.job,
+      jobId: String(jobId),
       activeInterview: activeInterview
         ? {
             id: activeInterview.id,

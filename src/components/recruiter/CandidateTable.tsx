@@ -9,6 +9,7 @@ import EditMeetLinkModal from "@/components/recruiter/EditMeetLinkModal";
 import ScheduleInterviewModal from "@/components/recruiter/ScheduleInterviewModal";
 import BulkUpdateModal from "@/components/recruiter/BulkUpdateModal";
 import { useScheduleInterview } from "@/hooks/useScheduleInterview";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/Button";
 import { slugifyInterviewLabel } from "@/lib/interviewRoutes";
 import type { CandidateListItem, CandidateStatusTone } from "@/types/candidate";
@@ -95,6 +96,9 @@ type CandidateTableProps = {
 
 export default function CandidateTable({ initialCandidates, error = null }: CandidateTableProps) {
   const router = useRouter();
+  const { profile } = useProfile();
+  const isAdmin = profile?.isAdmin || false;
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -110,6 +114,7 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
   const [showBulkModal, setShowBulkModal] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedCandidates(new Set());
   }, [page, statusFilter, roleFilter, search]);
 
@@ -178,22 +183,26 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
         defaultCandidateId={scheduleTarget?.candidateId}
         defaultJobId={scheduleTarget?.jobId}
       />
-      <BulkUpdateModal
-        isOpen={showBulkModal}
-        onClose={() => setShowBulkModal(false)}
-        candidateIds={Array.from(selectedCandidates)}
-        onSuccess={() => {
-          router.refresh();
-          setSelectedCandidates(new Set());
-        }}
-      />
-      {editingInterview?.activeInterview && (
+      {/* 👇 BulkUpdateModal hidden for admins */}
+      {!isAdmin && (
+        <BulkUpdateModal
+          isOpen={showBulkModal}
+          onClose={() => setShowBulkModal(false)}
+          candidateIds={Array.from(selectedCandidates)}
+          onSuccess={() => {
+            router.refresh();
+            setSelectedCandidates(new Set());
+          }}
+        />
+      )}
+      {/* 👇 EditMeetLinkModal also hidden for admins */}
+      {!isAdmin && editingInterview && (editingInterview as any).activeInterview && (
         <EditMeetLinkModal
           isOpen
           onClose={() => setEditingInterview(null)}
-          interviewId={editingInterview.activeInterview.id}
+          interviewId={(editingInterview as any).activeInterview.id}
           candidateName={editingInterview.name}
-          initialMeetLink={editingInterview.activeInterview.meetLink}
+          initialMeetLink={(editingInterview as any).activeInterview.meetLink}
         />
       )}
       <div className="mx-auto max-w-[1400px]">
@@ -267,7 +276,8 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
             </label>
           </div>
 
-          {someSelected && (
+          {/* 👇 Hide bulk update for admins */}
+          {someSelected && !isAdmin && (
             <div className="mb-4 flex items-center justify-between rounded-xl bg-[var(--color-primary)]/10 p-3">
               <span className="text-sm font-medium text-[var(--color-primary)]">
                 {selectedCandidates.size} candidate{selectedCandidates.size !== 1 ? "s" : ""} selected
@@ -283,14 +293,17 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
               <table className="min-w-full divide-y divide-[var(--color-warm-surface)]">
                 <thead className="bg-[var(--color-warm-bg)]">
                   <tr>
-                    <th className="px-4 py-4 text-left">
-                      <input
-                        type="checkbox"
-                        checked={allSelected}
-                        onChange={(e) => toggleSelectAll(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                      />
-                    </th>
+                    {/* 👇 Hide checkbox column for admins */}
+                    {!isAdmin && (
+                      <th className="px-4 py-4 text-left">
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={(e) => toggleSelectAll(e.target.checked)}
+                          className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                        />
+                      </th>
+                    )}
                     {[
                       { key: "name", label: "Name" },
                       { key: "role", label: "Role" },
@@ -326,93 +339,100 @@ export default function CandidateTable({ initialCandidates, error = null }: Cand
                 <tbody className="divide-y divide-[var(--color-warm-surface)] bg-white">
                   {error ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-16 text-center text-sm font-medium text-[var(--color-status-error-text)]">
+                      <td colSpan={isAdmin ? 6 : 7} className="px-4 py-16 text-center text-sm font-medium text-[var(--color-status-error-text)]">
                         {error}
                       </td>
                     </tr>
                   ) : pagedCandidates.length > 0 ? (
-                    pagedCandidates.map((candidate) => (
-                      <tr key={candidate.id} className="hover:bg-[var(--color-warm-bg-page)]">
-                        <td className="px-4 py-5">
-                          <input
-                            type="checkbox"
-                            checked={selectedCandidates.has(candidate.id)}
-                            onChange={(e) => toggleSelectCandidate(candidate.id, e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                          />
-                        </td>
-                        <td className="px-4 py-5">
-                          <div>
-                            <p className="text-base font-semibold text-[var(--color-text-darkest)]">{candidate.name}</p>
-                            <p className="mt-1 text-sm text-[var(--color-text-subtle)]">{candidate.email}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-5">
-                          <div>
-                            <p className="text-base font-medium text-[var(--color-text-darkest)]">{candidate.role}</p>
-                            <p className="mt-1 text-sm text-[var(--color-text-faint)]">
-                              {humanizeString(candidate.department)}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-5">
-                          <AIScoreBadge score={candidate.aiScore} />
-                        </td>
-                        <td className="px-4 py-5">
-                          <span className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${statusClasses(getStatusTone(candidate.status))}`}>
-                            {humanizeStatus(candidate.status)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-5 text-sm text-[var(--color-text-muted)]">{formatDate(candidate.appliedAt)}</td>
-                        <td className="px-4 py-5">
-                          <div className="flex min-w-[14rem] flex-wrap gap-2">
-                            <Link
-                              href={`/recruiter/dashboard/candidates/${candidate.id}`}
-                              className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
-                            >
-                              View Candidate
-                            </Link>
-                            {candidate.activeInterview && (
-                              <>
-                                <Link
-                                  href={{
-                                    pathname: `/recruiter/dashboard/interviews/live/${slugifyInterviewLabel(candidate.name)}`,
-                                    query: {
-                                      interviewId: candidate.activeInterview.id,
-                                      candidateName: candidate.name,
-                                      candidateEmail: candidate.email,
-                                      candidateRole: candidate.role,
-                                    },
-                                  }}
-                                  className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
-                                >
-                                  Start Interview
-                                </Link>
+                    pagedCandidates.map((candidate) => {
+                      const activeInterview = (candidate as any).activeInterview;
+                      return (
+                        <tr key={candidate.id} className="hover:bg-[var(--color-warm-bg-page)]">
+                          {/* 👇 Hide checkbox for admins */}
+                          {!isAdmin && (
+                            <td className="px-4 py-5">
+                              <input
+                                type="checkbox"
+                                checked={selectedCandidates.has(candidate.id)}
+                                onChange={(e) => toggleSelectCandidate(candidate.id, e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                              />
+                            </td>
+                          )}
+                          <td className="px-4 py-5">
+                            <div>
+                              <p className="text-base font-semibold text-[var(--color-text-darkest)]">{candidate.name}</p>
+                              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">{candidate.email}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-5">
+                            <div>
+                              <p className="text-base font-medium text-[var(--color-text-darkest)]">{candidate.role}</p>
+                              <p className="mt-1 text-sm text-[var(--color-text-faint)]">
+                                {humanizeString(candidate.department)}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-5">
+                            <AIScoreBadge score={candidate.aiScore} />
+                          </td>
+                          <td className="px-4 py-5">
+                            <span className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${statusClasses(getStatusTone(candidate.status))}`}>
+                              {humanizeStatus(candidate.status)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-5 text-sm text-[var(--color-text-muted)]">{formatDate(candidate.appliedAt)}</td>
+                          <td className="px-4 py-5">
+                            <div className="flex min-w-[14rem] flex-wrap gap-2">
+                              <Link
+                                href={`/recruiter/dashboard/candidates/${candidate.id}`}
+                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                              >
+                                View Candidate
+                              </Link>
+                              {/* 👇 All action buttons hidden for admins */}
+                              {!isAdmin && activeInterview && (
+                                <>
+                                  <Link
+                                    href={{
+                                      pathname: `/recruiter/dashboard/interviews/live/${slugifyInterviewLabel(candidate.name)}`,
+                                      query: {
+                                        interviewId: activeInterview.id,
+                                        candidateName: candidate.name,
+                                        candidateEmail: candidate.email,
+                                        candidateRole: candidate.role,
+                                      },
+                                    }}
+                                    className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
+                                  >
+                                    Start Interview
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingInterview(candidate)}
+                                    className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                                  >
+                                    Edit Meet Link
+                                  </button>
+                                </>
+                              )}
+                              {!isAdmin && candidate.status === "shortlisted" && !activeInterview && (
                                 <button
                                   type="button"
-                                  onClick={() => setEditingInterview(candidate)}
-                                  className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-warm-border-deep)] px-3 py-2 text-sm font-semibold text-[var(--color-text-body)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-teal-dark)]"
+                                  onClick={() => openFor(candidate.id, candidate.jobId)}
+                                  className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
                                 >
-                                  Edit Meet Link
+                                  Schedule Interview
                                 </button>
-                              </>
-                            )}
-                            {candidate.status === "shortlisted" && !candidate.activeInterview && (
-                              <button
-                                type="button"
-                                onClick={() => openFor(candidate.id, candidate.jobId)}
-                                className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
-                              >
-                                Schedule Interview
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
+                      <td colSpan={isAdmin ? 6 : 7} className="px-4 py-16 text-center text-sm text-[var(--color-text-subtle)]">
                         No candidates match the current filters.
                       </td>
                     </tr>

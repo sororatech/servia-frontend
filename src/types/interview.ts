@@ -29,10 +29,14 @@ export type InterviewRecord = {
   id: string;
   candidate: string;
   job: string;
+  recruiter?: string | null;
+  recruiter_name?: string;
+  scheduled_time: string | null;
+  duration_minutes: number;
+  stage: string;
   status: string;
   meet_link?: string;
-  scheduled_time?: string;
-  created_at?: string;
+  created_at: string;
   updated_at?: string;
 };
 
@@ -67,6 +71,7 @@ export type InterviewRow = {
   score: number | null;
   scheduledTime: string | null;
   meetLink: string;
+  recruiterName?: string;
 };
 
 export type PageStats = {

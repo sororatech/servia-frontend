@@ -34,7 +34,11 @@ export default function CandidatesTable({ candidates = [] }: { candidates?: Cand
                   </td>
                   <td className="px-4 py-4 text-sm text-[#635b55]">{c.user?.email || ''}</td>
                   <td className="px-4 py-4 text-sm text-[#635b55]">
-                    {c.applied_date ? new Date(c.applied_date).toLocaleDateString() : 'N/A'}
+                    {c.applied_date 
+                      ? new Date(c.applied_date).toLocaleDateString() 
+                      : (c.date_joined 
+                          ? new Date(c.date_joined).toLocaleDateString() 
+                          : 'N/A')}
                   </td>
                 </tr>
               ))

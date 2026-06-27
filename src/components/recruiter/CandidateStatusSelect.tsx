@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { CANDIDATE_STATUSES } from '@/types/candidate';
 import { updateCandidateStatus } from '@/utils/updateCandidateStatus';
+import { useProfile } from '@/hooks/useProfile';
 
 function humanize(status: string): string {
   return status
@@ -27,6 +28,9 @@ type Props = {
 };
 
 export default function CandidateStatusSelect({ candidateId, currentStatus }: Props) {
+  const { profile } = useProfile();
+  const isAdmin = profile?.isAdmin || false;
+  
   const [status, setStatus] = useState(currentStatus);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -47,6 +51,16 @@ export default function CandidateStatusSelect({ candidateId, currentStatus }: Pr
           setError(humanizeErrorMessage(err.message));
         });
     });
+  }
+
+  if (isAdmin) {
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <div className="inline-flex items-center rounded-full border-2 border-[var(--color-warm-border)] bg-[var(--color-warm-surface)] px-4 py-1.5 text-sm font-semibold text-[var(--color-text-muted)]">
+          {humanize(status)}
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -5,10 +5,16 @@ export type BackendUserBasic = {
   last_name: string;
 };
 
+export type BackendCandidateJob = {
+  id: string;
+  title: string;
+  department?: string;
+};
+
 export type BackendCandidate = {
   id: string;
   user: BackendUserBasic;
-  job: string;
+  job: string | BackendCandidateJob;
   status: string;
   ai_score: number | null;
   applied_at: string;

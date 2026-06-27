@@ -4,9 +4,12 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { deleteJob } from '@/utils/deleteJob';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function JobDetailActions({ jobId }: { jobId: string }) {
   const router = useRouter();
+  const { profile } = useProfile();
+  const isAdmin = profile?.isAdmin || false;
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -22,6 +25,11 @@ export default function JobDetailActions({ jobId }: { jobId: string }) {
         setConfirm(false);
       }
     });
+  }
+
+  // 👇 Hide all actions for admins
+  if (isAdmin) {
+    return null;
   }
 
   return (
