@@ -23,7 +23,7 @@ export default function DevPerformanceMeasureFix() {
     }
 
     const originalMeasure = perf.measure.bind(perf);
-    perf.measure = (...args: Parameters<Performance["measure"]>) => {
+    perf.measure = ((...args: Parameters<Performance["measure"]>): PerformanceMeasure | undefined => {
       try {
         return originalMeasure(...args);
       } catch (error) {
@@ -33,7 +33,7 @@ export default function DevPerformanceMeasureFix() {
         }
         throw error;
       }
-    };
+    }) as Performance["measure"];
     perf.__negativeTimestampPatched = true;
   }, []);
 
