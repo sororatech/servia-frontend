@@ -209,6 +209,7 @@ export default function ScheduleInterviewModal({
         id?: string; 
         detail?: string; 
         candidate?: string | string[];
+        non_field_errors?: string[];
         [key: string]: any;
       };
 
@@ -227,6 +228,15 @@ export default function ScheduleInterviewModal({
           errorMessage = Array.isArray(responseData.non_field_errors)
             ? responseData.non_field_errors.join(', ')
             : String(responseData.non_field_errors);
+        } else {
+          // Fallback: try to extract any error message from the response
+          const errorKeys = Object.keys(responseData).filter(key => 
+            Array.isArray(responseData[key]) || typeof responseData[key] === 'string'
+          );
+          if (errorKeys.length > 0) {
+            const firstError = responseData[errorKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError.join(', ') : String(firstError);
+          }
         }
         
         throw new Error(errorMessage);

@@ -64,20 +64,25 @@ async function loadCandidates(): Promise<CandidateListItem[]> {
     fetchAllPages<BackendJobSummary>("/jobs/jobs/"),
   ]);
 
-  const jobsById = new Map(jobs.map((job) => [job.id, job]));
+  const jobsById = new Map(jobs.map((job) => [String(job.id), job]));
 
   return candidates.map((candidate) => {
-    const job = jobsById.get(candidate.job);
+    const jobData = typeof candidate.job === 'object' && candidate.job !== null ? candidate.job : null;
+    
+    const jobId = jobData?.id || (typeof candidate.job === 'string' ? candidate.job : '');
+    
+    const job = jobsById.get(String(jobId));
+    
     return {
       id: candidate.id,
       name: formatCandidateName(candidate),
       email: candidate.user.email,
-      role: job?.title || "Unknown Role",
-      department: job?.department || "General",
+      role: jobData?.title || job?.title || "Unknown Role",
+      department: jobData?.department || job?.department || "General",
       aiScore: candidate.ai_score,
       status: candidate.status,
       appliedAt: candidate.applied_at,
-      jobId: candidate.job,
+      jobId: String(jobId),
     };
   });
 }
