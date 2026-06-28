@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from "react";
 import { deleteJob } from "@/utils/deleteJob";
+import { useProfile } from "@/hooks/useProfile";
 import type { JobListItem } from "@/types/job";
 
 const PAGE_SIZE = 20;
@@ -16,6 +17,9 @@ function formatDate(timestamp: string) {
 type Props = { initialJobs: JobListItem[]; error?: string | null };
 
 export default function JobsGrid({ initialJobs, error = null }: Props) {
+  const { profile } = useProfile();
+  const isAdmin = profile?.isAdmin || false;
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [departmentFilter, setDepartmentFilter] = useState("");
@@ -77,6 +81,7 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = filtered.length > paginated.length;
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setPage(1); }, [deferredSearch, statusFilter, departmentFilter, employmentTypeFilter, sortBy]);
 
   function clearFilters() {
@@ -112,18 +117,20 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--color-foreground)] sm:text-5xl">
-              My Job Postings
+              {isAdmin ? "All Job Postings" : "My Job Postings"}
             </h1>
             <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-muted)]">
-              Manage active job postings and track applications.
+              {isAdmin ? "View all job postings across all recruiters." : "Manage active job postings and track applications."}
             </p>
           </div>
-          <Link
-            href="/recruiter/dashboard/jobs/create"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-teal-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
-          >
-            + Create Job
-          </Link>
+          {!isAdmin && (
+            <Link
+              href="/recruiter/dashboard/jobs/create"
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-teal-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:border-[var(--color-primary)] hover:bg-[var(--color-teal-hover)]"
+            >
+              + Create Job
+            </Link>
+          )}
         </div>
 
         {/* Filters */}
@@ -203,12 +210,14 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
               </div>
               <p className="text-lg font-semibold text-[var(--color-text-dark)]">No job postings yet</p>
               <p className="mt-1 text-sm text-[var(--color-text-faint)]">Create your first job posting to start receiving applications</p>
-              <Link
-                href="/recruiter/dashboard/jobs/create"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)]"
-              >
-                + Create your first job
-              </Link>
+              {!isAdmin && (
+                <Link
+                  href="/recruiter/dashboard/jobs/create"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)]"
+                >
+                  + Create your first job
+                </Link>
+              )}
             </div>
           )
         ) : (
@@ -222,7 +231,11 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
                   <h2 className="text-xl font-bold text-[var(--color-foreground)]">{job.title}</h2>
                   <p className="mt-1 text-sm text-[var(--color-text-muted)]">{job.department}</p>
                   <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{job.location}</p>
-
+                  {isAdmin && job.postedByName && (
+                    <p className="mt-1 text-xs text-[var(--color-text-faint)]">
+                      Posted by: <span className="font-semibold">{job.postedByName}</span>
+                    </p>
+                  )}
                   <div className="mt-4 flex flex-wrap gap-2">
                     <span className="rounded-full border border-[var(--color-warm-border-light)] bg-[var(--color-warm-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text-subtle)]">
                       {job.employmentType}
@@ -275,24 +288,29 @@ export default function JobsGrid({ initialJobs, error = null }: Props) {
                   <div className="mt-5 flex items-center justify-between">
                     <p className="text-xs text-[var(--color-text-faint)]">Posted {formatDate(job.postedAt)}</p>
                     <div className="flex items-center gap-3">
-                      <Link
-                        href={`/recruiter/dashboard/jobs/${job.id}/edit`}
-                        className="text-sm font-semibold text-[var(--color-text-muted)] transition hover:text-[var(--color-teal-dark)]"
-                      >
-                        Edit
-                      </Link>
+                      {/* 👇 Hide Edit and Delete for admins, keep View */}
+                      {!isAdmin && (
+                        <Link
+                          href={`/recruiter/dashboard/jobs/${job.id}/edit`}
+                          className="text-sm font-semibold text-[var(--color-text-muted)] transition hover:text-[var(--color-teal-dark)]"
+                        >
+                          Edit
+                        </Link>
+                      )}
                       <Link
                         href={`/recruiter/dashboard/jobs/${job.id}`}
                         className="text-sm font-semibold text-[var(--color-teal-dark)] transition hover:underline"
                       >
                         View
                       </Link>
-                      <button
-                        onClick={() => setConfirmDeleteId(job.id)}
-                        className="text-sm font-semibold text-[var(--color-status-error-text)]/60 transition hover:text-[var(--color-status-error-text)]"
-                      >
-                        Delete
-                      </button>
+                      {!isAdmin && (
+                        <button
+                          onClick={() => setConfirmDeleteId(job.id)}
+                          className="text-sm font-semibold text-[var(--color-status-error-text)]/60 transition hover:text-[var(--color-status-error-text)]"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 </article>

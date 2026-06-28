@@ -58,7 +58,7 @@ function formatInterviewNotes(
     | {
         summary?: string;
         fit_score?: number;
-        recommendation?: string;
+        recommendation?: string | null;
       }
     | null
     | undefined,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Button } from '@/components/ui/Button';
 
 interface ServiceHealth {
   database: 'ok' | 'error';
@@ -43,16 +44,11 @@ export default function SystemHealthTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      const response = await api.get<HealthData>(`/system-health/`);
+      const response = await api.get<HealthData>('/system-health/');
       setData(response.data);
     } catch (err: any) {
       console.error('Failed to fetch health data:', err);
@@ -62,12 +58,16 @@ export default function SystemHealthTab() {
     }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   if (loading) {
     return (
-      <div className="rounded-2xl border border-black/10 bg-white/85 p-12 text-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+      <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-[var(--color-warm-border)] bg-white p-12 shadow-sm">
+        <div className="animate-pulse space-y-4 text-center">
+          <div className="h-4 w-48 rounded bg-gray-200 mx-auto" />
+          <div className="h-3 w-32 rounded bg-gray-100 mx-auto" />
         </div>
       </div>
     );
@@ -75,96 +75,113 @@ export default function SystemHealthTab() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
-        <p className="text-red-700 font-medium">⚠️ {error}</p>
-        <button
-          onClick={fetchData}
-          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-        >
+      <div className="rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] p-8 text-center shadow-sm">
+        <p className="text-sm font-medium text-[var(--color-status-error-text)]">⚠️ {error}</p>
+        <Button variant="primary" onClick={fetchData} className="mt-4">
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
 
   if (!data) return null;
 
+  const statusIcon = (status: 'ok' | 'error') =>
+    status === 'ok' ? '✓' : '✗';
+  const statusColor = (status: 'ok' | 'error') =>
+    status === 'ok' ? 'text-[var(--color-status-active-text)]' : 'text-[var(--color-status-error-text)]';
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="rounded-2xl border border-black/10 bg-white/85 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-[#171717]">System Status</h3>
-          <p className={`text-2xl font-bold mt-2 ${data.status === 'healthy' ? 'text-green-600' : data.status === 'degraded' ? 'text-yellow-600' : 'text-red-600'}`}>
-            {data.status === 'healthy' ? '✓ System Healthy' : data.status === 'degraded' ? '⚠️ Degraded' : '✗ Down'}
+      {/* Top stats cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold text-[var(--color-primary)]">System Status</p>
+          <p
+            className={`mt-2 text-2xl font-bold ${
+              data.status === 'healthy'
+                ? 'text-[var(--color-status-active-text)]'
+                : data.status === 'degraded'
+                ? 'text-[var(--color-status-warning-text)]'
+                : 'text-[var(--color-status-error-text)]'
+            }`}
+          >
+            {data.status === 'healthy' ? '✓ Healthy' : data.status === 'degraded' ? '⚠️ Degraded' : '✗ Down'}
           </p>
-          <p className="text-sm text-[#635b55] mt-1">
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             {data.status === 'healthy' ? 'All services operational' : 'Some issues detected'}
           </p>
         </div>
-
-        <div className="rounded-2xl border border-black/10 bg-white/85 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-[#171717]">Uptime</h3>
-          <p className="text-3xl font-bold text-[#26b9c8] mt-2">{data.uptime_percentage}%</p>
-          <p className="text-sm text-[#635b55] mt-1">Last 30 days</p>
+        <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold text-[var(--color-primary)]">Uptime (30d)</p>
+          <p className="mt-2 text-3xl font-bold text-[var(--color-foreground)]">{data.uptime_percentage}%</p>
         </div>
-
-        <div className="rounded-2xl border border-black/10 bg-white/85 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-[#171717]">Errors (24h)</h3>
-          <p className="text-3xl font-bold text-[#26b9c8] mt-2">{data.error_count_24h}</p>
-          <p className="text-sm text-[#635b55] mt-1">Last 24 hours</p>
+        <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold text-[var(--color-primary)]">Errors (24h)</p>
+          <p className="mt-2 text-3xl font-bold text-[var(--color-foreground)]">{data.error_count_24h}</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-black/10 bg-white/85 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-[#171717] mb-4">Service Health</h3>
+      {/* Service health */}
+      <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-[var(--color-secondary)] mb-4">Service Health</h3>
         <div className="grid grid-cols-2 gap-4">
           {Object.entries(data.services).map(([service, status]) => (
-            <div key={service} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <span className="text-sm font-medium text-gray-700 capitalize">{service}</span>
-              <span className={`text-sm font-semibold ${status === 'ok' ? 'text-green-600' : 'text-red-600'}`}>
-                {status === 'ok' ? '✓ OK' : '✗ Error'}
+            <div
+              key={service}
+              className="flex items-center justify-between rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg)] p-3"
+            >
+              <span className="text-sm font-medium capitalize text-[var(--color-text-dark)]">{service}</span>
+              <span className={`text-sm font-semibold ${statusColor(status)}`}>
+                {statusIcon(status)} {status === 'ok' ? 'OK' : 'Error'}
               </span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded-2xl border border-black/10 bg-white/85 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-[#171717] mb-2">API Usage</h3>
-        <p className="text-sm text-[#635b55] mb-4">Monthly AI scoring API consumption</p>
-        <div className="flex items-end gap-2 mb-2">
-          <span className="text-2xl font-bold text-[#171717]">{data.api_usage.current.toLocaleString()}</span>
-          <span className="text-sm text-gray-500 mb-1">/ {data.api_usage.limit.toLocaleString()} calls</span>
+      {/* API usage */}
+      <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-[var(--color-secondary)]">API Usage</h3>
+        <p className="mb-2 text-sm text-[var(--color-text-muted)]">Monthly AI scoring API consumption</p>
+        <div className="flex items-end gap-2">
+          <span className="text-2xl font-bold text-[var(--color-foreground)]">
+            {data.api_usage.current.toLocaleString()}
+          </span>
+          <span className="text-sm text-[var(--color-text-muted)] mb-1">
+            / {data.api_usage.limit.toLocaleString()} calls
+          </span>
         </div>
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--color-progress-track)]">
           <div
-            className="h-full bg-[#26b9c8] transition-all duration-500"
+            className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
             style={{ width: `${Math.min(data.api_usage.percentage, 100)}%` }}
           />
         </div>
-        <p className="text-sm text-[#635b55]">
-          {data.api_usage.percentage}% used — resets on {new Date(data.api_usage.resets_on).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+          {data.api_usage.percentage}% used — resets on{' '}
+          {new Date(data.api_usage.resets_on).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </p>
       </div>
 
-      <div className="rounded-2xl border border-black/10 bg-white/85 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[#171717]">Error Log</h3>
+      {/* Error log */}
+      <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <h3 className="text-lg font-bold text-[var(--color-secondary)]">Error Log</h3>
           {data.sentry.configured && (
             <a
               href={data.sentry.project_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[#26b9c8] hover:underline"
+              className="text-sm font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]"
             >
               View in Sentry →
             </a>
           )}
         </div>
-
         {data.recent_errors.length === 0 ? (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-700">✓ No errors in the last 24 hours</p>
+          <div className="rounded-xl border border-[var(--color-status-active-border)] bg-[var(--color-status-active-bg)] p-4 text-sm text-[var(--color-status-active-text)]">
+            ✓ No errors in the last 24 hours
           </div>
         ) : (
           <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -174,21 +191,28 @@ export default function SystemHealthTab() {
                 href={err.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                className="block rounded-xl border border-[var(--color-warm-border)] p-4 transition hover:bg-[var(--color-warm-bg)]"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
-                    <p className="font-medium text-[#171717]">{err.title}</p>
-                    {err.culprit && <p className="text-sm text-gray-600 mt-1 font-mono">{err.culprit}</p>}
-                    <p className="text-xs text-gray-500 mt-2">
-                      {new Date(err.first_seen).toLocaleString()} • {err.count} occurrence{err.count !== 1 ? 's' : ''}
+                    <p className="font-semibold text-[var(--color-secondary)]">{err.title}</p>
+                    {err.culprit && (
+                      <p className="mt-1 font-mono text-xs text-[var(--color-text-muted)]">{err.culprit}</p>
+                    )}
+                    <p className="mt-2 text-xs text-[var(--color-text-subtle)]">
+                      {new Date(err.first_seen).toLocaleString()} • {err.count} occurrence
+                      {err.count !== 1 ? 's' : ''}
                     </p>
                   </div>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    err.level === 'error' ? 'bg-red-100 text-red-700' :
-                    err.level === 'warning' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      err.level === 'error'
+                        ? 'bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)]'
+                        : err.level === 'warning'
+                        ? 'bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]'
+                        : 'bg-[var(--color-warm-surface)] text-[var(--color-text-subtle)]'
+                    }`}
+                  >
                     {err.level}
                   </span>
                 </div>

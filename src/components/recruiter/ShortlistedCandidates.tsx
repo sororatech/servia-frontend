@@ -17,11 +17,15 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
+type Props = {
+  candidates: ShortlistedCandidate[];
+  isAdmin?: boolean;
+};
+
 export default function ShortlistedCandidates({
   candidates,
-}: {
-  candidates: ShortlistedCandidate[];
-}) {
+  isAdmin = false,
+}: Props) {
   const { scheduleTarget, openFor, close, isOpen } = useScheduleInterview();
 
   if (candidates.length === 0) return null;
@@ -41,7 +45,7 @@ export default function ShortlistedCandidates({
             <table className="min-w-full divide-y divide-[var(--color-warm-surface)]">
               <thead className="bg-[var(--color-warm-bg)]">
                 <tr>
-                  {["Candidate", "Job Role", "Action"].map((col) => (
+                  {["Candidate", "Job Role", ...(!isAdmin ? ["Action"] : [])].map((col) => (
                     <th
                       key={col}
                       className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-faint)]"
@@ -68,15 +72,17 @@ export default function ShortlistedCandidates({
                     <td className="px-4 py-5">
                       <p className="text-base font-medium text-[var(--color-text-darkest)]">{candidate.role}</p>
                     </td>
-                    <td className="px-4 py-5">
-                      <button
-                        type="button"
-                        onClick={() => openFor(candidate.id, candidate.jobId)}
-                        className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
-                      >
-                        Schedule Interview
-                      </button>
-                    </td>
+                    {!isAdmin && (
+                      <td className="px-4 py-5">
+                        <button
+                          type="button"
+                          onClick={() => openFor(candidate.id, candidate.jobId)}
+                          className="inline-flex items-center rounded-[0.9rem] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-teal-dark)] transition hover:bg-[var(--color-teal-hover)]"
+                        >
+                          Schedule Interview
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -85,12 +91,14 @@ export default function ShortlistedCandidates({
         </div>
       </section>
 
-      <ScheduleInterviewModal
-        isOpen={isOpen}
-        onClose={close}
-        defaultCandidateId={scheduleTarget?.candidateId}
-        defaultJobId={scheduleTarget?.jobId}
-      />
+      {!isAdmin && (
+        <ScheduleInterviewModal
+          isOpen={isOpen}
+          onClose={close}
+          defaultCandidateId={scheduleTarget?.candidateId}
+          defaultJobId={scheduleTarget?.jobId}
+        />
+      )}
     </>
   );
 }

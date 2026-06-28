@@ -1,4 +1,3 @@
-// app/recruiter/dashboard/candidates/page.tsx
 import { redirect } from 'next/navigation';
 import { getRecruiterHeaders } from '@/lib/serverAuth';
 import { loadInitialCandidates } from '@/hooks/useCandidatesPageData';

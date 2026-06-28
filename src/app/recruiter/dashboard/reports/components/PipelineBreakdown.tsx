@@ -1,11 +1,34 @@
 'use client';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { CHART_COLORS, CHART_STYLES, getStatusColor } from '@/lib/theme';
+import { CHART_COLORS, CHART_STYLES } from '@/lib/theme';
 
 interface Props {
   data: { status: string; count: number }[];
 }
+
+function humanizeStatus(status: string): string {
+  return status
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+// Explicit color map for each status
+const STATUS_COLORS: Record<string, string> = {
+  'applied': '#26B9C8',         
+  'screened': '#F59E0B',       
+  'shortlisted': '#10B981',     
+  'video_submitted': '#8B5CF6', 
+  'interview_scheduled': '#3B82F6', 
+  'interviewed': '#6366F1',    
+  'offered': '#F472B6',          
+  'hired': '#059669',          
+  'rejected_cv': '#EF4444',     
+  'rejected_interview': '#DC2626',
+  'withdrawn': '#6B7280',      
+  'hold': '#D97706',           
+};
 
 export default function PipelineBreakdown({ data }: Props) {
   if (!data || data.length === 0) {
@@ -17,12 +40,9 @@ export default function PipelineBreakdown({ data }: Props) {
   }
 
   const chartData = data.map((item) => ({
-    name: item.status
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' '),
+    name: humanizeStatus(item.status),
     value: item.count,
-    color: getStatusColor(item.status) || 'var(--color-primary)',
+    color: STATUS_COLORS[item.status] || 'var(--color-primary)',
   }));
 
   return (

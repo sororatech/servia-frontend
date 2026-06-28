@@ -12,6 +12,7 @@ export async function loadSettingsData(headers: HeadersInit) {
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
     const usersThisWeek = [...recruiters, ...candidates].filter(user => {
+      if (!user.date_joined) return false; 
       return new Date(user.date_joined) >= oneWeekAgo;
     }).length;
 

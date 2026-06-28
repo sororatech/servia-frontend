@@ -37,6 +37,7 @@ export async function loadJobs(headers: HeadersInit): Promise<JobsPageData> {
         openingsCount: job.openings_count ?? 1,
         openingsRemaining: job.openings_remaining ?? (job.openings_count ?? 1),
         postedAt: job.created_at,
+        postedByName: job.posted_by_name,
       }));
 
     return { jobs, error: null };

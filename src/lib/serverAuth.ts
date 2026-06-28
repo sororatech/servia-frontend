@@ -42,7 +42,24 @@ export async function debugCookies() {
   return cookieStore.getAll();
 }
 
-// Optional: export a wrapper that also fetches (if needed)
+export async function isUserAdmin(): Promise<boolean> {
+  try {
+    const headers = await getRecruiterHeaders();
+    if (!headers) return false;
+
+    // Fetch the user profile from the backend
+    const data = await fetchJson<{ is_admin?: boolean; user_type?: string }>(
+      '/users/me/',
+      headers,
+    );
+
+    return data.is_admin === true || data.user_type === 'admin';
+  } catch (error) {
+    console.error('Failed to check admin status:', error);
+    return false;
+  }
+}
+
 export async function fetchWithServerAuth<T>(path: string, options?: RequestInit) {
   const headers = await getRecruiterHeaders();
   if (!headers) throw new Error('No auth headers');

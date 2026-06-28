@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { LoadingSkeleton } from "@/components/ui";
+import { AlertCircle } from "lucide-react";
 import {
   isValidMeetingLink,
   MEETING_LINK_HELP,
@@ -24,13 +25,21 @@ type JobOption = {
 
 type BackendCandidate = {
   id: string;
-  job: string;
+  job: string | { id: string; title: string; department?: string };
   user: { first_name: string; last_name: string; email: string };
 };
 
 type BackendJob = { id: string; title: string };
 
 type Paginated<T> = { results: T[] };
+
+type ExistingInterview = {
+  interview_id: string;
+  candidate_id: string;
+  status: string;
+  scheduled_time: string;
+  meet_link: string;
+};
 
 function toList<T>(payload: T[] | Paginated<T>): T[] {
   if (Array.isArray(payload)) return payload;
@@ -77,6 +86,9 @@ export default function ScheduleInterviewModal({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [existingInterview, setExistingInterview] = useState<ExistingInterview | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -86,6 +98,8 @@ export default function ScheduleInterviewModal({
     setMeetLink("");
     setError(null);
     setIsLoading(true);
+    setExistingInterview(null);
+    setIsUpdating(false);
 
     Promise.all([
       fetchFromRoute<BackendCandidate[] | Paginated<BackendCandidate>>("/api/recruiter/candidates"),
@@ -93,19 +107,54 @@ export default function ScheduleInterviewModal({
     ])
       .then(([rawCandidates, rawJobs]) => {
         setCandidates(
-          toList(rawCandidates).map((c) => ({
-            id: c.id,
-            name: `${c.user.first_name} ${c.user.last_name}`.trim() || c.user.email,
-            jobId: c.job,
-          })),
+          toList(rawCandidates).map((c) => {
+            const jobData = typeof c.job === 'object' && c.job !== null ? c.job : null;
+            const jobId = jobData?.id || (typeof c.job === 'string' ? c.job : '');
+            
+            return {
+              id: c.id,
+              name: `${c.user.first_name} ${c.user.last_name}`.trim() || c.user.email,
+              jobId: String(jobId),
+            };
+          }),
         );
-        setJobs(toList(rawJobs).map((j) => ({ id: j.id, title: j.title })));
+        setJobs(toList(rawJobs).map((j) => ({ id: String(j.id), title: j.title })));
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Failed to load candidates and jobs.");
       })
       .finally(() => setIsLoading(false));
   }, [isOpen, defaultCandidateId, defaultJobId]);
+
+  useEffect(() => {
+    if (!candidateId || !isOpen) return;
+    
+    const checkExistingInterview = async () => {
+      try {
+        const res = await fetch(`/api/recruiter/interviews?candidate_id=${candidateId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.hasActiveInterview && data.interview) {
+            setExistingInterview(data.interview);
+            // Pre-fill the form with existing interview data
+            if (data.interview.scheduled_time) {
+              setScheduledTime(toLocalDateTimeValue(new Date(data.interview.scheduled_time)));
+            }
+            // Pre-fill meet link if it exists
+            if (data.interview.meet_link) {
+              setMeetLink(data.interview.meet_link);
+            }
+          } else {
+            setExistingInterview(null);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check existing interview:', err);
+      }
+    };
+    
+    checkExistingInterview();
+  }, [candidateId, isOpen]);
 
   useEffect(() => {
     if (!candidateId) return;
@@ -130,23 +179,67 @@ export default function ScheduleInterviewModal({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/recruiter/interviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          candidate: candidateId,
-          job: jobId,
-          scheduled_time: new Date(scheduledTime).toISOString(),
-          duration_minutes: Number(duration),
-          meet_link: trimmedMeetLink,
-          status: "scheduled",
-        }),
-      });
+      const payload = {
+        candidate: candidateId,
+        job: jobId,
+        scheduled_time: new Date(scheduledTime).toISOString(),
+        duration_minutes: Number(duration),
+        meet_link: trimmedMeetLink,
+        status: "scheduled",
+      };
 
-      const payload = (await res.json()) as { id?: string; detail?: string };
+      let res: Response;
+      
+      // 👇 Use PUT if updating, POST if creating
+      if (existingInterview) {
+        res = await fetch(`/api/recruiter/interviews?id=${existingInterview.interview_id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch("/api/recruiter/interviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
 
-      if (!res.ok || !payload.id) {
-        throw new Error(payload.detail ?? "Unable to schedule interview.");
+      const responseData = (await res.json()) as { 
+        id?: string; 
+        detail?: string; 
+        candidate?: string | string[];
+        non_field_errors?: string[];
+        [key: string]: any;
+      };
+
+      if (!res.ok || !responseData.id) {
+        let errorMessage = "Unable to schedule interview.";
+        
+        if (responseData.detail) {
+          errorMessage = typeof responseData.detail === 'string' 
+            ? responseData.detail 
+            : JSON.stringify(responseData.detail);
+        } else if (responseData.candidate) {
+          errorMessage = Array.isArray(responseData.candidate) 
+            ? responseData.candidate.join(', ') 
+            : String(responseData.candidate);
+        } else if (responseData.non_field_errors) {
+          errorMessage = Array.isArray(responseData.non_field_errors)
+            ? responseData.non_field_errors.join(', ')
+            : String(responseData.non_field_errors);
+        } else {
+          // Fallback: try to extract any error message from the response
+          const errorKeys = Object.keys(responseData).filter(key => 
+            Array.isArray(responseData[key]) || typeof responseData[key] === 'string'
+          );
+          if (errorKeys.length > 0) {
+            const firstError = responseData[errorKeys[0]];
+            errorMessage = Array.isArray(firstError) ? firstError.join(', ') : String(firstError);
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       router.refresh();
@@ -166,7 +259,9 @@ export default function ScheduleInterviewModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="w-full max-w-lg rounded-3xl bg-[var(--color-warm-surface)] p-8 shadow-2xl">
-        <h2 className="text-xl font-bold text-[var(--color-foreground)]">Schedule Interview</h2>
+        <h2 className="text-xl font-bold text-[var(--color-foreground)]">
+          {existingInterview ? "Reschedule Interview" : "Schedule Interview"}
+        </h2>
 
         {isLoading ? (
           <div className="mt-8 py-6">
@@ -183,6 +278,21 @@ export default function ScheduleInterviewModal({
           </div>
         ) : (
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mt-6 space-y-4">
+            {existingInterview && (
+              <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4">
+                <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+                <div className="flex-1 text-sm">
+                  <p className="font-semibold text-amber-900">
+                    This candidate already has a scheduled interview
+                  </p>
+                  <p className="mt-1 text-amber-700">
+                    Submitting will update the existing interview scheduled for{" "}
+                    {new Date(existingInterview.scheduled_time).toLocaleString()}.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="mb-1 block text-sm font-semibold text-[var(--color-foreground)]">
                 Candidate Name
@@ -277,7 +387,10 @@ export default function ScheduleInterviewModal({
                 Cancel
               </Button>
               <Button variant="primary" type="submit" disabled={isSubmitting} className="flex-1">
-                {isSubmitting ? "Scheduling..." : "Schedule Interview"}
+                {isSubmitting 
+                  ? (existingInterview ? "Updating..." : "Scheduling...") 
+                  : (existingInterview ? "Update Interview" : "Schedule Interview")
+                }
               </Button>
             </div>
           </form>
