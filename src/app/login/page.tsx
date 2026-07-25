@@ -67,9 +67,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
       <div className="flex flex-1">
-        <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
+        {/* Left Panel (Desktop) */}
+        <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)]">
           <Image
             src="/images/registerimg.png"
             alt="ServiaAI background"
@@ -78,75 +79,92 @@ export default function LoginPage() {
             sizes="(max-width: 1024px) 100vw, 45vw"
             priority
           />
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
+          {/* Slightly darker overlay for better contrast in both modes */}
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(15, 42, 68, 0.65)' }} />
 
-          <div className="relative z-10 w-[85%] xl:w-auto xl:max-w-[460px] px-8 xl:px-14 py-10 xl:py-14 bg-[var(--color-background)] shadow-2xl rounded-[2px]">
+          <div className="relative z-10 w-[85%] xl:w-auto xl:max-w-[460px] px-8 xl:px-14 py-10 xl:py-14 bg-white dark:bg-[var(--color-warm-surface)] shadow-2xl rounded-2xl border border-[var(--color-warm-border)] transition-colors">
             <div className="mb-8">
               <div className="mb-6">
                 <Image src="/logo.png" alt="ServiaAI Logo" width={64} height={64} className="object-contain w-12 h-12 xl:w-16 xl:h-16" />
               </div>
-              <h2 className="text-xl xl:text-2xl mb-3 leading-tight" style={{ color: 'var(--color-secondary)' }}>
+              <h2 className="text-xl xl:text-2xl mb-3 leading-tight text-[var(--color-foreground)] font-bold">
                 The Ultimate Career Experience.
               </h2>
-              <p className="text-gray-600 leading-relaxed text-sm">
+              <p className="text-[var(--color-text-muted)] leading-relaxed text-sm">
                 Access high-stakes professional introductions and premium career opportunities designed for the ambitious.
               </p>
             </div>
 
-            <div className="mt-16 xl:mt-44 p-4 rounded-xl border border-gray-100 bg-[var(--color-background)] shadow-sm">
+            <div className="mt-16 xl:mt-44 p-4 rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)] shadow-sm transition-colors">
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-teal-light)' }}>
-                  <ShieldCheck className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
+                <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-teal-light)]">
+                  <ShieldCheck className="w-5 h-5 text-[var(--color-primary)]" />
                 </div>
                 <div>
-                  <h6 className="text-sm leading-none" style={{ color: 'var(--color-secondary)' }}>Verified Identity</h6>
-                  <p className="text-xs text-gray-500 leading-tight -mt-2" style={{ color: 'var(--color-primary)' }}>Your professional data is encrypted</p>
+                  <h6 className="text-sm leading-none text-[var(--color-foreground)] font-semibold">Verified Identity</h6>
+                  <p className="text-xs text-[var(--color-text-muted)] leading-tight -mt-2">Your professional data is encrypted</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-[var(--color-background)] overflow-y-auto">
+        {/* Right Panel (Form) */}
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-5 sm:p-8 bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] overflow-y-auto transition-colors">
           <div className="w-full max-w-md">
             <div className="mb-8 sm:mb-12">
-              <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-secondary)' }}>Welcome back</h2>
-              <p className="-mt-2 text-sm" style={{ color: 'var(--color-primary)' }}>Please enter your details to sign in.</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-foreground)]">Welcome back</h2>
+              <p className="-mt-2 text-sm text-[var(--color-text-muted)]">Please enter your details to sign in.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
               {(persistentError || error) && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{persistentError || error}</div>
+                <div className="p-3 bg-[var(--color-status-error-bg)] border border-[var(--color-status-error-border)] rounded-lg text-[var(--color-status-error-text)] text-sm">
+                  {persistentError || error}
+                </div>
               )}
 
               <div className="space-y-2 mt-8 sm:mt-16">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                <label htmlFor="email" className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Email address</label>
                 <input
-                  type="email" id="email" name="email" value={formData.email} onChange={handleChange}
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleChange}
                   placeholder="name@company.com"
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
-                  style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-[var(--color-input-bg)] dark:bg-[var(--color-input-bg-light)] text-[var(--color-text-darkest)] dark:text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                    validationErrors.email 
+                      ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                      : 'border-[var(--color-warm-border)] dark:border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                  }`}
                 />
-                {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
+                {validationErrors.email && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.email}</p>}
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                  <Link href="/forgot-password" className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>Forgot Password?</Link>
+                  <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Password</label>
+                  <Link href="/forgot-password" className="text-sm font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors">Forgot Password?</Link>
                 </div>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'} id="password" name="password" value={formData.password} onChange={handleChange}
+                    type={showPassword ? 'text' : 'password'} 
+                    id="password" 
+                    name="password" 
+                    value={formData.password} 
+                    onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
-                    style={{ backgroundColor: 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                    className={`w-full px-4 py-3 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-[var(--color-input-bg)] dark:bg-[var(--color-input-bg-light)] text-[var(--color-text-darkest)] dark:text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                      validationErrors.password 
+                        ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                        : 'border-[var(--color-warm-border)] dark:border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: 'var(--color-primary)' }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5 text-[var(--color-text-faint)] hover:text-[var(--color-foreground)] transition-colors"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -156,12 +174,19 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
-                {validationErrors.password && <p className="text-sm text-red-600">{validationErrors.password}</p>}
+                {validationErrors.password && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.password}</p>}
               </div>
 
               <div className="flex items-center">
-                <input id="rememberMe" name="rememberMe" type="checkbox" checked={rememberMe} onChange={handleCheckboxChange} className="w-4 h-4 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500" />
-                <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-600">Remember me</label>
+                <input 
+                  id="rememberMe" 
+                  name="rememberMe" 
+                  type="checkbox" 
+                  checked={rememberMe} 
+                  onChange={handleCheckboxChange} 
+                  className="w-4 h-4 flex-shrink-0 border-[var(--color-warm-border)] rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]/20 bg-[var(--color-input-bg)] dark:bg-[var(--color-input-bg-light)]" 
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-sm text-[var(--color-text-muted)] dark:text-[var(--color-foreground)]">Remember me</label>
               </div>
 
               <Button
@@ -176,9 +201,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <p className="mt-5 sm:mt-6 text-center text-sm text-gray-600">
+            <p className="mt-5 sm:mt-6 text-center text-sm text-[var(--color-text-muted)] dark:text-[var(--color-foreground)]">
               Don&#39;t have an account?{' '}
-              <Link href="/register" className="font-medium" style={{ color: 'var(--color-primary)' }}>Create Account</Link>
+              <Link href="/register" className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors">Create Account</Link>
             </p>
           </div>
         </div>
@@ -192,13 +217,15 @@ export default function LoginPage() {
           min-height: 48px !important;
           padding: 0 1.5rem !important;
           border-radius: 9999px !important;
+          color: white !important;
+          font-weight: 600 !important;
         }
-        .custom-button:hover {
+        .custom-button:hover:not(:disabled) {
           background-color: var(--color-primary-hover) !important;
-          opacity: 0.95 !important;
         }
         .custom-button:disabled {
           opacity: 0.6 !important;
+          cursor: not-allowed !important;
         }
       `}</style>
     </div>

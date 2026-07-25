@@ -11,9 +11,9 @@ export default function RecruiterOverviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-50">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <LoadingSkeleton className="h-10 w-64" />
+      <div className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-[1400px] space-y-6">
+          <LoadingSkeleton className="h-10 w-64 rounded-xl" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
               <LoadingSkeleton key={i} className="h-32 rounded-2xl" />
@@ -29,12 +29,15 @@ export default function RecruiterOverviewPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
-        <div className="mx-auto max-w-7xl flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
+        <div className="mx-auto max-w-[1400px] flex items-center justify-center h-64">
+          {/* Matched the error card styling from JobsGrid */}
+          <div className="text-center rounded-2xl border border-[var(--color-status-error-border)] bg-[var(--color-status-error-bg)] px-6 py-8">
+            <p className="text-[var(--color-status-error-text)] mb-4 font-medium">
+              {error}
+            </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
+              className="px-6 py-2.5 rounded-full bg-[var(--color-primary)] text-white font-semibold text-sm hover:bg-[var(--color-primary-hover)] transition-colors"
             >
               Retry
             </button>
@@ -65,15 +68,23 @@ export default function RecruiterOverviewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-25">
-      <div className="mx-auto max-w-8xl">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[var(--color-secondary)]" spellCheck={false}>
-            {getTimeGreeting()}, {safeData.recruiterName}!
-          </h1>
-          <p className="text-[var(--color-text-muted)] mt-2">
-            Here&apos;s what has happened with your recruitment pipeline today.
-          </p>
+    // Changed to <main> for semantic HTML, fixed px-25 to px-10 to match other pages
+    <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10">
+      {/* Changed max-w-8xl to max-w-[1400px] to perfectly align with Candidates/Jobs pages */}
+      <div className="mx-auto max-w-[1400px]">
+        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            {/* Changed text-[var(--color-secondary)] to text-[var(--color-foreground)] for dark mode readability */}
+            <h1 
+              className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--color-foreground)] sm:text-5xl" 
+              spellCheck={false}
+            >
+              {getTimeGreeting()}, {safeData.recruiterName}!
+            </h1>
+            <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-muted)]">
+              Here&apos;s what has happened with your recruitment pipeline today.
+            </p>
+          </div>
         </div>
 
         {/* Pass stats explicitly */}
@@ -87,6 +98,6 @@ export default function RecruiterOverviewPage() {
         <RecentApplications applications={safeData.recentApplications ?? []} />
         <OpenRolesProgress roles={safeData.openRoles ?? []} />
       </div>
-    </div>
+    </main>
   );
 }

@@ -29,7 +29,7 @@ export default function EditRecruiterModal({ recruiter, onClose, onUpdated }: { 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label>Department</Label>
-          <select value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-[#26b9c8]">
+          <select value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]">
             <option value="Engineering">Engineering</option>
             <option value="Sales">Sales</option>
             <option value="Marketing">Marketing</option>
@@ -38,7 +38,7 @@ export default function EditRecruiterModal({ recruiter, onClose, onUpdated }: { 
         </div>
         <div>
           <Label>Role</Label>
-          <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-[#26b9c8]">
+          <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]">
             <option value="Recruiter">Recruiter</option>
             <option value="Admin">Admin</option>
           </select>

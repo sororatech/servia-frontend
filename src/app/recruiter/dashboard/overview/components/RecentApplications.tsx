@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
 import { Video } from 'lucide-react';
 import { DASHBOARD_RECENT_LIMIT } from '@/hooks/useDashboardData';
 
@@ -34,11 +33,11 @@ export default function RecentApplications({ applications }: Props) {
 
   const getAvatarColor = (candidateId: string) => {
     const colors = [
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-purple-500',
-      'bg-orange-500',
-      'bg-pink-500',
+      'bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]',
+      'bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)]',
+      'bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]',
+      'bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)]',
+      'bg-[var(--color-teal-light)] text-[var(--color-teal-dark)]',
     ];
     const hash = candidateId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
@@ -46,13 +45,13 @@ export default function RecentApplications({ applications }: Props) {
 
   const getStatusBadgeClass = (status: string) => {
     const statusClasses: Record<string, string> = {
-      applied: 'bg-blue-100 text-blue-700',
-      shortlisted: 'bg-green-100 text-green-700',
-      interviewing: 'bg-purple-100 text-purple-700',
-      rejected: 'bg-red-100 text-red-700',
-      hired: 'bg-teal-100 text-teal-700',
+      applied: 'bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)]',
+      shortlisted: 'bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)]',
+      interviewing: 'bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)]',
+      rejected: 'bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)]',
+      hired: 'bg-[var(--color-status-active-bg)] text-[var(--color-status-active-text)]',
     };
-    return statusClasses[status.toLowerCase()] || 'bg-gray-100 text-gray-700';
+    return statusClasses[status.toLowerCase()] || 'bg-[var(--color-warm-surface)] text-[var(--color-text-muted)]';
   };
 
   const recentApplications = applications.slice(0, DASHBOARD_RECENT_LIMIT);
@@ -60,23 +59,23 @@ export default function RecentApplications({ applications }: Props) {
 
   if (applications.length === 0) {
     return (
-      <Card className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-8 text-center shadow-sm">
+      <div className="rounded-2xl bg-white dark:bg-[var(--color-warm-bg-deep)] p-8 text-center shadow-sm border-0">
         <p className="text-[var(--color-text-muted)] mb-4">No applications yet</p>
         <Link
           href="/jobs"
-          className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-full border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all"
+          className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-full bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-all"
         >
           Browse Jobs
         </Link>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm mb-8">
+    <div className="rounded-2xl bg-white dark:bg-[var(--color-warm-bg-deep)] p-6 shadow-sm mb-8 border-0">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-[var(--color-secondary)]">Recent Applications</h2>
+          <h2 className="text-2xl font-bold text-[var(--color-foreground)]">Recent Applications</h2>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
             Candidates waiting for your review
           </p>
@@ -97,20 +96,20 @@ export default function RecentApplications({ applications }: Props) {
           return (
             <Link
               key={app.id}
-              href={`/recruiter/dashboard/candidates/${app.id}`}  // ✅ use app.id (candidate ID)
-              className="flex flex-wrap items-center gap-3 p-4 rounded-xl transition-colors bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer"
+              href={`/recruiter/dashboard/candidates/${app.id}`}
+              className="flex flex-wrap items-center gap-3 p-4 rounded-xl transition-colors bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-surface)] hover:bg-[var(--color-warm-surface)] dark:hover:bg-[var(--color-warm-bg-deep)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer border-0"
             >
               <div
-                className={`w-10 h-10 rounded-full ${getAvatarColor(app.candidate.id)} flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}
+                className={`w-10 h-10 rounded-full ${getAvatarColor(app.candidate.id)} flex items-center justify-center font-semibold text-sm flex-shrink-0`}
               >
                 {getInitials(app.candidate.first_name, app.candidate.last_name)}
               </div>
 
               <div className="flex-1 min-w-0">
-                <span className="font-semibold text-gray-900 hover:text-[var(--color-primary)] block truncate">
+                <span className="font-semibold text-[var(--color-foreground)] hover:text-[var(--color-primary)] block truncate">
                   {candidateFullName}
                 </span>
-                <p className="text-sm text-gray-600 truncate">
+                <p className="text-sm text-[var(--color-text-muted)] truncate">
                   {app.job?.title || 'Unknown Job'}
                 </p>
               </div>
@@ -121,7 +120,7 @@ export default function RecentApplications({ applications }: Props) {
                     {app.ai_score}%
                   </span>
                 ) : (
-                  <span className="text-xs text-gray-300">—</span>
+                  <span className="text-xs text-[var(--color-text-faint)]">—</span>
                 )}
               </div>
 
@@ -144,7 +143,7 @@ export default function RecentApplications({ applications }: Props) {
                     Watch Video
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-500">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-warm-border)] text-[var(--color-text-muted)]">
                     <Video className="w-3 h-3" aria-hidden="true" />
                     No Video
                   </span>
@@ -154,6 +153,6 @@ export default function RecentApplications({ applications }: Props) {
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

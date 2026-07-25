@@ -13,20 +13,20 @@ export default function ApplicationsTable({ data }: Props) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center rounded-2xl border border-[var(--color-warm-border)] bg-white p-6">
+      <div className="flex h-full items-center justify-center rounded-2xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-surface)] p-6">
         <p className="text-sm text-[var(--color-text-subtle)]">No job application data available</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-[var(--color-secondary)]">Applications Posted</h3>
+    <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-surface)] p-6 shadow-sm">
+      <h3 className="text-lg font-bold text-[var(--color-foreground)]">Applications Posted</h3>
       <p className="mb-4 text-sm text-[var(--color-text-muted)]">Jobs sorted by application volume</p>
 
       <div className="overflow-x-auto rounded-xl border border-[var(--color-warm-border)]">
-        <table className="min-w-full divide-y divide-[var(--color-warm-surface)]">
-          <thead className="bg-[var(--color-warm-bg)]">
+        <table className="min-w-full divide-y divide-[var(--color-warm-surface)] dark:divide-[var(--color-warm-border)]">
+          <thead className="bg-[var(--color-warm-bg)] dark:bg-[var(--color-warm-bg-deep)]">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-primary)]">
                 Job Title
@@ -36,10 +36,10 @@ export default function ApplicationsTable({ data }: Props) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--color-warm-surface)] bg-white">
+          <tbody className="divide-y divide-[var(--color-warm-surface)] dark:divide-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-surface)]">
             {displayData.map((job, i) => (
-              <tr key={i} className="hover:bg-[var(--color-warm-bg-page)] transition">
-                <td className="px-4 py-3 text-sm text-[var(--color-text-dark)]">{job.job_title}</td>
+              <tr key={i} className="hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-bg)] transition">
+                <td className="px-4 py-3 text-sm text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">{job.job_title}</td>
                 <td className="px-4 py-3 text-sm font-semibold text-[var(--color-primary)]">
                   {job.applications}
                 </td>

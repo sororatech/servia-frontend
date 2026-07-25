@@ -59,34 +59,36 @@ function VideoIntroPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center gap-3 mb-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        {/* Stepper */}
+        <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">
-              <span className="text-xs font-medium text-white">1</span>
+            <div className="w-7 h-7 rounded-full bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] flex items-center justify-center border border-[var(--color-warm-border)]">
+              <span className="text-xs font-medium text-[var(--color-text-faint)]">1</span>
             </div>
-            <span className="text-sm text-gray-600">Personal Details</span>
+            <span className="text-sm text-[var(--color-text-faint)] whitespace-nowrap">Personal Details</span>
           </div>
-          <div className="w-12 h-px bg-gray-300" />
+          <div className="w-8 sm:w-12 h-px bg-[var(--color-warm-border)] flex-shrink-0" />
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-medium text-white">2</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">Video Intro</span>
+            <span className="text-sm font-medium text-[var(--color-foreground)] whitespace-nowrap">Video Intro</span>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
-          <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Left Column: Info */}
+          <div className="space-y-6 sm:space-y-8 order-1 lg:order-1">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-3">
+              <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-foreground)] mb-3 leading-tight">
                 Let them see the person behind the CV.
               </h1>
-              <p className="text-gray-600 leading-relaxed">
-                A short 60-second introduction helps recruiters understand your communication <br /> style and personality.
-                Focus on your biggest professional achievement <br /> and why you&apos;re passionate about this role.
+              <p className="text-[var(--color-text-muted)] leading-relaxed text-sm sm:text-base">
+                A short 60-second introduction helps recruiters understand your communication style and personality.
+                Focus on your biggest professional achievement and why you&apos;re passionate about this role.
               </p>
             </div>
 
@@ -99,36 +101,37 @@ function VideoIntroPageContent() {
               onUploadedFileChange={handleUploadedFileChange}
             />
 
-            <div className="p-4 bg-gray-50 rounded-xl flex items-start gap-3">
-              <svg className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-4 bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)] rounded-xl flex items-start gap-3 border border-[var(--color-warm-border)]">
+              <svg className="w-5 h-5 text-[var(--color-text-faint)] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium text-[#26B9C8]">Tip:</span> Ensure you&apos;re in a well-lit environment and using a clear microphone for the best impression.
+              <p className="text-sm text-[var(--color-text-muted)]">
+                <span className="font-medium text-[var(--color-primary)]">Tip:</span> Ensure you&apos;re in a well-lit environment and using a clear microphone for the best impression.
               </p>
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div className="bg-gray-50 rounded-xl p-6 relative">
-              <h3 className="font-semibold text-gray-900 mb-1">Already have a video?</h3>
-              <p className="text-sm text-gray-600 mb-4">Upload your pre-recorded introduction in MP4, MOV, or WEBM format.</p>
+          {/* Right Column: Upload Area */}
+          <div className="space-y-6 sm:space-y-8 order-2 lg:order-2">
+            <div className="bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)] rounded-2xl sm:rounded-3xl p-5 sm:p-6 relative border border-[var(--color-warm-border)]">
+              <h3 className="font-semibold text-[var(--color-foreground)] mb-1">Already have a video?</h3>
+              <p className="text-sm text-[var(--color-text-muted)] mb-4">Upload your pre-recorded introduction in MP4, MOV, or WEBM format.</p>
 
               {hasUploadedFile && uploadedPreviewUrl ? (
                 <div className="mb-4">
-                  <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden mb-3">
+                  <div className="relative aspect-video bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] rounded-lg overflow-hidden mb-3 border border-[var(--color-warm-border)]">
                     <video
                       src={uploadedPreviewUrl}
                       className="w-full h-full object-cover"
                       controls
                     />
                   </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600 truncate">{uploadedFileName}</p>
+                  <div className="flex justify-between items-center gap-3">
+                    <p className="text-sm text-[var(--color-text-muted)] truncate flex-1">{uploadedFileName}</p>
                     <button
                       onClick={handleRemoveFile}
-                      className="px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200 transition-colors"
+                      className="px-4 py-2 bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)] rounded-full text-sm font-medium hover:bg-[var(--color-status-error-bg)]/80 transition-colors border border-[var(--color-status-error-border)] flex-shrink-0"
                     >
                       Remove
                     </button>
@@ -154,40 +157,40 @@ function VideoIntroPageContent() {
                     };
                     input.click();
                   }}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#26B9C8] hover:bg-[#26B9C8]/5 transition-colors"
+                  className="border-2 border-dashed border-[var(--color-warm-border)] rounded-xl p-6 sm:p-8 text-center cursor-pointer hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors"
                 >
-                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-5 h-5 text-[#26B9C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 bg-[var(--color-status-info-bg)] rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
-                  <p className="text-gray-900 font-medium">Drop video here</p>
-                  <p className="text-sm text-[#26B9C8]">or click to browse files</p>
+                  <p className="text-[var(--color-foreground)] font-medium">Drop video here</p>
+                  <p className="text-sm text-[var(--color-primary)]">or click to browse files</p>
                 </div>
               )}
 
-              <div className="mt-4">
-                <p className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-2">QUICK CHECKLIST</p>
-                <ul className="space-y-1.5 text-sm text-gray-600">
+              <div className="mt-6">
+                <p className="text-xs font-semibold text-[var(--color-foreground)] uppercase tracking-wide mb-2">QUICK CHECKLIST</p>
+                <ul className="space-y-1.5 text-sm text-[var(--color-text-muted)]">
                   <li className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#26B9C8]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-4 h-4 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                     Professional attire recommended
                   </li>
                   <li className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#26B9C8]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-4 h-4 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                     Clear background
                   </li>
                   <li className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-[#26B9C8]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-4 h-4 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                     Under 50MB file size
                   </li>
                 </ul>
               </div>
 
               {hasRecordedVideo && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm rounded-xl pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl sm:rounded-3xl pointer-events-none">
                   <div className="text-center text-white p-6">
-                    <svg className="w-12 h-12 mx-auto mb-3 text-[#26B9C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12 mx-auto mb-3 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="font-semibold mb-1">Video Recorded</p>
@@ -201,14 +204,14 @@ function VideoIntroPageContent() {
               <button
                 onClick={handleSave}
                 disabled={isUploading || (!hasUploadedFile && !hasRecordedVideo)}
-                className="w-full py-3 bg-[#26B9C8] text-white rounded-full font-medium hover:bg-[#26B9C8]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                className="w-full py-3 sm:py-3.5 bg-[var(--color-primary)] text-white rounded-full font-medium hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
               >
                 {isUploading ? 'Uploading...' : 'Save & Continue'}
               </button>
               <button
                 onClick={() => router.push('/candidate/dashboard/status')}
                 disabled={isUploading}
-                className="w-full py-3 border-2 border-[#26B9C8] text-[#26B9C8] bg-white rounded-full font-medium hover:bg-[#26B9C8]/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                className="w-full py-3 sm:py-3.5 border-2 border-[var(--color-primary)] text-[var(--color-primary)] bg-white dark:bg-[var(--color-warm-surface)] rounded-full font-medium hover:bg-[var(--color-primary)]/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
               >
                 Skip for now
               </button>
@@ -222,7 +225,11 @@ function VideoIntroPageContent() {
 
 export default function VideoIntroPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)]">
+        <p className="text-[var(--color-text-muted)]">Loading...</p>
+      </div>
+    }>
       <VideoIntroPageContent />
     </Suspense>
   );

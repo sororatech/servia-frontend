@@ -1,7 +1,7 @@
 'use client';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { CHART_COLORS, CHART_STYLES } from '@/lib/theme';
+import { CHART_STYLES } from '@/lib/theme';
 
 interface Props {
   data: { status: string; count: number }[];
@@ -26,14 +26,14 @@ const STATUS_COLORS: Record<string, string> = {
   'hired': '#059669',          
   'rejected_cv': '#EF4444',     
   'rejected_interview': '#DC2626',
-  'withdrawn': '#6B7280',      
+  'withdrawn': '#9CA3AF',      // Lightened gray so it's visible in dark mode
   'hold': '#D97706',           
 };
 
 export default function PipelineBreakdown({ data }: Props) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center rounded-2xl border border-[var(--color-warm-border)] bg-white p-6">
+      <div className="flex h-full items-center justify-center rounded-2xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-surface)] p-6">
         <p className="text-sm text-[var(--color-text-subtle)]">No pipeline data available</p>
       </div>
     );
@@ -46,8 +46,8 @@ export default function PipelineBreakdown({ data }: Props) {
   }));
 
   return (
-    <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-[var(--color-secondary)]">Pipeline Breakdown</h3>
+    <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-surface)] p-6 shadow-sm">
+      <h3 className="text-lg font-bold text-[var(--color-foreground)]">Pipeline Breakdown</h3>
       <p className="mb-4 text-sm text-[var(--color-text-muted)]">
         Current status of all processed candidates
       </p>
@@ -70,10 +70,11 @@ export default function PipelineBreakdown({ data }: Props) {
             </Pie>
             <Tooltip
               contentStyle={{
-                backgroundColor: CHART_COLORS.tooltipBg,
-                border: `1px solid ${CHART_COLORS.tooltipBorder}`,
+                backgroundColor: 'var(--color-warm-surface)',
+                border: '1px solid var(--color-warm-border)',
                 borderRadius: CHART_STYLES.borderRadius.tooltip,
                 fontFamily: CHART_STYLES.fontFamily,
+                color: 'var(--color-foreground)',
               }}
             />
             <Legend
@@ -87,7 +88,7 @@ export default function PipelineBreakdown({ data }: Props) {
                 fontFamily: CHART_STYLES.fontFamily,
               }}
               formatter={(value: string) => (
-                <span style={{ color: CHART_COLORS.axisText }}>{value}</span>
+                <span style={{ color: 'var(--color-chart-text)' }}>{value}</span>
               )}
             />
           </PieChart>

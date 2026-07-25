@@ -16,14 +16,14 @@ export const ApplicationProgress = ({ status }: ApplicationProgressProps) => {
       <div className="w-full">
         <div className="flex justify-between mb-2 text-[10px] font-bold tracking-wider uppercase">
           {APPLICATION_STAGES.map((stage) => (
-            <span key={stage} className="text-gray-400">{stage}</span>
+            <span key={stage} className="text-[var(--color-text-faint)]">{stage}</span>
           ))}
         </div>
-        <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <div className="absolute top-0 left-0 h-full rounded-full bg-gray-300" style={{ width: '100%' }} />
+        <div className="relative h-1.5 bg-[var(--color-warm-border)] rounded-full overflow-hidden">
+          <div className="absolute top-0 left-0 h-full rounded-full bg-[var(--color-text-faint)]" style={{ width: '100%' }} />
         </div>
         <div className="mt-2 text-center">
-          <span className="inline-flex px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+          <span className="inline-flex px-2 py-0.5 bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)] text-xs rounded-full">
             {formatStatusDisplay(status)}
           </span>
         </div>
@@ -39,13 +39,13 @@ export const ApplicationProgress = ({ status }: ApplicationProgressProps) => {
         {APPLICATION_STAGES.map((stage, idx) => (
           <span
             key={stage}
-            className={idx <= activeIndex ? 'text-[var(--color-primary)]' : 'text-gray-400'}
+            className={idx <= activeIndex ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-faint)]'}
           >
             {stage}
           </span>
         ))}
       </div>
-      <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
+      <div className="relative h-1.5 bg-[var(--color-warm-border)] rounded-full overflow-hidden">
         <div
           className="absolute top-0 left-0 h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
           style={{ width: fillWidth }}
