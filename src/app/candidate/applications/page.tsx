@@ -24,7 +24,7 @@ function ApplicationsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
         <Navbar />
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
           <LoadingSkeleton variant="list" />
@@ -36,10 +36,12 @@ function ApplicationsContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
         <Navbar />
         <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10">
-          <div className="text-center text-red-600 bg-red-50 p-6 rounded-2xl">{error}</div>
+          <div className="text-center text-[var(--color-status-error-text)] bg-[var(--color-status-error-bg)] p-6 rounded-2xl border border-[var(--color-status-error-border)]">
+            {error}
+          </div>
         </main>
         <Footer />
       </div>
@@ -72,7 +74,7 @@ function ApplicationsContent() {
   const displayedApps = showAll ? filteredApps : filteredApps.slice(0, UI_CONSTANTS.MAX_RECENT_APPS);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
       <Navbar />
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-10">
@@ -86,32 +88,38 @@ function ApplicationsContent() {
 
         <div className="mt-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-            <h2 className="text-xl font-bold text-gray-900">Recent Applications</h2>
+            <h2 className="text-xl font-bold text-[var(--color-foreground)]">Recent Applications</h2>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="w-full sm:w-64">
                 <SearchInput placeholder="Search applications..." onSearch={setSearchQuery} debounceMs={300} className="w-full" />
               </div>
               <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                  className="pl-9 pr-8 py-2 bg-white border-2 border-[var(--color-primary)] rounded-xl text-sm font-medium text-gray-700 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent appearance-none cursor-pointer w-full sm:w-auto"
+                  className="pl-9 pr-8 py-2 bg-white dark:bg-[var(--color-warm-bg-deep)] border border-[var(--color-warm-border)] rounded-xl text-sm font-medium text-[var(--color-foreground)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent appearance-none cursor-pointer w-full sm:w-auto"
                 >
                   {APPLICATION_FILTER_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <option 
+                      key={option.value} 
+                      value={option.value}
+                      className="bg-white dark:bg-[var(--color-warm-surface)] text-[var(--color-foreground)]"
+                    >
+                      {option.label}
+                    </option>
                   ))}
                 </select>
               </div>
-              <button className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors self-center">
-                <SlidersHorizontal className="w-5 h-5 text-gray-600" />
+              <button className="p-2 bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] rounded-xl hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-surface)] transition-colors self-center">
+                <SlidersHorizontal className="w-5 h-5 text-[var(--color-text-muted)]" />
               </button>
             </div>
           </div>
 
           {displayedApps.length === 0 ? (
-            <div className="text-center py-16 bg-gray-50 rounded-3xl border border-gray-100">
-              <p className="text-gray-500 font-medium">
+            <div className="text-center py-16 bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] rounded-3xl border border-[var(--color-warm-border)]">
+              <p className="text-[var(--color-text-muted)] font-medium">
                 {searchQuery ? `No applications match "${searchQuery}"` : 'No applications yet'}
               </p>
             </div>

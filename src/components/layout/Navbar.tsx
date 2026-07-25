@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AUTH_STORAGE } from '@/lib/auth';
 
 const SEARCH_VISIBLE_PATHS = ['/']; 
+
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -18,6 +19,9 @@ export function Navbar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Theme state: defaults to false (light mode)
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const token = AUTH_STORAGE.getToken();
@@ -30,12 +34,33 @@ export function Navbar() {
       setUser({ name, role });
       setAvatarUrl(storedAvatar);
     }
+
+    // Initialize theme from localStorage, defaulting to light mode
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   const handleLogout = () => {
     AUTH_STORAGE.clear();
     router.push('/login');
     router.refresh();
+  };
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
   const getInitials = (name: string) => {
@@ -81,7 +106,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full bg-[var(--color-background)] border-b border-gray-100 h-20">
+      <nav className="sticky top-0 z-50 w-full bg-[var(--color-background)] border-b border-[var(--color-warm-border)] h-20 transition-colors duration-300">
         <div className="w-full max-w-[1440px] mx-auto px-4 h-full">
           <div className="grid grid-cols-[auto_1fr_auto] lg:grid-cols-3 items-center w-full h-full gap-4">
             <div className="flex justify-start">
@@ -123,36 +148,62 @@ export function Navbar() {
               })}
             </div>
 
-            {/* Right side: Search & Auth */}
+            {/* Right side: Search, Theme Toggle & Auth */}
             <div className="hidden lg:flex items-center justify-end gap-4">
               {showSearch && (
                 <div className="w-full max-w-[240px]">
-                  <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
+                  <div className="dark:[&>div>input]:text-[var(--color-foreground)] dark:[&>div>input]:bg-[var(--color-warm-bg-deep)] dark:[&>div>input]:border-[var(--color-warm-border)]">
+                    <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
+                  </div>
                 </div>
               )}
 
               <div className="flex items-center gap-3 min-w-[100px] justify-end">
+                {/* Theme Toggle Button */}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full text-[var(--color-foreground)] hover:bg-[var(--color-warm-surface)] dark:hover:bg-[var(--color-warm-border)] transition-colors"
+                  aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {isDarkMode ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+
                 {user ? (
                   <>
                     <Link
                       href={profileHref}
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20 overflow-hidden"
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-transform hover:scale-105 shrink-0 cursor-pointer bg-white dark:bg-[var(--color-warm-surface)] border-2 border-[var(--color-primary)] ring-2 ring-transparent hover:ring-[var(--color-primary)]/20 overflow-hidden"
                       title={`View ${user.name}'s Profile`}
                     >
                       {avatarUrl ? (
                         <Image src={avatarUrl} alt={user.name} width={40} height={40} className="w-full h-full rounded-full object-cover" />
                       ) : (
-                        <span className="text-[var(--color-secondary)] text-sm">{getInitials(user.name)}</span>
+                        /* FIX: Changed from color-secondary to color-foreground for visibility in dark mode */
+                        <span className="text-[var(--color-foreground)] dark:text-[var(--color-teal-dark)] text-sm font-semibold">
+                          {getInitials(user.name)}
+                        </span>
                       )}
                     </Link>
-                    <button onClick={handleLogout} className="text-sm font-medium text-gray-600 hover:text-red-500 transition-colors" title="Logout">
+                    <button 
+                      onClick={handleLogout} 
+                      className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-status-error-text)] transition-colors" 
+                      title="Logout"
+                    >
                       Logout
                     </button>
                   </>
                 ) : (
                   <Link
                     href="/login"
-                    className="px-6 py-2 rounded-full font-heading font-bold text-sm transition-all bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 active:scale-95 whitespace-nowrap"
+                    className="px-6 py-2 rounded-full font-heading font-bold text-sm transition-all bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:scale-95 whitespace-nowrap"
                   >
                     Sign In
                   </Link>
@@ -161,7 +212,24 @@ export function Navbar() {
             </div>
 
             {/* Mobile menu button */}
-            <div className="flex lg:hidden justify-end">
+            <div className="flex lg:hidden justify-end items-center gap-2">
+              {/* Mobile Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)] transition-colors"
+                aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDarkMode ? (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
+              
               <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-[var(--color-foreground)] hover:text-[var(--color-primary)] transition-colors" aria-label="Toggle menu">
                 {isMobileMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +254,7 @@ export function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="fixed top-20 left-0 right-0 z-40 bg-[var(--color-background)] border-b border-gray-100 shadow-lg lg:hidden"
+            className="fixed top-20 left-0 right-0 z-40 bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-page)] border-b border-[var(--color-warm-border)] shadow-lg lg:hidden transition-colors duration-300"
           >
             <div className="px-4 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="flex flex-col space-y-2">
@@ -196,7 +264,7 @@ export function Navbar() {
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`block px-4 py-3 rounded-lg font-heading font-semibold transition-colors ${
-                      isActive(link.href) ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-[var(--color-foreground)]/80 hover:bg-gray-50'
+                      isActive(link.href) ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-[var(--color-foreground)]/80 hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-surface)]'
                     }`}
                   >
                     {link.label}
@@ -205,18 +273,24 @@ export function Navbar() {
               </div>
               {showSearch && (
                 <div className="w-full">
-                  <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
+                  {/* FIX: Wrapper to force dark mode styles on the mobile SearchInput component */}
+                  <div className="dark:[&>div>input]:text-[var(--color-foreground)] dark:[&>div>input]:bg-[var(--color-warm-bg-deep)] dark:[&>div>input]:border-[var(--color-warm-border)]">
+                    <SearchInput placeholder="Search roles..." onSearch={handleSearch} />
+                  </div>
                 </div>
               )}
-              <div className="pt-2 border-t border-gray-100">
+              <div className="pt-2 border-t border-[var(--color-warm-border)]">
                 {user ? (
                   <div className="flex items-center justify-between">
                     <Link href={profileHref} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white border-2 border-[var(--color-primary)] overflow-hidden">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-white dark:bg-[var(--color-warm-surface)] border-2 border-[var(--color-primary)] overflow-hidden">
                         {avatarUrl ? (
                           <Image src={avatarUrl} alt={user.name} width={40} height={40} className="w-full h-full rounded-full object-cover" />
                         ) : (
-                          <span className="text-[var(--color-secondary)] text-sm">{getInitials(user.name)}</span>
+                          /* FIX: Mobile profile initials visibility */
+                          <span className="text-[var(--color-foreground)] dark:text-[var(--color-teal-dark)] text-sm font-semibold">
+                            {getInitials(user.name)}
+                          </span>
                         )}
                       </div>
                       <div className="flex flex-col">
@@ -224,12 +298,19 @@ export function Navbar() {
                         <span className="text-xs text-[var(--color-foreground)]/60 capitalize">{user.role}</span>
                       </div>
                     </Link>
-                    <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="text-sm text-red-500 font-medium hover:text-red-600">
+                    <button 
+                      onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} 
+                      className="text-sm font-medium text-[var(--color-status-error-text)] hover:text-[var(--color-status-error-text)]/80 transition-colors"
+                    >
                       Logout
                     </button>
                   </div>
                 ) : (
-                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-center px-6 py-3 rounded-full font-heading font-bold text-sm bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 active:scale-95">
+                  <Link 
+                    href="/login" 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="block w-full text-center px-6 py-3 rounded-full font-heading font-bold text-sm bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] active:scale-95"
+                  >
                     Sign In
                   </Link>
                 )}

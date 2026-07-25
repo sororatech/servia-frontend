@@ -63,28 +63,28 @@ export function SearchInput({
         </svg>
       </div>
 
-      <input
-        ref={inputRef}
-        id="search-input"
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="
-          w-full pl-10 pr-10 py-2 
-          bg-gray-100 
-          text-[var(--color-foreground)]
-          placeholder-gray-400
-          rounded-full
-          border-2 border-transparent
-          focus:border-[var(--color-primary)] 
-          focus:bg-white 
-          focus:outline-none 
-          transition-all
-        "
-        style={{ fontFamily: 'var(--font-body)' }}
-      />
+    <input
+      ref={inputRef}
+      id="search-input"
+      type="text"
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      className="
+        w-full pl-10 pr-10 py-2 
+        bg-gray-100 dark:bg-[var(--color-warm-surface)]
+        text-[var(--color-foreground)]
+        placeholder-gray-400 dark:placeholder-[var(--color-text-faint)]
+        rounded-full
+        border-2 border-transparent
+        focus:border-[var(--color-primary)] 
+        focus:bg-white dark:focus:bg-[var(--color-warm-bg-deep)]
+        focus:outline-none 
+        transition-all
+      "
+      style={{ fontFamily: 'var(--font-body)' }}
+    />
 
       {query && (
         <button

@@ -62,9 +62,9 @@ export default function AddRecruiterModal({
               type="text"
               value={formData.first_name}
               onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-              className="w-full rounded-xl border border-[var(--color-warm-border)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
-            {errors.first_name && <p className="text-xs text-red-500">{errors.first_name}</p>}
+            {errors.first_name && <p className="text-xs text-[var(--color-status-error-text)]">{errors.first_name}</p>}
           </div>
           <div>
             <Label>Last Name *</Label>
@@ -72,9 +72,9 @@ export default function AddRecruiterModal({
               type="text"
               value={formData.last_name}
               onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-              className="w-full rounded-xl border border-[var(--color-warm-border)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+              className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
             />
-            {errors.last_name && <p className="text-xs text-red-500">{errors.last_name}</p>}
+            {errors.last_name && <p className="text-xs text-[var(--color-status-error-text)]">{errors.last_name}</p>}
           </div>
         </div>
 
@@ -84,9 +84,9 @@ export default function AddRecruiterModal({
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full rounded-xl border border-[var(--color-warm-border)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+            className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
           />
-          {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+          {errors.email && <p className="text-xs text-[var(--color-status-error-text)]">{errors.email}</p>}
         </div>
 
         <div>
@@ -94,7 +94,7 @@ export default function AddRecruiterModal({
           <select
             value={formData.department}
             onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-            className="w-full rounded-xl border border-[var(--color-warm-border)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+            className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
           >
             <option value="">Select...</option>
             <option value="hr">HR</option>
@@ -102,7 +102,7 @@ export default function AddRecruiterModal({
             <option value="sales">Sales</option>
             <option value="marketing">Marketing</option>
           </select>
-          {errors.department && <p className="text-xs text-red-500">{errors.department}</p>}
+          {errors.department && <p className="text-xs text-[var(--color-status-error-text)]">{errors.department}</p>}
         </div>
 
         <div>
@@ -110,19 +110,17 @@ export default function AddRecruiterModal({
           <select
             value={formData.role}
             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            className="w-full rounded-xl border border-[var(--color-warm-border)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
+            className="w-full rounded-xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] px-4 py-2.5 text-sm outline-none focus:border-[var(--color-primary)]"
           >
             <option value="recruiter">Recruiter</option>
             <option value="admin">Admin</option>
           </select>
         </div>
 
-        {errors.api && <p className="text-sm text-red-500">{errors.api}</p>}
+        {errors.api && <p className="text-sm text-[var(--color-status-error-text)]">{errors.api}</p>}
 
         <div className="flex gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            Cancel
-          </Button>
+          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
           <Button type="submit" disabled={isLoading} variant="primary" className="flex-1">
             {isLoading ? 'Creating...' : 'Add Recruiter'}
           </Button>

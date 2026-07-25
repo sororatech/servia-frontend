@@ -283,7 +283,8 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
 
     return (
       <div className="space-y-4">
-        <div className={`relative aspect-video bg-gray-100 rounded-xl overflow-hidden shadow-lg ${hasUploadedVideo ? 'opacity-50' : ''}`}>
+        {/* Video Preview Area */}
+        <div className={`relative aspect-video bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] rounded-xl overflow-hidden shadow-lg border border-[var(--color-warm-border)] ${hasUploadedVideo ? 'opacity-50' : ''}`}>
           
           <video 
             ref={videoRef} 
@@ -303,8 +304,8 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           )}
           
           {state === 'idle' && !hasUploadedVideo && !videoUrl && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80">
-              <div className="text-center text-gray-400">
+            <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-warm-bg-page)]/80 dark:bg-[var(--color-warm-bg-deep)]/80">
+              <div className="text-center text-[var(--color-text-faint)]">
                 <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
@@ -326,7 +327,7 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           )}
 
           {state === 'paused' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
               <div className="text-center text-white">
                 <p className="text-xl font-semibold mb-1">Paused</p>
                 <p className="text-2xl font-mono">{formatTime(duration)}</p>
@@ -335,9 +336,9 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           )}
 
           {hasUploadedVideo && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm rounded-xl">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-xl">
               <div className="text-center text-white p-6">
-                <svg className="w-12 h-12 mx-auto mb-3 text-[#26B9C8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 mx-auto mb-3 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="font-semibold mb-1">Video Uploaded</p>
@@ -347,12 +348,13 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           )}
         </div>
 
-        <div className="flex justify-center gap-3">
+        {/* Control Buttons */}
+        <div className="flex flex-wrap justify-center gap-3">
           {state === 'idle' && !videoUrl && (
             <button 
               onClick={startCamera} 
               disabled={hasUploadedVideo}
-              className="px-8 py-3 bg-[#26B9C8] text-white rounded-full font-medium hover:bg-[#26B9C8]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+              className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-medium hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-md"
             >
               Start Camera
             </button>
@@ -360,7 +362,7 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           {state === 'active' && (
             <button 
               onClick={startRecording} 
-              className="px-8 py-3 bg-[#26B9C8] text-white rounded-full font-medium hover:bg-[#26B9C8]/90 flex items-center gap-2 transition-colors shadow-md"
+              className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-full font-medium hover:bg-[var(--color-primary-hover)] flex items-center gap-2 transition-colors shadow-md cursor-pointer"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><rect x="6" y="6" width="8" height="8" rx="1" /></svg>
               Start Recording
@@ -368,27 +370,27 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           )}
           {state === 'recording' && (
             <>
-              <button onClick={pauseRecording} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300">Pause</button>
-              <button onClick={stopRecording} className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700">Stop</button>
+              <button onClick={pauseRecording} className="px-6 py-3 bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] rounded-full font-medium hover:bg-[var(--color-warm-border)] cursor-pointer transition-colors">Pause</button>
+              <button onClick={stopRecording} className="px-6 py-3 bg-[var(--color-status-error-text)] text-white rounded-full font-medium hover:bg-[var(--color-status-error-text)]/90 cursor-pointer transition-colors">Stop</button>
             </>
           )}
           {state === 'paused' && (
             <>
-              <button onClick={resumeRecording} className="px-6 py-3 bg-[#26B9C8] text-white rounded-full font-medium hover:bg-[#26B9C8]/90">Resume</button>
-              <button onClick={stopRecording} className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700">Stop</button>
+              <button onClick={resumeRecording} className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-full font-medium hover:bg-[var(--color-primary-hover)] cursor-pointer transition-colors">Resume</button>
+              <button onClick={stopRecording} className="px-6 py-3 bg-[var(--color-status-error-text)] text-white rounded-full font-medium hover:bg-[var(--color-status-error-text)]/90 cursor-pointer transition-colors">Stop</button>
             </>
           )}
           {state === 'review' && videoUrl && (
             <>
               <button 
                 onClick={handleRetake} 
-                className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-medium hover:bg-gray-300"
+                className="px-6 py-3 bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] rounded-full font-medium hover:bg-[var(--color-warm-border)] cursor-pointer transition-colors"
               >
                 Retake
               </button>
               <button 
                 onClick={clearRecording}
-                className="px-6 py-3 bg-red-100 text-red-700 rounded-full font-medium hover:bg-red-200 transition-colors"
+                className="px-6 py-3 bg-[var(--color-status-error-bg)] text-[var(--color-status-error-text)] rounded-full font-medium hover:bg-[var(--color-status-error-bg)]/80 cursor-pointer transition-colors"
               >
                 Remove
               </button>
@@ -396,7 +398,7 @@ export const VideoRecord = forwardRef<VideoRecordHandle, VideoRecordProps>(
           )}
         </div>
 
-        {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+        {error && <p className="text-sm text-[var(--color-status-error-text)] text-center">{error}</p>}
       </div>
     );
   }

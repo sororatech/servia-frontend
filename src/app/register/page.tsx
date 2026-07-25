@@ -122,9 +122,9 @@ export default function RegisterPage() {
     if (/[a-z]/.test(password)) score++;
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
-    if (score <= 2) return { message: 'Weak', color: 'text-red-500' };
-    if (score <= 4) return { message: 'Medium', color: 'text-yellow-500' };
-    return { message: 'Strong', color: 'text-green-500' };
+    if (score <= 2) return { message: 'Weak', color: 'text-[var(--color-status-error-text)]' };
+    if (score <= 4) return { message: 'Medium', color: 'text-[var(--color-status-warning-text)]' };
+    return { message: 'Strong', color: 'text-[var(--color-status-active-text)]' };
   };
 
   const validateForm = (): boolean => {
@@ -188,9 +188,10 @@ export default function RegisterPage() {
   const passwordStrength = formData.password ? getPasswordStrength(formData.password) : null;
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden">
-      <div className="flex flex-1 overflow-hidden">
-        <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
+      <div className="flex flex-1">
+        {/* Left Panel (Desktop) */}
+        <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)]">
           <Image
             src="/images/registerimg.png"
             alt="ServiaAI background"
@@ -199,23 +200,27 @@ export default function RegisterPage() {
             sizes="(max-width: 1024px) 100vw, 45vw"
             priority
           />
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(32, 94, 101, 0.5)' }} />
+          {/* Slightly darker overlay for better contrast in both modes */}
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(15, 42, 68, 0.65)' }} />
         </div>
 
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-[var(--color-background)] overflow-y-auto">
+        {/* Right Panel (Form) */}
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] overflow-y-auto transition-colors">
           <div className="w-full max-w-lg">
             <div className="mb-8 sm:mb-10">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: 'var(--color-secondary)' }}>Create your account</h2>
-              <p className="-mt-3" style={{ color: 'var(--color-primary)' }}>Start your journey</p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-foreground)]">Create your account</h2>
+              <p className="-mt-3 text-[var(--color-text-muted)]">Start your journey</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-7">
               {(error || validationErrors.submit) && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error || validationErrors.submit}</div>
+                <div className="p-3 bg-[var(--color-status-error-bg)] border border-[var(--color-status-error-border)] rounded-lg text-[var(--color-status-error-text)] text-sm">
+                  {error || validationErrors.submit}
+                </div>
               )}
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Full Name <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Full Name <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <input
                   type="text"
                   name="fullName"
@@ -224,14 +229,17 @@ export default function RegisterPage() {
                   onBlur={() => handleBlur('fullName')}
                   placeholder="Enter your full name"
                   maxLength={100}
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'}`}
-                  style={{ backgroundColor: touchedFields.fullName ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                    validationErrors.fullName 
+                      ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                      : 'border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                  }`}
                 />
-                {validationErrors.fullName && <p className="text-sm text-red-600">{validationErrors.fullName}</p>}
+                {validationErrors.fullName && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.fullName}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Email Address <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Email Address <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <input
                   type="email"
                   name="email"
@@ -240,38 +248,43 @@ export default function RegisterPage() {
                   onBlur={() => handleBlur('email')}
                   placeholder="name@company.com"
                   maxLength={254}
-                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.email ? 'border-red-500' : 'border-gray-300'}`}
-                  style={{ backgroundColor: touchedFields.email ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                  className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                    validationErrors.email 
+                      ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                      : 'border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                  }`}
                 />
-                {validationErrors.email && <p className="text-sm text-red-600">{validationErrors.email}</p>}
+                {validationErrors.email && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.email}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <label className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Phone Number</label>
                 <div className="flex gap-1.5 sm:gap-2">
                   <div className="relative flex-shrink-0" ref={countryDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-3 rounded-lg border border-gray-300 bg-[var(--color-background)] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 transition w-[84px] sm:w-[110px]"
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-3 rounded-lg border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 transition w-[84px] sm:w-[110px]"
                     >
                       <span className="text-lg sm:text-xl leading-none">{selectedCountry.flag}</span>
-                      <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">{countryCode}</span>
-                      <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+                      <span className="text-xs sm:text-sm font-medium truncate">{countryCode}</span>
+                      <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-[var(--color-text-faint)] flex-shrink-0 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-50 mt-1 w-64 sm:w-72 max-h-60 sm:max-h-64 overflow-y-auto bg-[var(--color-background)] border border-gray-200 rounded-lg shadow-lg">
+                      <div className="absolute z-50 mt-1 w-64 sm:w-72 max-h-60 sm:max-h-64 overflow-y-auto bg-white dark:bg-[var(--color-warm-surface)] border border-[var(--color-warm-border)] rounded-lg shadow-lg">
                         {countries.map((country) => (
                           <button
                             key={country.code}
                             type="button"
                             onClick={() => handleCountrySelect(country)}
-                            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 hover:bg-gray-50 transition text-left ${countryCode === country.dialCode ? 'bg-teal-50' : ''}`}
+                            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-bg-deep)] transition text-left ${
+                              countryCode === country.dialCode ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-[var(--color-foreground)]'
+                            }`}
                           >
                             <span className="text-lg sm:text-xl">{country.flag}</span>
-                            <span className="flex-1 text-xs sm:text-sm text-gray-700 truncate">{country.name}</span>
-                            <span className="text-xs sm:text-sm text-gray-500 flex-shrink-0">{country.dialCode}</span>
+                            <span className="flex-1 text-xs sm:text-sm truncate">{country.name}</span>
+                            <span className="text-xs sm:text-sm text-[var(--color-text-muted)] flex-shrink-0">{country.dialCode}</span>
                           </button>
                         ))}
                       </div>
@@ -286,15 +299,18 @@ export default function RegisterPage() {
                     onBlur={() => handleBlur('phone')}
                     placeholder="Phone number"
                     maxLength={15}
-                    className={`flex-1 min-w-0 px-3 sm:px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.phone ? 'border-red-500' : 'border-gray-300'}`}
-                    style={{ backgroundColor: touchedFields.phone ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                    className={`flex-1 min-w-0 px-3 sm:px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                      validationErrors.phone 
+                        ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                        : 'border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                    }`}
                   />
                 </div>
-                {validationErrors.phone && <p className="text-sm text-red-600">{validationErrors.phone}</p>}
+                {validationErrors.phone && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.phone}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Password <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Password <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -309,15 +325,17 @@ export default function RegisterPage() {
                     onBlur={() => handleBlur('password')}
                     placeholder="Enter password"
                     maxLength={128}
-                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.password ? 'border-red-500' : 'border-gray-300'}`}
-                    style={{ backgroundColor: touchedFields.password ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                      validationErrors.password 
+                        ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                        : 'border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                    }`}
                   />
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="var(--color-primary)" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none text-[var(--color-primary)]" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: 'var(--color-primary)' }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5 text-[var(--color-text-faint)] hover:text-[var(--color-foreground)] transition-colors"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -338,18 +356,18 @@ export default function RegisterPage() {
                       { met: passwordReqs.special, text: 'One special character' },
                     ].map((req, i) => (
                       <div key={i} className="flex items-center gap-2 text-xs">
-                        <span className={req.met ? 'text-green-600' : 'text-gray-400'}>{req.met ? '✓' : '○'}</span>
-                        <span className={req.met ? 'text-gray-700' : 'text-gray-400'}>{req.text}</span>
+                        <span className={req.met ? 'text-[var(--color-status-active-text)]' : 'text-[var(--color-text-faint)]'}>{req.met ? '✓' : '○'}</span>
+                        <span className={req.met ? 'text-[var(--color-foreground)]' : 'text-[var(--color-text-faint)]'}>{req.text}</span>
                       </div>
                     ))}
                     <div className={`mt-1.5 text-xs font-medium ${passwordStrength?.color}`}>Password strength: {passwordStrength?.message}</div>
                   </div>
                 )}
-                {validationErrors.password && <p className="text-sm text-red-600">{validationErrors.password}</p>}
+                {validationErrors.password && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.password}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Confirm Password <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-[var(--color-text-dark)] dark:text-[var(--color-foreground)]">Confirm Password <span className="text-[var(--color-status-error-text)]">*</span></label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -359,15 +377,17 @@ export default function RegisterPage() {
                     onBlur={() => handleBlur('confirmPassword')}
                     placeholder="Re-enter password"
                     maxLength={128}
-                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base ${validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
-                    style={{ backgroundColor: touchedFields.confirmPassword ? '#ffffff' : 'var(--color-input-bg)', color: 'var(--color-text-darkest)' }}
+                    className={`w-full px-4 py-3 pl-11 pr-11 rounded-lg border focus:outline-none focus:ring-2 transition text-sm sm:text-base bg-white dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] ${
+                      validationErrors.confirmPassword 
+                        ? 'border-[var(--color-status-error-text)] focus:ring-[var(--color-status-error-text)]/20' 
+                        : 'border-[var(--color-warm-border)] focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]'
+                    }`}
                   />
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" color="var(--color-primary)" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 pointer-events-none text-[var(--color-primary)]" />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5"
-                    style={{ color: 'var(--color-primary)' }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none p-0.5 text-[var(--color-text-faint)] hover:text-[var(--color-foreground)] transition-colors"
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? (
@@ -377,7 +397,7 @@ export default function RegisterPage() {
                     )}
                   </button>
                 </div>
-                {validationErrors.confirmPassword && <p className="text-sm text-red-600">{validationErrors.confirmPassword}</p>}
+                {validationErrors.confirmPassword && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.confirmPassword}</p>}
               </div>
 
               <div className="space-y-2">
@@ -388,13 +408,13 @@ export default function RegisterPage() {
                     type="checkbox"
                     checked={formData.agreeToTerms}
                     onChange={handleChange}
-                    className="w-4 h-4 mt-0.5 flex-shrink-0 border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
+                    className="w-4 h-4 mt-0.5 flex-shrink-0 border border-[var(--color-warm-border)] rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]/20 bg-white dark:bg-[var(--color-warm-bg-deep)]"
                   />
-                  <label htmlFor="agreeToTerms" className="ml-2 text-sm text-gray-600">
-                    I agree to the <Link href="/terms-of-service" className="font-medium" style={{ color: 'var(--color-primary)' }} target="_blank">Terms of Service</Link> and <Link href="/privacy-policy" className="font-medium" style={{ color: 'var(--color-primary)' }} target="_blank">Privacy Policy</Link>.
+                  <label htmlFor="agreeToTerms" className="ml-2 text-sm text-[var(--color-text-muted)] dark:text-[var(--color-foreground)]">
+                    I agree to the <Link href="/terms-of-service" className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors" target="_blank">Terms of Service</Link> and <Link href="/privacy-policy" className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors" target="_blank">Privacy Policy</Link>.
                   </label>
                 </div>
-                {validationErrors.agreeToTerms && <p className="text-sm text-red-600">{validationErrors.agreeToTerms}</p>}
+                {validationErrors.agreeToTerms && <p className="text-sm text-[var(--color-status-error-text)]">{validationErrors.agreeToTerms}</p>}
               </div>
 
               <Button
@@ -409,8 +429,8 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <p className="mt-5 text-center text-sm text-gray-600">
-              Already have an account? <Link href="/login" className="font-medium" style={{ color: 'var(--color-primary)' }}>Login here</Link>
+            <p className="mt-5 text-center text-sm text-[var(--color-text-muted)] dark:text-[var(--color-foreground)]">
+              Already have an account? <Link href="/login" className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors">Login here</Link>
             </p>
           </div>
         </div>
@@ -430,13 +450,15 @@ export default function RegisterPage() {
           min-height: 48px !important;
           padding: 0 1.5rem !important;
           border-radius: 9999px !important;
+          color: white !important;
+          font-weight: 600 !important;
         }
-        .custom-button:hover {
+        .custom-button:hover:not(:disabled) {
           background-color: var(--color-primary-hover) !important;
-          opacity: 0.95 !important;
         }
         .custom-button:disabled {
           opacity: 0.6 !important;
+          cursor: not-allowed !important;
         }
       `}</style>
     </div>

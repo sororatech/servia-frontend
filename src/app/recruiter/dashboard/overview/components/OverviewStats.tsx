@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { Users, Star, Calendar, TrendingUp } from 'lucide-react';
 
 interface StatsProps {
@@ -21,29 +20,29 @@ export default function OverviewStats({
       label: 'Total Candidates',
       value: totalCandidates,
       icon: Users,
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600',
+      iconBg: 'bg-[var(--color-status-info-bg)]',
+      iconColor: 'text-[var(--color-status-info-text)]',
     },
     {
       label: 'Shortlisted',
       value: shortlisted,
       icon: Star,
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600',
+      iconBg: 'bg-[var(--color-status-active-bg)]',
+      iconColor: 'text-[var(--color-status-active-text)]',
     },
     {
       label: 'Interviews this week',
       value: interviewsThisWeek,
       icon: Calendar,
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600',
+      iconBg: 'bg-[var(--color-status-warning-bg)]',
+      iconColor: 'text-[var(--color-status-warning-text)]',
     },
     {
       label: 'Avg AI Score',
       value: avgAiScore !== null ? `${avgAiScore}%` : 'N/A',
       icon: TrendingUp,
-      iconBg: 'bg-teal-100',
-      iconColor: 'text-teal-600',
+      iconBg: 'bg-[var(--color-teal-light)]',
+      iconColor: 'text-[var(--color-teal-dark)]',
     },
   ];
 
@@ -52,20 +51,20 @@ export default function OverviewStats({
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <Card 
+          <div 
             key={stat.label} 
-            className="p-5 hover:shadow-lg transition-shadow border-0 bg-[#C2B5B5]"
+            className="p-5 hover:shadow-lg transition-shadow bg-white dark:bg-[var(--color-warm-bg-deep)] shadow-sm border-0 rounded-2xl"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-800 mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold text-[#26B9C8]">{stat.value}</p>
+                <p className="text-sm font-semibold text-[var(--color-primary)] mb-1">{stat.label}</p>
+                <p className="text-3xl font-bold text-[var(--color-foreground)]">{stat.value}</p>
               </div>
               <div className={`p-3 rounded-full ${stat.iconBg}`}>
                 <Icon className={`w-6 h-6 ${stat.iconColor}`} aria-hidden="true" />
               </div>
             </div>
-          </Card>
+          </div>
         );
       })}
     </div>
