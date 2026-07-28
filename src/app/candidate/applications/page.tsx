@@ -1,0 +1,161 @@
+'use client';
+
+import { Suspense } from 'react';
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import { ApplicationCard } from '@/components/ui/ApplicationCard';
+import { Button } from '@/components/ui/Button';
+import { SearchInput } from '@/components/ui/SearchInput';
+import { useApplications } from '@/hooks/useApplications';
+import { Filter, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+import { APPLICATION_FILTER_OPTIONS, REJECTED_STATUSES, UI_CONSTANTS } from '@/lib/applications';
+import { StatCard } from '@/components/ui/StatCard';
+import { Play, Star, MessageSquare, Users, Award, XCircle } from 'lucide-react';
+
+type FilterStatus = typeof APPLICATION_FILTER_OPTIONS[number]['value'] | 'all';
+
+function ApplicationsContent() {
+  const { applications, loading, error } = useApplications();
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAll, setShowAll] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
+        <Navbar />
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
+          <LoadingSkeleton variant="list" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
+        <Navbar />
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10">
+          <div className="text-center text-[var(--color-status-error-text)] bg-[var(--color-status-error-bg)] p-6 rounded-2xl border border-[var(--color-status-error-border)]">
+            {error}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const stats = {
+    applied: applications.length,
+    shortlisted: applications.filter((app) => app.status.toLowerCase() === 'shortlisted').length,
+    inReview: applications.filter((app) => ['in_review', 'review', 'screened'].includes(app.status.toLowerCase())).length,
+    interview: applications.filter((app) => ['video_submitted', 'interview_scheduled', 'interviewed'].includes(app.status.toLowerCase())).length,
+    offers: applications.filter((app) => app.status.toLowerCase() === 'offered').length,
+    notSelected: applications.filter((app) => REJECTED_STATUSES.includes(app.status.toLowerCase() as any)).length,
+  };
+
+  const filteredApps = applications.filter((app) => {
+    const matchesStatus = filterStatus === 'all'
+      ? true
+      : filterStatus === 'rejected_cv'
+        ? REJECTED_STATUSES.includes(app.status.toLowerCase() as any)
+        : app.status.toLowerCase() === filterStatus;
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery
+      || app.job?.title?.toLowerCase().includes(searchLower)
+      || app.job?.location?.toLowerCase().includes(searchLower)
+      || app.job?.department?.toLowerCase().includes(searchLower);
+    return matchesStatus && matchesSearch;
+  });
+
+  const displayedApps = showAll ? filteredApps : filteredApps.slice(0, UI_CONSTANTS.MAX_RECENT_APPS);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] transition-colors">
+      <Navbar />
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-10">
+          <StatCard title="APPLIED" value={stats.applied} icon={<Play className="w-6 h-6" />} variant="primary" />
+          <StatCard title="SHORTLISTED" value={stats.shortlisted} icon={<Star className="w-6 h-6" />} variant="secondary" />
+          <StatCard title="IN REVIEW" value={stats.inReview} icon={<MessageSquare className="w-6 h-6" />} variant="primary" />
+          <StatCard title="INTERVIEW" value={stats.interview} icon={<Users className="w-6 h-6" />} variant="primary" />
+          <StatCard title="OFFERS" value={stats.offers} icon={<Award className="w-6 h-6" />} variant="secondary" />
+          <StatCard title="NOT SELECTED" value={stats.notSelected} icon={<XCircle className="w-6 h-6" />} variant="primary" />
+        </div>
+
+        <div className="mt-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <h2 className="text-xl font-bold text-[var(--color-foreground)]">Recent Applications</h2>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="w-full sm:w-64">
+                <SearchInput placeholder="Search applications..." onSearch={setSearchQuery} debounceMs={300} className="w-full" />
+              </div>
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                  className="pl-9 pr-8 py-2 bg-white dark:bg-[var(--color-warm-bg-deep)] border border-[var(--color-warm-border)] rounded-xl text-sm font-medium text-[var(--color-foreground)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent appearance-none cursor-pointer w-full sm:w-auto"
+                >
+                  {APPLICATION_FILTER_OPTIONS.map((option) => (
+                    <option 
+                      key={option.value} 
+                      value={option.value}
+                      className="bg-white dark:bg-[var(--color-warm-surface)] text-[var(--color-foreground)]"
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button className="p-2 bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] rounded-xl hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-surface)] transition-colors self-center">
+                <SlidersHorizontal className="w-5 h-5 text-[var(--color-text-muted)]" />
+              </button>
+            </div>
+          </div>
+
+          {displayedApps.length === 0 ? (
+            <div className="text-center py-16 bg-[var(--color-warm-surface)] dark:bg-[var(--color-warm-bg-deep)] rounded-3xl border border-[var(--color-warm-border)]">
+              <p className="text-[var(--color-text-muted)] font-medium">
+                {searchQuery ? `No applications match "${searchQuery}"` : 'No applications yet'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {displayedApps.map((app) => (
+                <ApplicationCard
+                  key={app.id}
+                  id={app.id}
+                  jobTitle={app.job?.title || 'Position'}
+                  company={app.job?.department_display || app.job?.location || 'Servia Hotels'}
+                  appliedAt={app.applied_at}
+                  status={app.status}
+                />
+              ))}
+            </div>
+          )}
+
+          {filteredApps.length > UI_CONSTANTS.MAX_RECENT_APPS && (
+            <div className="mt-8 flex justify-center">
+              <Button variant="secondary" size="md" onClick={() => setShowAll(!showAll)} rightIcon={showAll ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}>
+                {showAll ? 'Show Less' : `View All (${filteredApps.length})`}
+              </Button>
+            </div>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default function CandidateApplicationsPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton variant="page" />}>
+      <ApplicationsContent />
+    </Suspense>
+  );
+}
