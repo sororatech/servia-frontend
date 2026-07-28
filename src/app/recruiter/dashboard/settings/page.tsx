@@ -17,9 +17,7 @@ export default async function SystemSettingsPage({
   }
 
   try {
-    // Use the same headers to fetch profile, or reuse the existing logic
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    // The headers object from serverAuth already contains Authorization
     const response = await fetch(`${baseUrl}/users/profile/`, {
       headers: headers as HeadersInit,
       cache: 'no-store',
@@ -80,18 +78,18 @@ export default async function SystemSettingsPage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(38,185,200,0.12),_transparent_22%),linear-gradient(180deg,#fbfaf8_0%,#f3ece7_100%)] px-4 py-8 sm:px-6 lg:px-10 overflow-y-auto">
+    <main className="min-h-screen bg-page-gradient px-4 py-8 sm:px-6 lg:px-10 overflow-y-auto transition-colors">
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-8">
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[#171717] sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--color-foreground)] sm:text-5xl">
             System Settings
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-[#635b55]">
+          <p className="mt-3 max-w-2xl text-lg text-[var(--color-text-muted)]">
             Manage users, AI configuration, and system health.
           </p>
         </div>
 
-        <div className="mb-8 flex gap-2 border-b border-black/10">
+        <div className="mb-8 flex gap-2 border-b border-[var(--color-warm-border)]">
           <TabButton active={tab === 'users'} href="/recruiter/dashboard/settings?tab=users" icon="users">
             User Management
           </TabButton>
@@ -101,9 +99,9 @@ export default async function SystemSettingsPage({
         </div>
 
         {loadError && tab === 'users' && (
-          <div className="mb-6 rounded-xl bg-yellow-50 border border-yellow-200 p-4 text-yellow-800">
+          <div className="mb-6 rounded-xl bg-[var(--color-status-warning-bg)] dark:bg-[var(--color-status-warning-bg)]/20 border border-[var(--color-status-warning-border)] p-4 text-[var(--color-status-warning-text)]">
             <p className="font-medium">⚠️ {loadError}</p>
-            <p className="text-sm mt-1">Showing limited data. Contact your administrator for full access.</p>
+            <p className="text-sm mt-1 opacity-90">Showing limited data. Contact your administrator for full access.</p>
           </div>
         )}
 
@@ -116,8 +114,8 @@ export default async function SystemSettingsPage({
         )}
 
         {tab === 'config' && (
-          <div className="rounded-2xl border border-black/10 bg-white/85 p-8 text-center text-gray-500">
-            <p className="text-lg font-medium">System Configuration</p>
+          <div className="rounded-2xl border border-[var(--color-warm-border)] bg-white dark:bg-[var(--color-warm-surface)] p-8 text-center text-[var(--color-text-muted)] transition-colors">
+            <p className="text-lg font-medium text-[var(--color-foreground)]">System Configuration</p>
             <p className="mt-2">AI thresholds, email settings, and feature flags will appear here.</p>
           </div>
         )}
@@ -183,8 +181,8 @@ function TabButton({
       href={href}
       className={`flex items-center rounded-lg px-6 py-3 text-sm font-medium transition-all ${
         active
-          ? 'bg-[#26b9c8] text-white'
-          : 'text-gray-700 hover:bg-gray-100'
+          ? 'bg-[var(--color-primary)] text-white'
+          : 'text-[var(--color-text-muted)] hover:bg-[var(--color-warm-bg-page)] dark:hover:bg-[var(--color-warm-surface)] dark:text-[var(--color-foreground)]'
       }`}
     >
       {icons[icon]}

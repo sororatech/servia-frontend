@@ -10,7 +10,7 @@ import { Footer } from '@/components/layout/Footer';
 function ApplicationSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const applicationId = searchParams.get('applicationId');
+  const applicationId = searchParams.get('applicationId') || '';
   const jobTitle = decodeURIComponent(searchParams.get('jobTitle') || '');
   const company = decodeURIComponent(searchParams.get('company') || 'Servia Hotels');
 
@@ -22,31 +22,80 @@ function ApplicationSuccessContent() {
     router.push('/');
   }, [router]);
 
+  const handleUploadVideo = useCallback(() => {
+    router.push(`/candidate/dashboard/video?applicationId=${applicationId}`);
+  }, [router, applicationId]);
+
   return (
     <div className="min-h-screen bg-[var(--color-background)] dark:bg-[var(--color-warm-bg-deep)] flex flex-col transition-colors">
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left Column: Success Message */}
-          <div className="space-y-6 sm:space-y-8 order-1">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-[var(--color-status-active-bg)] text-[var(--color-primary)] text-xs font-semibold border border-[var(--color-status-active-border)]">
-              SUBMISSION SUCCESSFUL
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          
+          <div className="space-y-6 sm:space-y-8">
+            
+            <div>
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-[var(--color-status-active-bg)] text-[var(--color-primary)] text-xs font-semibold border border-[var(--color-status-active-border)] mb-4">
+                SUBMISSION SUCCESSFUL
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--color-foreground)] leading-tight mb-4">
+                Application Received!
+              </h1>
+
+              <p className="text-[var(--color-text-muted)] text-sm sm:text-base leading-relaxed max-w-xl">
+                Your professional profile has been successfully delivered to the hiring team. You&apos;ve taken the first step toward your next career move.
+              </p>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--color-foreground)] leading-tight">
-              Application Received!
-            </h1>
+            <div className="bg-white dark:bg-[var(--color-warm-surface)] rounded-2xl p-6 border border-[var(--color-warm-border)] shadow-sm">
+              <div className="flex items-start gap-4 mb-5">
+                <div className="flex-shrink-0 w-10 h-10 bg-[var(--color-primary)]/10 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-[var(--color-primary)]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-base font-bold text-[var(--color-foreground)]">Add a 60-second Video Introduction</h4>
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wide">Optional</span>
+                  </div>
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    Introduce yourself to the hiring team and stand out from other candidates.
+                  </p>
+                </div>
+              </div>
 
-            <p className="text-[var(--color-text-muted)] text-sm sm:text-base leading-relaxed max-w-xl">
-              Your professional profile has been successfully delivered to the hiring team. You&apos;ve taken the first step toward your next career move.
-            </p>
+              <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-gray-50/50 dark:bg-gray-800/20 mb-5">
+                <svg className="w-8 h-8 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                  Upload video <span className="font-normal text-gray-500">or drag & drop</span>
+                </p>
+                <p className="text-xs text-gray-500">
+                  MP4, MOV or WebM • Max 2 minutes • Max 100MB
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleUploadVideo}
+                  className="!rounded-full px-6 py-2.5 font-semibold shadow-lg shadow-teal-500/20 bg-[#26B9C8] hover:bg-[#20a8b6] text-white"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                  </svg>
+                  Upload Video
+                </Button>
+              </div>
+            </div>
 
             <div className="bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)] text-[var(--color-text-muted)] rounded-2xl p-6 sm:p-8 border border-[var(--color-warm-border)] transition-colors">
-              <h4 className="text-sm font-semibold text-[var(--color-foreground)] mb-6">
-                What happens next?
-              </h4>
-              
+              <h4 className="text-sm font-semibold text-[var(--color-foreground)] mb-6">What happens next?</h4>
               <div className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-[var(--color-primary)]/10 rounded-full flex items-center justify-center">
@@ -58,7 +107,6 @@ function ApplicationSuccessContent() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-[var(--color-primary)]/10 rounded-full flex items-center justify-center">
                     <span className="text-[var(--color-primary)] text-xs font-bold">02</span>
@@ -69,7 +117,6 @@ function ApplicationSuccessContent() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-6 h-6 bg-[var(--color-primary)]/10 rounded-full flex items-center justify-center">
                     <span className="text-[var(--color-primary)] text-xs font-bold">03</span>
@@ -84,28 +131,16 @@ function ApplicationSuccessContent() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                variant="primary"
-                size="md"
-                onClick={handleViewDashboard}
-                className="!rounded-full px-8 py-3 shadow-lg shadow-[var(--color-primary)]/20 w-full sm:w-auto"
-              >
+              <Button variant="primary" size="md" onClick={handleViewDashboard} className="!rounded-full px-8 py-3 shadow-lg shadow-[var(--color-primary)]/20 w-full sm:w-auto">
                 View Dashboard
               </Button>
-              
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={handleReturnToJobs}
-                className="!rounded-full px-8 py-3 border-2 w-full sm:w-auto"
-              >
+              <Button variant="secondary" size="md" onClick={handleReturnToJobs} className="!rounded-full px-8 py-3 border-2 w-full sm:w-auto">
                 Return to Job Listings
               </Button>
             </div>
           </div>
 
-          {/* Right Column: Application Summary Card */}
-          <div className="bg-gradient-to-br from-[var(--color-warm-bg-page)] to-[var(--color-warm-surface)] dark:from-[var(--color-warm-bg-deep)] dark:to-[var(--color-warm-surface)] rounded-2xl sm:rounded-3xl p-6 sm:p-8 flex flex-col border border-[var(--color-warm-border)] order-2">
+          <div className="bg-gradient-to-br from-[var(--color-warm-bg-page)] to-[var(--color-warm-surface)] dark:from-[var(--color-warm-bg-deep)] dark:to-[var(--color-warm-surface)] rounded-2xl sm:rounded-3xl p-6 sm:p-8 flex flex-col border border-[var(--color-warm-border)]">
             <div className="bg-white dark:bg-[var(--color-warm-surface)] rounded-2xl p-6 shadow-lg mb-auto border border-[var(--color-warm-border)]">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-[var(--color-warm-bg-page)] dark:bg-[var(--color-warm-bg-deep)] rounded-xl flex items-center justify-center border border-[var(--color-warm-border)]">
@@ -121,9 +156,7 @@ function ApplicationSuccessContent() {
               <h3 className="text-xl font-bold text-[var(--color-foreground)] mb-1 line-clamp-2" title={jobTitle}>
                 {jobTitle || 'Position Applied'}
               </h3>
-              <p className="text-[var(--color-primary)] text-sm font-medium mb-4">
-                {company}
-              </p>
+              <p className="text-[var(--color-primary)] text-sm font-medium mb-4">{company}</p>
 
               <div className="mb-4">
                 <div className="h-1.5 bg-[var(--color-warm-border)] rounded-full overflow-hidden">
@@ -154,6 +187,7 @@ function ApplicationSuccessContent() {
               </p>
             </div>
           </div>
+
         </div>
       </div>
       <Footer />

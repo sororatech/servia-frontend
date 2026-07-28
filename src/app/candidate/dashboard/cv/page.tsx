@@ -40,7 +40,6 @@ function CVUploadContent() {
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
-        {/* Stepper */}
         <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-[var(--color-primary)] rounded-full flex items-center justify-center flex-shrink-0">
@@ -63,7 +62,6 @@ function CVUploadContent() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 py-2">
-          {/* Left Column: Info (Now order-1 on mobile to appear on TOP) */}
           <div className="space-y-6 order-1 lg:order-1">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold mb-2 leading-tight">
@@ -79,7 +77,6 @@ function CVUploadContent() {
               </p>
             </div>
 
-            {/* Privacy First Box: Now matches the Form Card styling exactly */}
             <div className="bg-white dark:bg-[var(--color-warm-surface)] rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-lg border border-[var(--color-warm-border)] w-full transition-colors">
               <div className="flex flex-col items-start text-left">
                 <svg className="w-7 h-7 text-[var(--color-primary)] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,10 +90,9 @@ function CVUploadContent() {
             </div>
           </div>
 
-          {/* Right Column: Form (Now order-2 on mobile to appear BELOW the info) */}
           <div className="order-2 lg:order-2">
             <div className="bg-white dark:bg-[var(--color-warm-surface)] rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-lg border border-[var(--color-warm-border)] hover:shadow-xl transition-all duration-300">
-              <form onSubmit={onSubmit} className="space-y-5 sm:space-y-6">
+                            <form onSubmit={onSubmit} className="space-y-5 sm:space-y-6">
                 
                 {errorMessage && (
                   <div className="p-3 bg-[var(--color-status-error-bg)] border border-[var(--color-status-error-border)] rounded-lg flex items-start gap-2">
@@ -119,29 +115,16 @@ function CVUploadContent() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                  <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-dark)] dark:text-[var(--color-foreground)] mb-2">Full Name</label>
-                    <input
-                      type="text"
-                      name="full_name"
-                      required
-                      disabled={uploading}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-input-bg)] dark:bg-[var(--color-input-bg-light)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] text-sm disabled:opacity-50 transition-colors"
-                      placeholder="Alex Rivera"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-[var(--color-text-dark)] dark:text-[var(--color-foreground)] mb-2">Work Email</label>
-                    <input
-                      type="email"
-                      name="work_email"
-                      required
-                      disabled={uploading}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-input-bg)] dark:bg-[var(--color-input-bg-light)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] text-sm disabled:opacity-50 transition-colors"
-                      placeholder="alex@company.com"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--color-text-dark)] dark:text-[var(--color-foreground)] mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    name="full_name"
+                    required
+                    disabled={uploading}
+                    className="w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl border border-[var(--color-warm-border)] bg-[var(--color-input-bg)] dark:bg-[var(--color-input-bg-light)] text-[var(--color-foreground)] placeholder-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] text-sm disabled:opacity-50 transition-colors"
+                    placeholder="Alex Rivera"
+                  />
                 </div>
 
                 <div>
